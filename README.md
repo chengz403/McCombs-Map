@@ -1,6 +1,6 @@
-# McCombs Map
+# McCombs Map: CBA 6th Floor
 
-A walkable, third-person 3D model of the McCombs GSB 3rd floor, built from photos of the floor-plan directory and the hallways. It is a single HTML file using three.js from a CDN, so there is no build step.
+A walkable, third-person 3D model of the CBA 6th floor and the Sixth Floor Walkway to CBA North. The layout is traced from the two floor plans; colors, materials and props come from photos of the hallways. It is a single HTML file using three.js from a CDN, so there is no build step.
 
 ## Run it
 
@@ -22,22 +22,29 @@ Then go to http://localhost:8000.
 | Run | Shift | Push the joystick to the edge |
 | Zoom | Scroll | — |
 
-## What's modeled so far
+## What's modeled
 
-- **Escalator hallway:** wood wall with bulletin board, escalators down, GSB 3.128 recessed entry with double doors, teal Student Honor Code wall, benches, hanging wayfinding sign, windows at the far end.
-- **Salem Center lobby (3.118):** curved pixel-film glass wall with a scrolling LED stock ticker, Corporate & Foundation Relations (3.126) door, wall clock showing the real time, column and the north entrance doors.
+- **Every room on the floor plan:** about 110 rooms, each with a door and a room plaque on the side that faces the hallway.
+- **North wing (6.3xx and 6.48x–6.49x):** cream walls with a black base, glossy speckled tile, oak doors in black frames, a dead-end hallway with an EXIT sign, trash and recycling bins.
+- **6.432 / 6.426 suite:** grey fabric-panel walls and carpet, a frameless glass entry with one leaf swung open, and waiting chairs (black, teal fabric, orange leather).
+- **Atrium:** open from the ground floor up to a skylight, with a glass railing along the west corridor.
+- **West corridor:** elevator, stairs, restrooms and 6.404–6.418.
+- **Sixth Floor Walkway:** window wall, a long wood ledge, two escalators down to level 5, offices 6.202–6.220 and the doors to CBA North.
+
+On the plan, north is to the left. The minimap follows you and keeps the plan's orientation.
 
 ## Features
 
-- **Find a room:** type `3.128`, `3.118`, `3.126` or `exit` to get arrows projected on the floor, a beacon at the destination, live turn-by-turn steps and the route on the minimap.
-- **Start at an entrance:** teleport to the north entrance or the escalator hallway.
+- **Find a room:** type any room number (`6.492`, `6.432K`, `6.202`) or `elevator`, `restroom`, `stairs`, `walkway`, `atrium`, `lab`, `schwab`. You get arrows on the floor, a beacon at the door, turn-by-turn steps and the route on the minimap. Routing uses A* on a walkable grid, so new rooms are routed around automatically.
+- **Start at an entrance:** teleport to the atrium, elevator, the north hallway, the suite doors or either end of the walkway.
 
 ## Extending the map
 
-Coordinates in `index.html` use the pixel grid of the floor-plan directory photo: `X(px)` and `Z(px)` convert to meters at 0.05 m per pixel.
+Coordinates in `index.html` use the pixel grid of the 6th floor plan (1542×956), at 0.045 m per pixel. The walkway plan has its own grid; `wu()` and `wv()` convert it.
 
-- **Rooms for the finder:** add an entry to `ROOM_DB` with a `dest` point in front of the door.
+- **Rooms:** add `[label, x1, y1, x2, y2, door]` to `ROOMS`. `door` is the side facing the hallway (`n`, `s`, `e`, `w`) plus an optional position along that side, e.g. `'e.3'`. The room finder, minimap and routing pick it up.
+- **Full names:** add the room to `NAMES` to show a full name in the finder.
 - **Entrances:** add an entry to `ENTRANCES` with a spawn `pos` and a `look` target.
-- **Routing:** if new walls block a route, add walkable waypoints to `NODES`.
+- **Suite look:** anything inside the `SUITE` rectangle gets the grey panel walls and carpet.
 
-The ticker prices are simulated, not live quotes.
+Rooms are drawn from the floor plan. Interior details (furniture, signs) are only modeled where there are photos.
