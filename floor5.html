@@ -94,7 +94,7 @@ kbd{font-family:var(--font-ui);font-size:11px;font-weight:700;color:var(--ink);b
    Plan pixel -> meters: S m per px. x grows east, y grows south. */
 const S=0.07, H=2.9, K=S*100;                // meters per plan pixel (0.055 and 0.045 were both too small; calibrated from the elevator/stair plan crop); K = canvas px per plan px
 const X=m=>(m-1000)*S, Z=m=>(m-800)*S;
-const BOUNDS={x1:640,y1:530,x2:1420,y2:960};
+const BOUNDS={x1:640,y1:530,x2:1420,y2:1145};
 const PIT=[971,784,1187,822];                 // escalator opening (top landing at the west end); hugs the men's-restroom wood wall
 
 try{await Promise.race([Promise.all(['600 40px "Barlow Condensed"','700 40px "Barlow Condensed"','400 40px Rubik','700 40px Rubik'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,2500))])}catch(e){}
@@ -212,7 +212,20 @@ box(640,530,1127,700,0,H,M.wall);       // 5.142 block and everything north-west
 box(1127,530,1330,600,0,H,M.wall);      // north end of the modeled seating area
 box(1330,530,1420,960,0,H,M.wall);      // east edge
 box(640,700,706,960,0,H,M.wall);        // rooms 5.102-5.112 (west of the corridor)
-box(640,945,1420,960,0,H,M.wall);       // south end wall
+// ---- the GSB west corridor now continues south through a connector into the CBA corridor ----
+// (CBA sheet is rotated 180 degrees against the GSB sheet and drawn at ~0.045 m per CBA px; positions below are converted into this model's plan px)
+box(640,945,706,994,0,H,M.wall);        // connector, west wall
+box(640,994,690,1100,0,H,M.wall);       // CBA corridor, east end
+box(752,945,820,994,0,H,M.wall);        // room 5.310 (north side of the CBA corridor); 5.312's door is on the connector wall
+box(820,944,864,946,0,H,M.wall);        // back wall of the vending room (narrower: the machines are close together)
+box(864,945,935,994,0,H,M.wall);        // room 5.306
+box(935,945,975,973,0,H,M.wall);        // behind the CBA elevator recess
+box(975,945,1190,994,0,H,M.wall);       // rooms and the stair block along the south side of the corridor
+box(690,1045,1063,1145,0,H,M.wall);     // atrium glass wall + 5.304 (its west wall is the east wall of the north hallway)
+// T junction at the west end: the corridor we walk keeps going straight (west), and a hallway branches north (x 1063-1117).
+// Both are capped with plain walls for now (the next round continues the north hallway).
+box(1117,1045,1190,1145,0,H,M.wall);box(1063,1140,1117,1145,0,H,M.wall);box(1190,945,1203,1145,0,H,M.wall);
+box(1203,945,1420,994,0,H,M.wall);      // south end of the GSB east corridor
 box(752,822,875,945,0,H,M.bronze);      // elevator bank + stairwell (doors face the hall)
 box(975,822,1262,945,0,H,M.wall);       // MEN'S RESTROOM block (wood wall on its north and west faces); entrance not modeled
 // the narrow blue "empty space" east of the elevators (x 875-975, y 822-846), and below its west part the recess ("a cube that gets deeper into the wall") with Stair 1's white double door
@@ -289,7 +302,7 @@ pictoSign(945,821,'n',2.3);pictoSign(920,853,'w',2.3);
  x.fillStyle='rgba(255,255,255,.07)';for(let m=752;m<=875;m+=24)x.fillRect(u(m),0,2,c.height);
  x.fillStyle='rgba(0,0,0,.18)';x.fillRect(0,0,c.width,60);
  const lw=1.2/S;
- const lift=cx=>{x.fillStyle='#232018';x.fillRect(u(cx+lw/2)-8,52,lw*K+16,210);x.fillStyle='#34301f';x.fillRect(u(cx+lw/2),60,lw*K,202);x.fillStyle='#16140f';x.fillRect(u(cx)-1.5,60,3,202)};
+ const lift=cx=>{x.fillStyle='#232018';x.fillRect(u(cx+lw/2)-8,52,lw*K+16,238);x.fillStyle='#34301f';x.fillRect(u(cx+lw/2),60,lw*K,230);x.fillStyle='#16140f';x.fillRect(u(cx)-1.5,60,3,230)};
  lift(785);lift(835);
  const plate=m=>{x.fillStyle='#b69a62';x.fillRect(u(m)-10,110,20,48);x.fillStyle='#e8d9a8';x.beginPath();x.arc(u(m),130,5,0,7);x.fill()};plate(771);plate(821);
  decal(813.5,822,'n',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.6,metalness:.1}),.012)}
@@ -324,12 +337,12 @@ const ROOMS=[['5.112',760],['5.110',799],['5.108',837],['5.106',876],['5.102',91
 {const d=wallCanvas('e',735,945),{c,x,u}=d;
  x.fillStyle='#ece9df';x.fillRect(0,0,c.width,c.height);
  for(const [lab,my] of ROOMS){
-   x.fillStyle='#1d1b17';x.fillRect(u(my+19),20,38*K,250);   // black frame around the bay
-   x.fillStyle='#faf8f2';x.fillRect(u(my+19)+7,27,38*K-14,238);
+   x.fillStyle='#1d1b17';x.fillRect(u(my+19),20,38*K,270);   // black frame around the bay (runs down to the floor)
+   x.fillStyle='#faf8f2';x.fillRect(u(my+19)+7,27,38*K-14,263);
    const dw=.9/S;                                                  // door leaf (0.9 m)
-   x.fillStyle='#1d1b17';x.fillRect(u(my+dw/2+4)-5,27,dw*K+10,240);
-   x.fillStyle='#b97832';x.fillRect(u(my+dw/2+4),32,dw*K,235);
-   for(let i=0;i<14;i++){x.fillStyle=`rgba(70,35,10,${.1+rnd()*.15})`;x.fillRect(u(my+dw/2+4)+rnd()*dw*K,32,1+rnd()*2,235)}
+   x.fillStyle='#1d1b17';x.fillRect(u(my+dw/2+4)-5,27,dw*K+10,263);
+   x.fillStyle='#b97832';x.fillRect(u(my+dw/2+4),32,dw*K,258);
+   for(let i=0;i<14;i++){x.fillStyle=`rgba(70,35,10,${.1+rnd()*.15})`;x.fillRect(u(my+dw/2+4)+rnd()*dw*K,32,1+rnd()*2,258)}
    x.fillStyle='#233036';x.fillRect(u(my+dw/2+4)+dw*K*.62,62,dw*K*.2,120);x.fillStyle='#8fb3c4';x.fillRect(u(my+dw/2+4)+dw*K*.64,66,dw*K*.16,112);
    x.fillStyle='#1d1b17';x.fillRect(u(my+dw/2+4)+dw*K*.2,150,10,6);
    x.fillStyle='#212225';x.fillRect(u(my-9)-8,110,44,66);x.fillStyle='#e6e6e0';x.font=`600 15px ${SIGNF}`;x.fillText(lab,u(my-9)-5,150);
@@ -340,12 +353,7 @@ const ROOMS=[['5.112',760],['5.110',799],['5.108',837],['5.106',876],['5.102',91
  x.fillStyle='#4b4636';x.fillRect(0,0,c.width,c.height);x.fillStyle='rgba(255,255,255,.07)';for(let m=822;m<=945;m+=24)x.fillRect(u(m),0,2,c.height);
  x.fillStyle='#cfd1cf';x.fillRect(u(900),170,80,30);x.fillStyle='#9ea3a6';x.fillRect(u(900)+8,176,64,10);
  decal(752,883.5,'w',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.6}),.012)}
-// window at the south end of the corridor, looking at brick buildings
-{const d=wallCanvas('n',706,752),{c,x,u}=d;
- const g=x.createLinearGradient(0,60,0,260);g.addColorStop(0,'#b6d3e6');g.addColorStop(1,'#e8eef0');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
- x.fillStyle='#b4694a';x.fillRect(0,90,c.width,170);x.fillStyle='#efe3cf';for(let i=0;i<5;i++)for(let j=0;j<4;j++)x.fillRect(12+i*38,100+j*38,22,26);
- x.fillStyle='#111';x.fillRect(0,0,c.width,22);x.fillRect(0,270,c.width,20);x.fillRect(0,0,12,c.height);x.fillRect(c.width-12,0,12,c.height);x.fillRect(c.width/2-5,22,10,250);
- decal(729,945,'n',d.w,H,H/2,new THREE.MeshBasicMaterial({map:tex(c)}),.012)}
+// (the corridor's south end is now open: it leads through the connector to the CBA corridor)
 // east corridor to the CBA building: glass doors at the south end
 {const d=wallCanvas('n',1262,1330),{c,x,u}=d;
  x.fillStyle='#ece9df';x.fillRect(0,0,c.width,c.height);x.fillStyle='#111';x.fillRect(10,60,c.width-20,230);
@@ -369,12 +377,12 @@ const ROOMS=[['5.112',760],['5.110',799],['5.108',837],['5.106',876],['5.102',91
  for(let m=765;m<=1127;m+=50)x.fillRect(u(m)-5,52,10,230);
  // single wood door (west), 0.95 m wide
  {const w=.95/S,l=850-w/2;
-  x.fillStyle='#17140f';x.fillRect(u(l)-8,56,w*K+16,226);x.fillStyle='#d98c1a';x.fillRect(u(l),64,w*K,218);
+  x.fillStyle='#17140f';x.fillRect(u(l)-8,56,w*K+16,234);x.fillStyle='#d98c1a';x.fillRect(u(l),64,w*K,226);
   x.fillStyle='#8fb3c4';x.fillRect(u(l)+w*K*.2,86,w*K*.2,92);x.fillStyle='#1d1b17';x.fillRect(u(l)+w*K*.72,170,22,8)}
  // orange double doors (east, 5.142A), 1.8 m wide
  {const w=1.8/S,l=1092-w/2;
-  x.fillStyle='#17140f';x.fillRect(u(l)-8,56,w*K+16,226);
-  x.fillStyle='#e9921c';x.fillRect(u(l),64,w*K/2-2,218);x.fillRect(u(l)+w*K/2+2,64,w*K/2-2,218);
+  x.fillStyle='#17140f';x.fillRect(u(l)-8,56,w*K+16,234);
+  x.fillStyle='#e9921c';x.fillRect(u(l),64,w*K/2-2,226);x.fillRect(u(l)+w*K/2+2,64,w*K/2-2,226);
   x.fillStyle='#bfe0ea';x.fillRect(u(l)+12,80,w*K/2-26,140);x.fillRect(u(l)+w*K/2+14,80,w*K/2-26,140)}
  decal((765+1127)/2,700,'s',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.5}),.012)}
 {const [c,x]=cvs(256,200);x.fillStyle='#f6f4ee';x.fillRect(0,0,256,200);x.strokeStyle='#222';x.lineWidth=4;x.strokeRect(2,2,252,196);x.fillStyle='#222';x.font=`500 40px ${SIGNF}`;['Classroom','5.142','A & B'].forEach((t,i)=>x.fillText(t,22,56+i*52));
@@ -399,6 +407,72 @@ hangSign(1265,760,'w',{arrow:'←',lines:['Development &','External Relations']}
 hangSign(800,760,'e',{arrow:'←',lines:['Active Learning','Classrooms · Mod Labs','PhD Lounge']},null,{arrow:'→',lines:['Development &','External Relations']},3.2);
 // corridor sign
 hangSign(729,760,'e',{arrow:'←',lines:['Mod Labs','PhD Lounge']},null,{arrow:'→',lines:['Active Learning Classrooms','McCombs Testing Center']},3.0);
+
+// ---------- CBA side: connector, corridor, rooms, vending room, elevator recess ----------
+// Walking from the GSB west corridor: through the connector to the atrium glass, turn "left" (CBA west), pass 5.312, 5.310, the vending room,
+// 5.306, the elevator recess and lockers, and stop at the SW corner where the corridor turns north. Atrium behind the glass is empty on level 5.
+const CZ0=994,CZ1=1045,CREAM='#efe9d6',DW=.95/S;
+function oak(x,u0,w,top=80){x.fillStyle='#1d1b17';x.fillRect(u0-6,top-8,w+12,292-top+8);x.fillStyle='#c79a62';x.fillRect(u0,top,w,290-top);
+  for(let i=0;i<10;i++){x.fillStyle=`rgba(90,55,20,${.08+rnd()*.14})`;x.fillRect(u0+rnd()*w,top,1+rnd()*2,290-top)}
+  x.fillStyle='#8a6a2a';x.beginPath();x.arc(u0+w*.82,top+(290-top)*.5,5,0,7);x.fill()}
+function nameplate(x,u0,y0,w,h,...lines){x.fillStyle='#262626';x.fillRect(u0,y0,w,h);x.fillStyle='#e8e6df';x.font=`600 13px ${SIGNF}`;lines.forEach((t,i)=>x.fillText(t,u0+4,y0+16+i*16))}
+function faceOf(dir,a,b,at,cxm,paint){const d=wallCanvas(dir,a,b),{c,x,u}=d;x.fillStyle=CREAM;x.fillRect(0,0,c.width,c.height);x.fillStyle='#1a1a1a';x.fillRect(0,276,c.width,14);
+  paint(x,u,c,d);decal(dir==='s'||dir==='n'?(a+b)/2:at,dir==='s'||dir==='n'?at:(a+b)/2,dir,d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.85}),.012)}
+// rooms on the north side of the corridor (their doors face +z)
+faceOf('s',752,820,CZ0,0,(x,u)=>{
+  oak(x,u(792-DW/2),DW*K);nameplate(x,u(792+DW/2)+8,105,66,52,'Telephone','Equipment','5.310')});
+// 5.312's door is on the connector's side wall (the corridor's east wall), not on the corridor
+faceOf('w',945,994,752,0,(x,u)=>{oak(x,u(968-DW/2),DW*K);nameplate(x,u(968+DW/2)+8,105,48,34,'5.312')});
+faceOf('s',864,935,CZ0,0,(x,u)=>{oak(x,u(903-DW/2),DW*K);nameplate(x,u(903+DW/2)+8,105,48,34,'5.306')});
+faceOf('s',975,1083,CZ0,0,(x,u)=>{
+  x.fillStyle='#111';x.fillRect(u(1003),84,100,58);x.fillStyle='#e8f0f8';x.fillRect(u(1003)+4,88,92,50);x.fillStyle='#e8702a';x.font=`700 11px ${SIGNF}`;x.fillText('UHS STI Nurse',u(1003)+8,104);x.fillText('Screening Clinic',u(1003)+8,118);
+  oak(x,u(1028-DW/2),DW*K);nameplate(x,u(1028+DW/2)+8,105,40,30,'5.30x');
+  x.fillStyle='#b9bdbf';x.fillRect(u(1045),178,46,18);x.fillStyle='#8f9496';x.fillRect(u(1045)+4,182,38,8);x.fillStyle='#d6d9da';x.fillRect(u(1045)+10,150,26,28);   // water fountain
+  {const w=1.8/S*K,l=u(1068-.9/S);x.fillStyle='#2a2018';x.fillRect(l-8,72,w+16,220);x.fillStyle='#c79a62';x.fillRect(l,80,w/2-2,210);x.fillRect(l+w/2+2,80,w/2-2,210);
+   x.fillStyle='#8fb3c4';x.fillRect(l+w/2-26,120,16,60);x.fillRect(l+w/2+10,120,16,60);x.fillStyle='#1d1b17';x.fillRect(l+4,170,w-8,5);
+   x.fillStyle='#f6f4ee';x.fillRect(l-6,34,50,34);x.fillStyle='#222';x.font=`600 12px ${SIGNF}`;x.fillText('STAIR 1',l-1,48);x.fillText('Floor 5',l-1,62)}});
+// vending room (opens off the corridor into the rooms row)
+faceOf('s',820,864,946,0,()=>{});
+function coke(){const [c,x]=cvs(200,340);x.fillStyle='#c4161c';x.fillRect(0,0,200,340);x.fillStyle='#111';x.fillRect(14,40,140,250);
+  const g=x.createLinearGradient(0,40,0,290);g.addColorStop(0,'#f4fbff');g.addColorStop(1,'#bfe0f2');x.fillStyle=g;x.fillRect(20,46,128,238);
+  for(let r=0;r<5;r++)for(let k=0;k<6;k++){x.fillStyle=['#3a7bd5','#e0a526','#2e8b57','#c4161c','#7ab6e0'][(r+k)%5];x.fillRect(26+k*20,56+r*46,12,34)}
+  x.fillStyle='#fff';x.font='italic 700 26px Georgia,serif';x.fillText('Coca-Cola',34,318);return basic(c)}
+function blackVm(){const [c,x]=cvs(200,340);x.fillStyle='#0f0f10';x.fillRect(0,0,200,340);x.fillStyle='#c4161c';x.beginPath();x.moveTo(0,250);x.quadraticCurveTo(100,200,200,260);x.lineTo(200,340);x.lineTo(0,340);x.fill();
+  x.fillStyle='#33d06b';x.fillRect(150,150,12,12);x.fillStyle='#d9d9d9';x.fillRect(30,120,90,50);return basic(c)}
+{const redM=std({color:0xb3161c,roughness:.5}),blkM=std({color:0x151516,roughness:.5});
+ box(821,950,832,964,0,1.9,redM);box(821,964,832,978,0,1.9,redM);box(853,957,863,972,0,1.9,blkM);   // machines face each other across a narrow aisle (about 1.5 m)
+ decal(832,957,'e',.95,1.7,.98,coke(),.012);decal(832,971,'e',.95,1.7,.98,coke(),.012);decal(853,964.5,'w',.95,1.7,.98,blackVm(),.012);
+ const vl=new THREE.PointLight(0xcfe8ff,.7,6,1.5);vl.position.set(X(841),1.8,Z(965));scene.add(vl)}
+// CBA elevator in a small recess ("5" plates, poster, black corner guards)
+faceOf('s',935,975,973,0,(x,u)=>{
+  const w=1.1/S*K,l=u(953-.55/S);x.fillStyle='#2a2a2a';x.fillRect(l-8,60,w+16,232);
+  const g=x.createLinearGradient(l,0,l+w,0);g.addColorStop(0,'#7e8283');g.addColorStop(.5,'#b7bbbc');g.addColorStop(1,'#858a8b');x.fillStyle=g;x.fillRect(l,66,w,224);x.fillStyle='#4a4d4e';x.fillRect(l+w/2-1,66,2,224);
+  x.fillStyle='#111';x.fillRect(l+w+14,140,22,22);x.fillRect(l+w+14,168,22,22);x.fillStyle='#fff';x.font=`700 16px ${SIGNF}`;x.fillText('5',l+w+21,156);x.fillText('5',l+w+21,184);
+  const px=u(967)-6;x.fillStyle='#fbf8f2';x.fillRect(px,70,56,82);x.strokeStyle='#e8702a';x.lineWidth=3;x.strokeRect(px,70,56,82);x.fillStyle='#e8702a';x.font=`700 11px ${SIGNF}`;x.fillText('A LAUNCH PAD',px+4,108);x.fillText('FOR BOLD IDEAS.',px+4,120)});
+box(934,991.4,935.2,994,0,1.5,M.black);box(974.8,991.4,976,994,0,1.5,M.black);
+// north side of the corridor: atrium glass (empty atrium behind it on level 5) and the 5.304 wall with lockers
+faceOf('n',690,893,CZ1,0,(x,u,c)=>{
+  const g=x.createLinearGradient(0,0,0,c.height);g.addColorStop(0,'#b6d3e6');g.addColorStop(.7,'#e8eef0');g.addColorStop(1,'#d7d9d0');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
+  x.fillStyle='#a8603f';x.fillRect(0,90,c.width,200);x.fillStyle='#efe3cf';for(let i=0;i<c.width;i+=46)for(let j=0;j<4;j++)x.fillRect(i+10,102+j*44,26,30);
+  for(let i=0;i<c.width;i+=70){x.fillStyle=['#5f7f4a','#4c6b3c','#728f55'][(i/70|0)%3];x.beginPath();x.arc(i+20,262+(i%3)*4,26,0,7);x.fill()}
+  x.fillStyle='#17140f';x.fillRect(0,0,c.width,16);x.fillRect(0,c.height-14,c.width,14);for(let m=690;m<=893;m+=26)x.fillRect(u(m)-4,0,8,c.height);x.fillRect(0,96,c.width,6)});
+faceOf('n',893,1063,CZ1,0,(x,u)=>{
+  const l=u(1010),w=85*K;x.fillStyle='#3c3a36';x.fillRect(l-4,66,w+8,212);
+  for(let k=0;k<7;k++)for(let r=0;r<4;r++){x.fillStyle='#8b857a';x.fillRect(l+k*(w/7)+2,70+r*52,w/7-4,48);x.fillStyle='#c9b26a';x.fillRect(l+k*(w/7)+(w/7)/2-3,70+r*52+34,6,8)}
+  x.fillStyle='#fff';x.fillRect(l+w/2-26,16,52,44);x.fillStyle='#111';x.font=`700 30px ${SIGNF}`;x.textAlign='center';x.fillText('J',l+w/2,50);x.textAlign='left';
+  oak(x,u(1038+DW/2),DW*K);
+  x.fillStyle='#2a2a2a';x.fillRect(u(1056)-3,110,50,66);x.fillStyle='#e8702a';x.fillRect(u(1056),114,44,58)});
+// west end: a T junction. The corridor keeps going straight (capped with a plain wall for now) and a hallway branches north.
+faceOf('s',1083,1190,CZ0,0,()=>{});                  // south side beyond the stair doors
+faceOf('n',1117,1190,CZ1,0,()=>{});                  // north side west of the branch
+faceOf('w',994,1045,1190,0,()=>{});                  // straight-ahead cap
+faceOf('e',1045,1140,1063,0,()=>{});                 // branch, east wall (the 5.304 west wall)
+faceOf('w',1045,1140,1117,0,()=>{});                 // branch, west wall
+faceOf('n',1063,1117,1140,0,()=>{});                 // branch, north cap
+hangSign(1045,1019,'w',{arrow:'',lines:['Mod Lab West']},null,null,2.0);
+// bins and benches near the west end
+for(const [mx,col] of [[1015,0x9aa2a8],[1024,0x1f4aa0]]){const b=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.84,22),std({color:col,roughness:.5}));b.position.set(X(mx),.42,Z(1038));scene.add(b);camBlockers.push(b);addCollider(X(mx)-.28,Z(1038)-.28,X(mx)+.28,Z(1038)+.28)}
+{const oakM=std({color:0xb5783e,roughness:.55}),teal=std({color:0x5d9a96,roughness:.7});for(const mx of [1047]){box(mx,1034,mx+11,1045,0,.36,oakM);box(mx,1034,mx+11,1045,.36,.46,teal,{collide:false})}}
 
 // ---------- seating area furniture ----------
 function table(mx,my){const w=1.6,d=.8,x0=X(mx),z0=Z(my);
@@ -435,6 +509,9 @@ for(let mx=760;mx<=1320;mx+=60){lightPanel(mx,722);lightPanel(mx,765);if(mx<950|
 for(let mx=1210;mx<=1310;mx+=50)for(let my=620;my<=720;my+=50)lightPanel(mx,my);
 for(let my=790;my<=930;my+=45){lightPanel(729,my)}
 for(const my of [855,880])lightPanel(925,my);
+for(let mx=705;mx<=1075;mx+=52)lightPanel(mx,1019);
+for(const my of [955,975])lightPanel(729,my);
+for(const [mx,my] of [[729,975],[790,1019],[880,1019],[970,1019],[1050,1019]]){const l=new THREE.PointLight(0xfff4e2,.7,13,1.4);l.position.set(X(mx),H-.35,Z(my));scene.add(l)}
 for(const mx of [1275,1315])lightPanel(mx,880);
 
 // ---------- avatar ----------
@@ -493,6 +570,14 @@ function moveP(dx,dz){
 }
 
 const ZONES=[
+  [[820,944,864,994],'Vending room · 5.308'],
+  [[1063,1045,1117,1145],'North hallway (to be continued)'],
+  [[1063,994,1117,1045],'T junction · corridor goes on, hallway turns north'],
+  [[1117,994,1190,1045],'Corridor beyond the junction (capped for now)'],
+  [[935,973,975,994],'CBA elevator recess'],
+  [[706,945,752,994],'Connector · GSB to CBA'],
+  [[690,994,893,1045],'CBA corridor · atrium glass ahead'],
+  [[893,994,1063,1045],'CBA corridor · lockers and rooms 5.306 – 5.312'],
   [[706,700,752,945],'West corridor · rooms 5.102 – 5.112'],
   [[875,822,975,875],'Stair 1 recess · white double door'],
   [[752,700,975,822],'Elevator lobby · Stair 1'],
@@ -504,7 +589,7 @@ const zoneEl=document.getElementById('zone');let lastZone='';
 function zoneAt(){const mx=P.x/S+1000,my=P.z/S+800;for(const [r,n] of ZONES)if(mx>=r[0]&&mx<=r[2]&&my>=r[1]&&my<=r[3])return n;return 'GSB Level 5'}
 
 // ---------- minimap ----------
-const MB={x1:640,y1:560,x2:1360,y2:960};
+const MB={x1:640,y1:560,x2:1360,y2:1150};
 const mini=document.getElementById('mini');const MW=440,MH=Math.round(MW*(MB.y2-MB.y1)/(MB.x2-MB.x1));mini.width=MW;mini.height=MH;
 const mctx=mini.getContext('2d');
 const mmx=m=>(m-MB.x1)/(MB.x2-MB.x1)*MW,mmy=m=>(m-MB.y1)/(MB.y2-MB.y1)*MH,mms=MW/(MB.x2-MB.x1);
@@ -514,10 +599,14 @@ const base=document.createElement('canvas');base.width=MW;base.height=MH;
  rr([660,700,706,945],'#ee6c24');rr([765,560,1127,700],'#1e8fd0');rr([752,822,875,945],'#6d6a5a');rr([920,846,1262,945],'#56504a');rr([975,822,1262,846],'#56504a');
  rr([706,700,1330,822],'#d9cfc1');rr([706,700,752,945],'#d9cfc1');rr([1187,600,1330,700],'#cfc8b8');rr([1262,822,1330,945],'#d9cfc1');
  rr([875,822,975,846],'#d9cfc1');rr([875,846,920,875],'#d9cfc1');rr([908,820,971,824],'#b5783e');
+ // CBA side
+ rr([752,945,1203,994],'#6d6a5a');rr([690,994,1190,1045],'#d9cfc1');rr([706,945,752,994],'#d9cfc1');rr([820,944,864,994],'#d9cfc1');rr([935,973,975,994],'#d9cfc1');rr([1063,1045,1117,1140],'#d9cfc1');
+ rr([690,1045,893,1052],'#7fb7d6');rr([893,1045,1083,1052],'#8b857a');
  rr(PIT,'#8f8a84');b.strokeStyle='#6c6762';b.lineWidth=1;for(let x=mmx(PIT[0]);x<mmx(PIT[2]);x+=5){b.beginPath();b.moveTo(x,mmy(PIT[1]));b.lineTo(x,mmy(PIT[3]));b.stroke()}
  b.fillStyle='#fff';b.font=`600 13px ${SIGNF}`;b.textAlign='center';b.textBaseline='middle';
  const L=(t,x,y)=>b.fillText(t,mmx(x),mmy(y));
- L('5.142',945,660);L('ELEV.',813,880);L('ESC.',1080,803);L('STAIR 1',897,905);L("MEN'S RESTROOM",1120,880);for(const [lab,my] of ROOMS)L(lab.slice(2),680,my);L('SEATING',1245,620);L('TO CBA',1296,900);}
+ L('5.142',945,660);L('ELEV.',813,880);L('ESC.',1080,803);L('STAIR 1',897,905);L("MEN'S RESTROOM",1120,880);for(const [lab,my] of ROOMS)L(lab.slice(2),680,my);L('SEATING',1245,620);L('TO CBA',1296,900);
+ b.font=`600 11px ${SIGNF}`;L('5.312',745,968);L('5.310',792,968);L('VENDING',842,962);L('T',1090,1019);L('5.306',903,968);L('ELEV.',955,983);L('LOCKERS',955,1034);L('ATRIUM GLASS',790,1058);L('CBA CORRIDOR',1010,1010);}
 function drawMini(){
   mctx.drawImage(base,0,0);
   const px=mmx(P.x/S+1000),py=mmy(P.z/S+800);
@@ -540,6 +629,14 @@ const ROOM_DB={
   'stair':{name:'Stair 1',full:'Exit stair · Floor 5',dest:[897,860],beacon:[897,866],tag:'STAIR 1',say:'Stair 1 is'},
   'escalator':{name:'Escalators',full:'Down to Level 4',dest:[959,803],beacon:[957,803],tag:'ESC',say:'The escalators are'},
   'cba':{name:'CBA (west connector)',full:'Corridor with rooms 5.102 – 5.112',dest:[731,935],beacon:[731,930],tag:'CBA',say:'The corridor to CBA is'},
+  'vending':{name:'Vending room',full:'CBA 5.308 · drinks and snacks',dest:[841,985],beacon:[841,980],tag:'VENDING',say:'The vending room is'},
+  '5310':{name:'CBA 5.310',full:'Telephone Equipment',dest:[797,1004],beacon:[797,1000],tag:'5.310',say:'The 5.310 door is'},
+  '5312':{name:'CBA 5.312',full:'Door on the connector wall',dest:[736,968],beacon:[740,968],tag:'5.312',say:'The 5.312 door is'},
+  '5306':{name:'CBA 5.306',full:'Room off the CBA corridor',dest:[903,1004],beacon:[903,1000],tag:'5.306',say:'The 5.306 door is'},
+  'cbaelevator':{name:'CBA elevator',full:'Level 5 · in the small recess',dest:[955,986],beacon:[955,981],tag:'ELEV',say:'The CBA elevator is'},
+  'lockers':{name:'Lockers',full:'Locker bank J',dest:[960,1034],beacon:[960,1038],tag:'LOCKERS',say:'The lockers are'},
+  'mod':{name:'Mod Lab West',full:'Sign near the T intersection',dest:[1060,1019],beacon:[1060,1015],tag:'MOD LAB W',say:'Mod Lab West is'},
+  'tintersection':{name:'T junction',full:'Corridor goes on, hallway turns north',dest:[1090,1019],beacon:[1090,1015],tag:'T',say:'The T junction is'},
   'cbaeast':{name:'CBA (east connector)',full:'Glass doors at the end of the corridor',dest:[1296,935],beacon:[1296,930],tag:'CBA',say:'The glass doors to CBA are'},
 };
 ROOM_DB['5142b']=ROOM_DB['5142'];ROOM_DB['elevators']=ROOM_DB['lift']=ROOM_DB['elevator'];ROOM_DB['stairs']=ROOM_DB['stair1']=ROOM_DB['stair'];ROOM_DB['escalators']=ROOM_DB['escalator'];
@@ -557,7 +654,7 @@ function drawTag(t){bcx.clearRect(0,0,256,96);bcx.fillStyle='rgba(255,122,42,.92
 beacon.visible=false;scene.add(beacon);
 
 // walkable waypoints (plan px)
-const NODES=[[729,740],[729,830],[729,880],[729,930],[775,740],[810,790],[860,790],[897,790],[897,835],[897,860],[900,740],[960,750],[1000,740],[1100,740],[1195,750],[1230,790],[1296,790],[1296,830],[1296,880],[1296,930],[1250,700],[1215,730],[1250,640],[1092,722],[850,722]].map(([a,b])=>[X(a),Z(b)]);
+const NODES=[[1090,1019],[1090,1080],[1150,1019],[729,960],[729,1019],[760,1019],[800,1019],[841,1019],[841,985],[903,1019],[955,1019],[955,990],[1000,1019],[1050,1019],[960,1030],[729,740],[729,830],[729,880],[729,930],[775,740],[810,790],[860,790],[897,790],[897,835],[897,860],[900,740],[960,750],[1000,740],[1100,740],[1195,750],[1230,790],[1296,790],[1296,830],[1296,880],[1296,930],[1250,700],[1215,730],[1250,640],[1092,722],[850,722]].map(([a,b])=>[X(a),Z(b)]);
 function los(a,b,r=.3){const dx=b[0]-a[0],dz=b[1]-a[1],n=Math.ceil(Math.hypot(dx,dz)/.25);for(let i=1;i<n;i++){const t=i/n;if(blocked(a[0]+dx*t,a[1]+dz*t,r))return false}return true}
 const NL=NODES.map(a=>NODES.map(b=>a===b?false:los(a,b)));
 function findPath(start,goal){
@@ -601,6 +698,11 @@ $('rcancel').addEventListener('click',()=>{stopNav();el.focus()});
 const ENTRANCES=[
   {id:'esc',name:'Escalators · top landing',pos:[955,758],look:[1250,775]},
   {id:'lift',name:'Recess · facing Stair 1 door',pos:[897,832],look:[897,875]},
+  {id:'cba',name:'CBA corridor · atrium glass ahead',pos:[729,1005],look:[729,1045]},
+  {id:'cbaw',name:'CBA corridor · west end (Mod Lab West)',pos:[1050,1019],look:[729,1019]},
+  {id:'tint',name:'CBA corridor · approaching the T',pos:[1010,1019],look:[1130,1019]},
+  {id:'vend',name:'CBA · vending room',pos:[841,1012],look:[841,946]},
+  {id:'celev',name:'CBA · elevator recess',pos:[955,1012],look:[955,973]},
   {id:'seat',name:'Seating area · outside 5.142A',pos:[1275,700],look:[1000,770]},
   {id:'west',name:'West corridor · rooms 5.102–5.112',pos:[731,900],look:[731,770]},
   {id:'east',name:'East corridor · doors to CBA',pos:[1296,935-14],look:[1296,800]},
