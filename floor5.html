@@ -92,10 +92,10 @@ kbd{font-family:var(--font-ui);font-size:11px;font-weight:700;color:var(--ink);b
 "use strict";
 /* Level 5 (GSB). Coordinates are pixels of the GSB Fifth Floor plan image (1760 px wide).
    Plan pixel -> meters: S m per px. x grows east, y grows south. */
-const S=0.055, H=2.9, K=S*100;               // K = canvas pixels per plan pixel (100 px per meter)
+const S=0.07, H=2.9, K=S*100;                // meters per plan pixel (0.055 and 0.045 were both too small; calibrated from the elevator/stair plan crop); K = canvas px per plan px
 const X=m=>(m-1000)*S, Z=m=>(m-800)*S;
 const BOUNDS={x1:640,y1:530,x2:1420,y2:960};
-const PIT=[940,795,1160,829];                 // escalator opening (top landing at the west end)
+const PIT=[971,784,1187,822];                 // escalator opening (top landing at the west end); hugs the men's-restroom wood wall
 
 try{await Promise.race([Promise.all(['600 40px "Barlow Condensed"','700 40px "Barlow Condensed"','400 40px Rubik','700 40px Rubik'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,2500))])}catch(e){}
 
@@ -202,19 +202,23 @@ box(PIT[0],PIT[1],PIT[2],PIT[1]+2,-4.6,-0.02,M.pit,{collide:false,cam:false});
 box(PIT[0],PIT[3]-2,PIT[2],PIT[3],-4.6,-0.02,M.pit,{collide:false,cam:false});
 box(PIT[2],PIT[1],PIT[2]+40,PIT[3],-4.6,-0.4,M.pit,{collide:false,cam:false});
 // carpeted seating area east of the escalators
-const CARPET=[1160,600,1330,830];
+const CARPET=[1187,600,1330,822];
 {const w=(CARPET[2]-CARPET[0])*S,d=(CARPET[3]-CARPET[1])*S,t=carpetTex.clone();t.needsUpdate=true;t.repeat.set(w/1.5,d/1.5);
  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),std({map:t,roughness:1}));m.rotation.x=-Math.PI/2;m.position.set((X(CARPET[0])+X(CARPET[2]))/2,.005,(Z(CARPET[1])+Z(CARPET[3]))/2);scene.add(m);
  box(CARPET[0]-2,CARPET[1],CARPET[0],CARPET[3],0,.007,std({color:0x1c1c1c}),{collide:false,cam:false});}
 
 // ---------- solid blocks (plan pixels) ----------
-box(640,530,1100,757,0,H,M.wall);       // 5.142 block and everything north-west
-box(1100,530,1330,600,0,H,M.wall);      // north end of the modeled seating area
+box(640,530,1127,700,0,H,M.wall);       // 5.142 block and everything north-west (front wall pushed north: the walkway beside the escalators is much wider in real life)
+box(1127,530,1330,600,0,H,M.wall);      // north end of the modeled seating area
 box(1330,530,1420,960,0,H,M.wall);      // east edge
-box(640,757,722,960,0,H,M.wall);        // rooms 5.102-5.112 (west of the corridor)
+box(640,700,706,960,0,H,M.wall);        // rooms 5.102-5.112 (west of the corridor)
 box(640,945,1420,960,0,H,M.wall);       // south end wall
-box(756,830,940,945,0,H,M.bronze);      // elevator bank + stair 1
-box(940,830,1262,945,0,H,M.wall);       // restroom block with the wood wall
+box(752,822,875,945,0,H,M.bronze);      // elevator bank + stairwell (doors face the hall)
+box(975,822,1262,945,0,H,M.wall);       // MEN'S RESTROOM block (wood wall on its north and west faces); entrance not modeled
+// the narrow blue "empty space" east of the elevators (x 875-975, y 822-846), and below its west part the recess ("a cube that gets deeper into the wall") with Stair 1's white double door
+box(920,846,975,945,0,H,M.wall);box(875,875,920,945,0,H,M.wall);
+// single-layer wood panel covering the east part of that open space from the hall side
+box(908,821,971,823.2,0,H,M.dark);
 // soffit over the escalators and a soffit curve over the seating area
 box(PIT[0]-10,PIT[1]-6,PIT[2]+10,PIT[3],2.55,H,M.wall,{collide:false});
 
@@ -222,11 +226,11 @@ box(PIT[0]-10,PIT[1]-6,PIT[2]+10,PIT[3],2.55,H,M.wall,{collide:false});
 const stepTexes=[];
 function stepTex(){const [c,x]=cvs(64,256);x.fillStyle='#3b3d40';x.fillRect(0,0,64,256);for(let i=0;i<256;i+=6){x.fillStyle='#55585c';x.fillRect(0,i,64,2)}x.fillStyle='#d8b32a';x.fillRect(0,0,64,4);x.fillRect(0,0,4,256);x.fillRect(60,0,4,256);const t=tex(c,true);t.rotation=Math.PI/2;t.center.set(.5,.5);return t}
 function escalator(mz,dirSign){
-  const zc=Z(mz),xTop=X(950),xBot=X(1150),yTop=0,yBot=-4.6,wd=.9;
+  const zc=Z(mz),xTop=X(PIT[0]+10),xBot=X(PIT[2]-10),yTop=0,yBot=-4.6,wd=1.0;
   const L=Math.hypot(xBot-xTop,yTop-yBot),ang=Math.atan2(yBot-yTop,xBot-xTop);
   const g=new THREE.Group();g.position.set((xTop+xBot)/2,(yTop+yBot)/2,zc);g.rotation.z=ang;
   const st=stepTex();st.repeat.set(L/0.42,1);stepTexes.push({t:st,dir:dirSign});
-  const tread=new THREE.Mesh(new THREE.PlaneGeometry(L,.62),std({map:st,roughness:.5,metalness:.4}));tread.rotation.x=-Math.PI/2;tread.position.y=.02;g.add(tread);
+  const tread=new THREE.Mesh(new THREE.PlaneGeometry(L,.8),std({map:st,roughness:.5,metalness:.4}));tread.rotation.x=-Math.PI/2;tread.position.y=.02;g.add(tread);
   const body=new THREE.Mesh(new THREE.BoxGeometry(L,.7,wd+.08),M.steel);body.position.y=-.36;g.add(body);
   for(const s of [-1,1]){
     const gl=new THREE.Mesh(new THREE.PlaneGeometry(L,.95),M.glass);gl.position.set(0,.5,s*wd*.47);g.add(gl);
@@ -243,7 +247,7 @@ function escalator(mz,dirSign){
   }
   scene.add(top);
 }
-escalator(803,1);escalator(821,-1);
+escalator(794,1);escalator(811,-1);
 function railing(ax,az,bx,bz){
   const len=Math.hypot(bx-ax,bz-az),ang=Math.atan2(bz-az,bx-ax);
   const g=new THREE.Group();g.position.set((ax+bx)/2,0,(az+bz)/2);g.rotation.y=-ang;
@@ -257,8 +261,12 @@ railing(X(PIT[0]),Z(PIT[1]),X(PIT[2]),Z(PIT[1]));      // along the walkway
 railing(X(PIT[2]),Z(PIT[1]),X(PIT[2]),Z(PIT[3]));      // east end
 
 // ---------- wood wall + bulletin board (north face of the restroom block) ----------
-{const w=(1165-940)*S,wt=woodTex.clone();wt.needsUpdate=true;wt.repeat.set(w/2.6,H/2.6);
- decal((940+1165)/2,830,'n',w,H,H/2,std({map:wt,roughness:.6}),.01);}
+{const w=(1187-975)*S,wt=woodTex.clone();wt.needsUpdate=true;wt.repeat.set(w/2.6,H/2.6);
+ decal((975+1187)/2,822,'n',w,H,H/2,std({map:wt,roughness:.6}),.01);
+ const w2=(971-908)*S,wt2=woodTex.clone();wt2.needsUpdate=true;wt2.repeat.set(w2/2.6,H/2.6);
+ decal(939.5,821,'n',w2,H,H/2,std({map:wt2,roughness:.6}),.01);          // the single-layer panel, wood side toward the hall
+ const w3=(875-846)*S,wt3=woodTex.clone();wt3.needsUpdate=true;wt3.repeat.set(w3/2.6,H/2.6);
+ decal(920,860.5,'w',w3,H,H/2,std({map:wt3,roughness:.6}),.01);}         // wood on the recess's east side, as in the photo
 {const [c,x]=cvs(768,460);
  x.fillStyle='#3a2618';x.fillRect(0,0,768,460);x.fillStyle='#e9e1d3';x.fillRect(16,16,736,428);
  x.fillStyle='#bf5700';x.fillRect(16,16,250,428);
@@ -267,46 +275,58 @@ railing(X(PIT[2]),Z(PIT[1]),X(PIT[2]),Z(PIT[3]));      // east end
  const fl=[['INFO SESSIONS','Tonight','#c1121f'],['LIFT FELLOWS','Apply now','#1d3557'],['VEGANISM','Club meeting','#f2c200'],['CASE COMP','Spring kickoff','#2a9d8f'],['AI & SOCIETY','Panel','#6a4c93'],['CAREER WEEK','Resume reviews','#e76f51'],['STUDY ABROAD','Info table','#8d0801'],['STARTUP LAB','Pitch night','#264653'],['FILM FEST','Showcase','#111']];
  let i=0;for(let r=0;r<3;r++)for(let k=0;k<3;k++){const f=fl[i++];const fx=290+k*152+(rnd()*14-7),fy=30+r*136+(rnd()*10-5);
    x.save();x.translate(fx+66,fy+60);x.rotate((rnd()-.5)*.08);x.fillStyle=f[2];x.fillRect(-66,-60,132,120);x.fillStyle=f[2]==='#f2c200'?'#111':'#fff';x.font=`700 17px ${SIGNF}`;x.fillText(f[0],-58,-30);x.font='400 14px Rubik,sans-serif';x.fillText(f[1],-58,-8);x.fillStyle='rgba(255,255,255,.5)';x.fillRect(-58,16,70,4);x.fillRect(-58,26,90,4);x.restore()}
- decal(1020,830,'n',2.4,1.44,1.55,new THREE.MeshStandardMaterial({map:tex(c),roughness:.8}),.03);}
+ decal(1085,822,'n',2.4,1.44,1.55,new THREE.MeshStandardMaterial({map:tex(c),roughness:.8}),.03);}
 // restroom pictogram signs on the wood wall
-function pictoSign(mx,my,dir,yc){const [c,x]=cvs(128,128);x.fillStyle='#f3f1ec';x.fillRect(0,0,128,128);x.strokeStyle='#222';x.lineWidth=5;x.strokeRect(3,3,122,122);x.fillStyle='#222';x.beginPath();x.arc(40,34,11,0,7);x.fill();x.fillRect(31,50,18,38);x.fillRect(31,88,7,24);x.fillRect(42,88,7,24);
-  x.beginPath();x.arc(88,76,22,0,7);x.lineWidth=5;x.stroke();x.beginPath();x.arc(96,38,9,0,7);x.fill();
+// men's restroom (behind the wood wall) + accessible pictogram, like the sign by the elevators
+function pictoSign(mx,my,dir,yc){const [c,x]=cvs(128,128);x.fillStyle='#f3f1ec';x.fillRect(0,0,128,128);x.strokeStyle='#222';x.lineWidth=5;x.strokeRect(3,3,122,122);x.fillStyle='#222';x.beginPath();x.arc(36,30,11,0,7);x.fill();x.fillRect(27,46,18,38);x.fillRect(27,84,7,28);x.fillRect(38,84,7,28);
+  x.beginPath();x.arc(88,82,20,0,7);x.lineWidth=5;x.stroke();x.beginPath();x.arc(92,36,9,0,7);x.fill();x.fillRect(86,48,10,26);
   decal(mx,my,dir,.38,.38,yc,new THREE.MeshBasicMaterial({map:tex(c)}),.02)}
-pictoSign(1170,830,'n',2.3);pictoSign(1170,830,'w',2.3);
+pictoSign(945,821,'n',2.3);pictoSign(920,853,'w',2.3);
 
 // ---------- elevator bank, stair 1, bins ----------
-{const d=wallCanvas('n',756,940),{c,x,u}=d;
+{const d=wallCanvas('n',752,875),{c,x,u}=d;     // north face of the bank: the elevator doors face the hall
  x.fillStyle='#4b4636';x.fillRect(0,0,c.width,c.height);
- x.fillStyle='rgba(255,255,255,.07)';for(let m=756;m<=940;m+=26)x.fillRect(u(m),0,2,c.height);
+ x.fillStyle='rgba(255,255,255,.07)';for(let m=752;m<=875;m+=24)x.fillRect(u(m),0,2,c.height);
  x.fillStyle='rgba(0,0,0,.18)';x.fillRect(0,0,c.width,60);
- const lift=(a,b)=>{x.fillStyle='#232018';x.fillRect(u(b)-8,52,(b-a)*K+16,210);x.fillStyle='#34301f';x.fillRect(u(b),60,(b-a)*K,202);x.fillStyle='#16140f';x.fillRect(u(a+(b-a)/2)-1.5,60,3,202)};
- lift(782,806);lift(826,850);
- const plate=m=>{x.fillStyle='#b69a62';x.fillRect(u(m)-10,110,20,48);x.fillStyle='#e8d9a8';x.beginPath();x.arc(u(m),130,5,0,7);x.fill()};plate(814);plate(858);
- x.fillStyle='#f4f4f0';x.fillRect(u(902),38,(902-872)*K,(902-872)*K*.9);x.fillStyle='#222';x.font=`600 22px ${SIGNF}`;x.textAlign='center';x.fillText('STAIR 1',u(887),75);x.fillText('Floor 5',u(887),100);x.textAlign='left';
- x.fillStyle='#fff';x.fillRect(u(866),82,(866-826)*K*.55,160);x.fillStyle='#e8702a';x.fillRect(u(866),82,(866-826)*K*.55,6);
- // stair 1 doors (cream double leaf) on the east end of the bank
- x.fillStyle='#2c2a24';x.fillRect(u(937)-4,60,(937-905)*K+8,206);x.fillStyle='#efe9d8';x.fillRect(u(937),64,(937-905)*K,198);x.fillStyle='#2c2a24';x.fillRect(u(921)-2,64,4,198);
- x.fillStyle='#b8a074';x.beginPath();x.arc(u(923),170,6,0,7);x.arc(u(919),170,6,0,7);x.fill();
- x.fillStyle='#1a1a1a';x.fillRect(u(936),16,(936-908)*K,36);x.fillStyle='#ff3b30';x.font=`700 30px ${SIGNF}`;x.textAlign='center';x.fillText('EXIT',u(922),44);
- decal(848,830,'n',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.6,metalness:.1}),.012)}
-for(const [mx,col,lab] of [[772,0x9aa2a8,'LANDFILL'],[782,0x1f4aa0,'RECYCLE']]){
-  const g=new THREE.Group();g.position.set(X(mx),0,Z(822));
+ const lw=1.2/S;
+ const lift=cx=>{x.fillStyle='#232018';x.fillRect(u(cx+lw/2)-8,52,lw*K+16,210);x.fillStyle='#34301f';x.fillRect(u(cx+lw/2),60,lw*K,202);x.fillStyle='#16140f';x.fillRect(u(cx)-1.5,60,3,202)};
+ lift(785);lift(835);
+ const plate=m=>{x.fillStyle='#b69a62';x.fillRect(u(m)-10,110,20,48);x.fillStyle='#e8d9a8';x.beginPath();x.arc(u(m),130,5,0,7);x.fill()};plate(771);plate(821);
+ decal(813.5,822,'n',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.6,metalness:.1}),.012)}
+// east face of the bank, seen from the bay: "Stair 1 Floor 5" sign, light switch, blank panel (as in the photo)
+{const d=wallCanvas('e',822,875),{c,x,u}=d;
+ x.fillStyle='#3a3a36';x.fillRect(0,0,c.width,c.height);
+ x.fillStyle='rgba(255,255,255,.05)';x.fillRect(u(852)-1,0,2,c.height);x.fillStyle='rgba(0,0,0,.25)';x.fillRect(0,95,c.width,3);
+ x.fillStyle='#f6f4ee';x.fillRect(u(838),12,.45/S*K,.45/S*K*.95);x.fillStyle='#222';x.font=`600 24px ${SIGNF}`;x.textAlign='center';x.fillText('STAIR 1',u(838)+.45/S*K/2,58);x.fillText('Floor 5',u(838)+.45/S*K/2,86);x.textAlign='left';
+ x.fillStyle='#f3f1ec';x.fillRect(u(846),115,60,85);
+ x.fillStyle='#e7dcb4';x.fillRect(u(852)+16,170,16,28);
+ decal(875,848.5,'e',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.7}),.012)}
+// Stair 1: white double door at the back of the recess, with an EXIT sign above
+{const d=wallCanvas('n',875,920),{c,x,u}=d;
+ x.fillStyle='#e9e5d4';x.fillRect(0,0,c.width,c.height);
+ const w=1.5/S,l=897.5-w/2,r=897.5+w/2;
+ x.fillStyle='#2c2a24';x.fillRect(u(r)-5,60,w*K+10,c.height-60);x.fillStyle='#f5f1e6';x.fillRect(u(r),66,w*K,c.height-66);x.fillStyle='#2c2a24';x.fillRect(u(897.5)-2,66,4,c.height-66);
+ x.fillStyle='#b8a074';x.beginPath();x.arc(u(897.5)+10,175,5,0,7);x.arc(u(897.5)-10,175,5,0,7);x.fill();
+ x.fillStyle='#fff';x.fillRect(u(r)+4,26,56,26);x.fillStyle='#ff3b30';x.font=`700 24px ${SIGNF}`;x.textAlign='center';x.fillText('EXIT',u(r)+32,46);
+ decal(897.5,875,'n',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.7}),.012)}
+for(const [mx,my,col,lab] of [[886,854,0x9aa2a8,'LANDFILL'],[886,863,0x1f4aa0,'RECYCLE']]){
+  const g=new THREE.Group();g.position.set(X(mx),0,Z(my));
   const b=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.84,22),std({color:col,roughness:.5}));b.position.y=.42;g.add(b);
   const lid=new THREE.Mesh(new THREE.CylinderGeometry(.29,.29,.1,22),std({color:0xb4bcc2,roughness:.5}));lid.position.y=.88;g.add(lid);
-  scene.add(g);addCollider(X(mx)-.28,Z(822)-.28,X(mx)+.28,Z(822)+.28);camBlockers.push(b)}
+  scene.add(g);addCollider(X(mx)-.28,Z(my)-.28,X(mx)+.28,Z(my)+.28);camBlockers.push(b)}
 // "A launch pad for bold ideas." poster by the elevators
 {const [c,x]=cvs(300,380);x.fillStyle='#fbf8f2';x.fillRect(0,0,300,380);x.strokeStyle='#e8702a';x.lineWidth=8;x.strokeRect(4,4,292,372);x.fillStyle='#222';x.font=`600 14px ${SIGNF}`;x.textAlign='center';x.fillText('WE ARE TEXAS McCOMBS.',150,40);
  x.fillStyle='#e8702a';x.font=`700 54px ${SIGNF}`;['A LAUNCH PAD','FOR BOLD IDEAS.'].forEach((t,i)=>x.fillText(t,150,170+i*58));
- decal(868,830,'n',.62,.78,1.55,new THREE.MeshBasicMaterial({map:tex(c)}),.03)}
+ decal(860,822,'n',.62,.78,1.55,new THREE.MeshBasicMaterial({map:tex(c)}),.03)}
 
 // ---------- west corridor: rooms 5.112 .. 5.102 (doors on the corridor's west wall) ----------
-const ROOMS=[['5.112',772],['5.110',807],['5.108',842],['5.106',877],['5.102',912]];
-{const d=wallCanvas('e',757,945),{c,x,u}=d;
+const ROOMS=[['5.112',760],['5.110',799],['5.108',837],['5.106',876],['5.102',913]];
+{const d=wallCanvas('e',735,945),{c,x,u}=d;
  x.fillStyle='#ece9df';x.fillRect(0,0,c.width,c.height);
  for(const [lab,my] of ROOMS){
-   x.fillStyle='#1d1b17';x.fillRect(u(my+17.5),20,35*K,250);   // black frame around the bay
-   x.fillStyle='#faf8f2';x.fillRect(u(my+17.5)+7,27,35*K-14,238);
-   const dw=16.4,dx0=u(my-dw/2+4);                                 // door leaf
+   x.fillStyle='#1d1b17';x.fillRect(u(my+19),20,38*K,250);   // black frame around the bay
+   x.fillStyle='#faf8f2';x.fillRect(u(my+19)+7,27,38*K-14,238);
+   const dw=.9/S;                                                  // door leaf (0.9 m)
    x.fillStyle='#1d1b17';x.fillRect(u(my+dw/2+4)-5,27,dw*K+10,240);
    x.fillStyle='#b97832';x.fillRect(u(my+dw/2+4),32,dw*K,235);
    for(let i=0;i<14;i++){x.fillStyle=`rgba(70,35,10,${.1+rnd()*.15})`;x.fillRect(u(my+dw/2+4)+rnd()*dw*K,32,1+rnd()*2,235)}
@@ -314,18 +334,18 @@ const ROOMS=[['5.112',772],['5.110',807],['5.108',842],['5.106',877],['5.102',91
    x.fillStyle='#1d1b17';x.fillRect(u(my+dw/2+4)+dw*K*.2,150,10,6);
    x.fillStyle='#212225';x.fillRect(u(my-9)-8,110,44,66);x.fillStyle='#e6e6e0';x.font=`600 15px ${SIGNF}`;x.fillText(lab,u(my-9)-5,150);
  }
- decal(722,851,'e',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.8}),.012)}
+ decal(706,840,'e',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.8}),.012)}
 // corridor east wall (the elevator bank's west face) with the water fountain
-{const d=wallCanvas('w',830,945),{c,x,u}=d;
- x.fillStyle='#4b4636';x.fillRect(0,0,c.width,c.height);x.fillStyle='rgba(255,255,255,.07)';for(let m=830;m<=945;m+=26)x.fillRect(u(m),0,2,c.height);
+{const d=wallCanvas('w',822,945),{c,x,u}=d;
+ x.fillStyle='#4b4636';x.fillRect(0,0,c.width,c.height);x.fillStyle='rgba(255,255,255,.07)';for(let m=822;m<=945;m+=24)x.fillRect(u(m),0,2,c.height);
  x.fillStyle='#cfd1cf';x.fillRect(u(900),170,80,30);x.fillStyle='#9ea3a6';x.fillRect(u(900)+8,176,64,10);
- decal(756,887,'w',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.6}),.012)}
+ decal(752,883.5,'w',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.6}),.012)}
 // window at the south end of the corridor, looking at brick buildings
-{const d=wallCanvas('n',722,756),{c,x,u}=d;
+{const d=wallCanvas('n',706,752),{c,x,u}=d;
  const g=x.createLinearGradient(0,60,0,260);g.addColorStop(0,'#b6d3e6');g.addColorStop(1,'#e8eef0');x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
  x.fillStyle='#b4694a';x.fillRect(0,90,c.width,170);x.fillStyle='#efe3cf';for(let i=0;i<5;i++)for(let j=0;j<4;j++)x.fillRect(12+i*38,100+j*38,22,26);
  x.fillStyle='#111';x.fillRect(0,0,c.width,22);x.fillRect(0,270,c.width,20);x.fillRect(0,0,12,c.height);x.fillRect(c.width-12,0,12,c.height);x.fillRect(c.width/2-5,22,10,250);
- decal(739,945,'n',d.w,H,H/2,new THREE.MeshBasicMaterial({map:tex(c)}),.012)}
+ decal(729,945,'n',d.w,H,H/2,new THREE.MeshBasicMaterial({map:tex(c)}),.012)}
 // east corridor to the CBA building: glass doors at the south end
 {const d=wallCanvas('n',1262,1330),{c,x,u}=d;
  x.fillStyle='#ece9df';x.fillRect(0,0,c.width,c.height);x.fillStyle='#111';x.fillRect(10,60,c.width-20,230);
@@ -335,28 +355,30 @@ const ROOMS=[['5.112',772],['5.110',807],['5.108',842],['5.106',877],['5.102',91
  decal(1296,945,'n',d.w,H,H/2,new THREE.MeshBasicMaterial({map:tex(c)}),.012)}
 
 // ---------- 5.142 A & B classroom frontage (glass + wood panelling) ----------
-{const d=wallCanvas('s',770,1100),{c,x,u}=d;
+{const d=wallCanvas('s',765,1127),{c,x,u}=d;     // 's' faces south: canvas x grows with the plan x
  x.fillStyle='#efeadc';x.fillRect(0,0,c.width,c.height);
  // glass band with the orange wood-panelled interior showing through
  x.fillStyle='#c98128';x.fillRect(0,64,u(1000),206);
- x.strokeStyle='rgba(60,30,8,.55)';x.lineWidth=2;for(let m=770;m<1000;m+=32){x.beginPath();x.moveTo(u(m),64);x.lineTo(u(m),270);x.stroke()}
+ x.strokeStyle='rgba(60,30,8,.55)';x.lineWidth=2;for(let m=765;m<1000;m+=28){x.beginPath();x.moveTo(u(m),64);x.lineTo(u(m),270);x.stroke()}
  for(const yy of [118,178]){x.beginPath();x.moveTo(0,yy);x.lineTo(u(1000),yy);x.stroke()}
  x.fillStyle='#e5e0d0';x.fillRect(u(1000),64,c.width-u(1000),206);
  x.fillStyle='#8d8c84';x.fillRect(0,225,c.width,45);                 // carpet seen through the glass
- x.fillStyle='#2c3a4a';x.fillRect(u(1010),100,70,50);x.fillStyle='#f1c14a';x.fillRect(u(1010)+30,125,40,25);   // wall-mounted screen
+ x.fillStyle='#2c3a4a';x.fillRect(u(1010),100,90,60);x.fillStyle='#f1c14a';x.fillRect(u(1010)+40,130,50,30);   // wall-mounted screen
  // black mullions
  x.fillStyle='#17140f';x.fillRect(0,52,c.width,14);x.fillRect(0,266,c.width,18);x.fillRect(0,146,c.width,9);
- for(let m=770;m<=1100;m+=55)x.fillRect(u(m)-5,52,10,230);
- // single wood door (west)
- x.fillStyle='#17140f';x.fillRect(u(860)-8,56,(860-834)*K+16,226);x.fillStyle='#d98c1a';x.fillRect(u(860),64,(860-834)*K,218);
- x.fillStyle='#8fb3c4';x.fillRect(u(860)+10,86,20,92);x.fillStyle='#1d1b17';x.fillRect(u(860)+(860-834)*K*.7,170,22,8);
- // orange double doors (east, 5.142A)
- x.fillStyle='#17140f';x.fillRect(u(1072)-8,56,(1072-1040)*K+16,226);
- x.fillStyle='#e9921c';x.fillRect(u(1072),64,(1072-1040)*K/2-2,218);x.fillRect(u(1056)+2,64,(1072-1040)*K/2-2,218);
- x.fillStyle='#bfe0ea';x.fillRect(u(1072)+10,80,(1072-1040)*K/2-22,140);x.fillRect(u(1056)+12,80,(1072-1040)*K/2-22,140);
- decal(935,757,'s',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.5}),.012)}
+ for(let m=765;m<=1127;m+=50)x.fillRect(u(m)-5,52,10,230);
+ // single wood door (west), 0.95 m wide
+ {const w=.95/S,l=850-w/2;
+  x.fillStyle='#17140f';x.fillRect(u(l)-8,56,w*K+16,226);x.fillStyle='#d98c1a';x.fillRect(u(l),64,w*K,218);
+  x.fillStyle='#8fb3c4';x.fillRect(u(l)+w*K*.2,86,w*K*.2,92);x.fillStyle='#1d1b17';x.fillRect(u(l)+w*K*.72,170,22,8)}
+ // orange double doors (east, 5.142A), 1.8 m wide
+ {const w=1.8/S,l=1092-w/2;
+  x.fillStyle='#17140f';x.fillRect(u(l)-8,56,w*K+16,226);
+  x.fillStyle='#e9921c';x.fillRect(u(l),64,w*K/2-2,218);x.fillRect(u(l)+w*K/2+2,64,w*K/2-2,218);
+  x.fillStyle='#bfe0ea';x.fillRect(u(l)+12,80,w*K/2-26,140);x.fillRect(u(l)+w*K/2+14,80,w*K/2-26,140)}
+ decal((765+1127)/2,700,'s',d.w,H,H/2,new THREE.MeshStandardMaterial({map:tex(c),roughness:.5}),.012)}
 {const [c,x]=cvs(256,200);x.fillStyle='#f6f4ee';x.fillRect(0,0,256,200);x.strokeStyle='#222';x.lineWidth=4;x.strokeRect(2,2,252,196);x.fillStyle='#222';x.font=`500 40px ${SIGNF}`;['Classroom','5.142','A & B'].forEach((t,i)=>x.fillText(t,22,56+i*52));
- decal(848,757,'s',.5,.39,2.55,new THREE.MeshBasicMaterial({map:tex(c)}),.03)}
+ decal(826,700,'s',.5,.39,2.55,new THREE.MeshBasicMaterial({map:tex(c)}),.03)}
 
 // ---------- hanging wayfinding signs ----------
 function hangSign(mx,my,faceDir,left,mid,right,wMeters){
@@ -372,11 +394,11 @@ function hangSign(mx,my,faceDir,left,mid,right,wMeters){
   for(const dz of [-wMeters*.4,wMeters*.4]){const rod=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,H-2.6,6),M.steel);rod.position.set(X(mx),(H+2.6)/2,Z(my)+dz);scene.add(rod)}
 }
 // looking east (seen from the escalators): to the lounge and back toward Development & External Relations
-hangSign(1235,790,'w',{arrow:'←',lines:['Development &','External Relations']},{arrow:'↑',lines:['Peggy Drake Holland','Student Lounge']},{arrow:'→',lines:['Information Risk,','Operations & Mgmt','PhD Lounge · Mod Labs']},3.6);
+hangSign(1265,760,'w',{arrow:'←',lines:['Development &','External Relations']},{arrow:'↑',lines:['Peggy Drake Holland','Student Lounge']},{arrow:'→',lines:['Information Risk,','Operations & Mgmt','PhD Lounge · Mod Labs']},3.6);
 // looking west (seen from the seating area / escalators)
-hangSign(790,790,'e',{arrow:'←',lines:['Active Learning','Classrooms · Mod Labs','PhD Lounge']},null,{arrow:'→',lines:['Development &','External Relations']},3.2);
+hangSign(800,760,'e',{arrow:'←',lines:['Active Learning','Classrooms · Mod Labs','PhD Lounge']},null,{arrow:'→',lines:['Development &','External Relations']},3.2);
 // corridor sign
-hangSign(739,785,'e',{arrow:'←',lines:['Mod Labs','PhD Lounge']},null,{arrow:'→',lines:['Active Learning Classrooms','McCombs Testing Center']},3.0);
+hangSign(729,760,'e',{arrow:'←',lines:['Mod Labs','PhD Lounge']},null,{arrow:'→',lines:['Active Learning Classrooms','McCombs Testing Center']},3.0);
 
 // ---------- seating area furniture ----------
 function table(mx,my){const w=1.6,d=.8,x0=X(mx),z0=Z(my);
@@ -394,27 +416,25 @@ function sofa(mx,my,rot){const x0=X(mx),z0=Z(my),g=new THREE.Group();g.position.
   const back=new THREE.Mesh(new THREE.BoxGeometry(1.5,.5,.2),M.sofa);back.position.set(0,.65,-.3);g.add(back);
   for(const sx of [-1,1]){const a=new THREE.Mesh(new THREE.BoxGeometry(.18,.3,.8),M.sofa);a.position.set(sx*.66,.55,0);g.add(a)}
   scene.add(g);addCollider(x0-.8,z0-.8,x0+.8,z0+.8)}
-table(1200,690);chair(1200,676,0,true);chair(1200,704,Math.PI,true);chair(1185,690,Math.PI/2,false);chair(1215,690,-Math.PI/2,true);
-table(1258,650);chair(1258,636,0,true);chair(1258,664,Math.PI,false);
-table(1270,740);chair(1270,726,0,true);chair(1270,754,Math.PI,true);chair(1255,740,Math.PI/2,false);
-sofa(1135+40,612,0);sofa(1190,612,0);
-{const lampX=X(1160),lampZ=Z(606);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,2.0,8),std({color:0x0e88a8}));pole.position.set(lampX+.4,1.0,lampZ+.5);scene.add(pole);
+table(1235,690);chair(1235,676,0,true);chair(1235,704,Math.PI,true);chair(1220,690,Math.PI/2,false);chair(1250,690,-Math.PI/2,true);
+table(1285,650);chair(1285,636,0,true);chair(1285,664,Math.PI,false);
+table(1290,745);chair(1290,731,0,true);chair(1290,759,Math.PI,true);chair(1275,745,Math.PI/2,false);
+sofa(1215,612,0);sofa(1265,612,0);
+{const lampX=X(1192),lampZ=Z(606);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,2.0,8),std({color:0x0e88a8}));pole.position.set(lampX+.4,1.0,lampZ+.5);scene.add(pole);
  const shade=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,.3,32),std({color:0x0b8fb3,roughness:.6}));shade.position.set(lampX+.4,2.1,lampZ+.5);scene.add(shade);
  const glow=new THREE.Mesh(new THREE.CircleGeometry(.76,32),new THREE.MeshBasicMaterial({color:0xfff6dc}));glow.rotation.x=Math.PI/2;glow.position.set(lampX+.4,1.94,lampZ+.5);scene.add(glow)}
-// "Remove barriers" poster on the end of the bank corridor wall
-{const [c,x]=cvs(300,200);x.fillStyle='#e8702a';x.fillRect(0,0,300,200);x.fillStyle='#fff';x.font=`700 56px ${SIGNF}`;x.textAlign='center';x.fillText('REMOVE',150,90);x.fillText('BARRIERS',150,150);
- decal(722,1,'e',.1,.1,5,std({color:0xffffff}),0);}
 
 // ---------- lights ----------
 scene.add(new THREE.HemisphereLight(0xfffaf0,0x6b4a3c,.62));
 scene.add(new THREE.AmbientLight(0xffffff,.2));
-for(const [mx,my] of [[780,780],[900,778],[1030,775],[1120,778],[1210,790],[1260,690],[1240,640],[739,860],[1296,890],[1180,720]]){const l=new THREE.PointLight(0xfff4e2,.75,14,1.4);l.position.set(X(mx),H-.35,Z(my));scene.add(l)}
+for(const [mx,my] of [[790,760],[900,760],[1030,750],[1130,750],[1230,770],[1270,690],[1250,640],[729,860],[1296,890],[925,860]]){const l=new THREE.PointLight(0xfff4e2,.75,14,1.4);l.position.set(X(mx),H-.35,Z(my));scene.add(l)}
 {const l=new THREE.PointLight(0xfff0dd,.7,14,1.4);l.position.set(X(1050),-2.2,Z(812));scene.add(l)}
 const panel=new THREE.PlaneGeometry(1.2,.6);
 function lightPanel(mx,my){const p=new THREE.Mesh(panel,M.light);p.rotation.x=Math.PI/2;p.position.set(X(mx),H-.012,Z(my));scene.add(p)}
-for(let mx=750;mx<=1320;mx+=70)lightPanel(mx,777);
-for(let mx=1180;mx<=1310;mx+=65)for(let my=620;my<=760;my+=70)lightPanel(mx,my);
-for(let my=790;my<=930;my+=50){lightPanel(739,my)}
+for(let mx=760;mx<=1320;mx+=60){lightPanel(mx,722);lightPanel(mx,765);if(mx<950||mx>1200)lightPanel(mx,805)}
+for(let mx=1210;mx<=1310;mx+=50)for(let my=620;my<=720;my+=50)lightPanel(mx,my);
+for(let my=790;my<=930;my+=45){lightPanel(729,my)}
+for(const my of [855,880])lightPanel(925,my);
 for(const mx of [1275,1315])lightPanel(mx,880);
 
 // ---------- avatar ----------
@@ -440,7 +460,7 @@ const player=avatar({shirt:0xd8ccb0,skin:0xa8714c,skinHex:'#a8714c',hair:0x23181
 player.g.scale.setScalar(.92);
 
 // ---------- player state & input ----------
-const P={x:X(930),z:Z(776),y:0,vy:0,grounded:true,face:Math.PI/2,amp:0,phase:0};
+const P={x:X(955),z:Z(758),y:0,vy:0,grounded:true,face:Math.PI/2,amp:0,phase:0};
 let yaw=-Math.PI/2,pitch=.3,dist=5.2,camDist=5.2;
 const keys={};
 addEventListener('keydown',e=>{if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'))return;keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault()});
@@ -473,11 +493,12 @@ function moveP(dx,dz){
 }
 
 const ZONES=[
-  [[722,757,756,945],'West corridor · rooms 5.102 – 5.112'],
-  [[756,757,940,830],'Elevator lobby · Stair 1'],
-  [[940,757,1160,830],'Escalators · Classroom 5.142 A & B'],
-  [[1160,600,1330,830],'Seating area · outside 5.142A'],
-  [[1262,830,1330,945],'Corridor to CBA'],
+  [[706,700,752,945],'West corridor · rooms 5.102 – 5.112'],
+  [[875,822,975,875],'Stair 1 recess · white double door'],
+  [[752,700,975,822],'Elevator lobby · Stair 1'],
+  [[975,700,1187,822],"Escalators · men's restroom behind the wood wall"],
+  [[1187,600,1330,822],'Seating area · outside 5.142A'],
+  [[1262,822,1330,945],'Corridor to CBA'],
 ];
 const zoneEl=document.getElementById('zone');let lastZone='';
 function zoneAt(){const mx=P.x/S+1000,my=P.z/S+800;for(const [r,n] of ZONES)if(mx>=r[0]&&mx<=r[2]&&my>=r[1]&&my<=r[3])return n;return 'GSB Level 5'}
@@ -490,12 +511,13 @@ const mmx=m=>(m-MB.x1)/(MB.x2-MB.x1)*MW,mmy=m=>(m-MB.y1)/(MB.y2-MB.y1)*MH,mms=MW
 const base=document.createElement('canvas');base.width=MW;base.height=MH;
 {const b=base.getContext('2d');b.fillStyle='#3a302b';b.fillRect(0,0,MW,MH);
  const rr=(r,col)=>{b.fillStyle=col;b.fillRect(mmx(r[0]),mmy(r[1]),mmx(r[2])-mmx(r[0]),mmy(r[3])-mmy(r[1]))};
- rr([660,757,722,945],'#ee6c24');rr([770,560,1100,757],'#1e8fd0');rr([756,830,940,945],'#6d6a5a');rr([940,830,1262,945],'#2fa84f');
- rr([722,757,1330,830],'#d9cfc1');rr([722,757,756,945],'#d9cfc1');rr([1160,600,1330,757],'#cfc8b8');rr([1262,830,1330,945],'#d9cfc1');
+ rr([660,700,706,945],'#ee6c24');rr([765,560,1127,700],'#1e8fd0');rr([752,822,875,945],'#6d6a5a');rr([920,846,1262,945],'#56504a');rr([975,822,1262,846],'#56504a');
+ rr([706,700,1330,822],'#d9cfc1');rr([706,700,752,945],'#d9cfc1');rr([1187,600,1330,700],'#cfc8b8');rr([1262,822,1330,945],'#d9cfc1');
+ rr([875,822,975,846],'#d9cfc1');rr([875,846,920,875],'#d9cfc1');rr([908,820,971,824],'#b5783e');
  rr(PIT,'#8f8a84');b.strokeStyle='#6c6762';b.lineWidth=1;for(let x=mmx(PIT[0]);x<mmx(PIT[2]);x+=5){b.beginPath();b.moveTo(x,mmy(PIT[1]));b.lineTo(x,mmy(PIT[3]));b.stroke()}
  b.fillStyle='#fff';b.font=`600 13px ${SIGNF}`;b.textAlign='center';b.textBaseline='middle';
  const L=(t,x,y)=>b.fillText(t,mmx(x),mmy(y));
- L('5.142',935,700);L('ELEV.',848,885);L('ESC.',1050,812);for(const [lab,my] of ROOMS)L(lab.slice(2),690,my);L('SEATING',1245,620);L('TO CBA',1296,900);}
+ L('5.142',945,660);L('ELEV.',813,880);L('ESC.',1080,803);L('STAIR 1',897,905);L("MEN'S RESTROOM",1120,880);for(const [lab,my] of ROOMS)L(lab.slice(2),680,my);L('SEATING',1245,620);L('TO CBA',1296,900);}
 function drawMini(){
   mctx.drawImage(base,0,0);
   const px=mmx(P.x/S+1000),py=mmy(P.z/S+800);
@@ -511,17 +533,17 @@ function drawMini(){
 
 // ---------- room finder ----------
 const ROOM_DB={
-  '5142':{name:'GSB 5.142 A & B',full:'Classroom · single wood door',dest:[848,772],beacon:[848,767],tag:'5.142',say:'The 5.142 door is'},
-  '5142a':{name:'GSB 5.142A',full:'Classroom · orange double doors',dest:[1056,772],beacon:[1056,767],tag:'5.142A',say:'The 5.142A doors are'},
+  '5142':{name:'GSB 5.142 A & B',full:'Classroom · single wood door',dest:[850,722],beacon:[850,716],tag:'5.142',say:'The 5.142 door is'},
+  '5142a':{name:'GSB 5.142A',full:'Classroom · orange double doors',dest:[1092,722],beacon:[1092,716],tag:'5.142A',say:'The 5.142A doors are'},
   '5142b':null,
-  'elevator':{name:'Elevators',full:'Level 5 elevator lobby',dest:[815,818],beacon:[815,823],tag:'ELEV',say:'The elevators are'},
-  'stair':{name:'Stair 1',full:'Exit stair · Floor 5',dest:[922,818],beacon:[922,823],tag:'STAIR 1',say:'Stair 1 is'},
-  'escalator':{name:'Escalators',full:'Down to Level 4',dest:[935,806],beacon:[933,806],tag:'ESC',say:'The escalators are'},
-  'cba':{name:'CBA (west connector)',full:'Corridor with rooms 5.102 – 5.112',dest:[739,935],beacon:[739,930],tag:'CBA',say:'The corridor to CBA is'},
+  'elevator':{name:'Elevators',full:'Level 5 elevator lobby',dest:[810,805],beacon:[810,810],tag:'ELEV',say:'The elevators are'},
+  'stair':{name:'Stair 1',full:'Exit stair · Floor 5',dest:[897,860],beacon:[897,866],tag:'STAIR 1',say:'Stair 1 is'},
+  'escalator':{name:'Escalators',full:'Down to Level 4',dest:[959,803],beacon:[957,803],tag:'ESC',say:'The escalators are'},
+  'cba':{name:'CBA (west connector)',full:'Corridor with rooms 5.102 – 5.112',dest:[731,935],beacon:[731,930],tag:'CBA',say:'The corridor to CBA is'},
   'cbaeast':{name:'CBA (east connector)',full:'Glass doors at the end of the corridor',dest:[1296,935],beacon:[1296,930],tag:'CBA',say:'The glass doors to CBA are'},
 };
 ROOM_DB['5142b']=ROOM_DB['5142'];ROOM_DB['elevators']=ROOM_DB['lift']=ROOM_DB['elevator'];ROOM_DB['stairs']=ROOM_DB['stair1']=ROOM_DB['stair'];ROOM_DB['escalators']=ROOM_DB['escalator'];
-for(const [lab,my] of ROOMS){const k=lab.replace('.','');ROOM_DB[k]={name:'GSB '+lab,full:'Room on the corridor to CBA',dest:[739,my],beacon:[735,my],tag:lab,say:`The ${lab} door is`}}
+for(const [lab,my] of ROOMS){const k=lab.replace('.','');ROOM_DB[k]={name:'GSB '+lab,full:'Room on the corridor to CBA',dest:[731,my],beacon:[725,my],tag:lab,say:`The ${lab} door is`}}
 const nav={active:false,arrived:false,room:null,goal:null,goalVis:[],path:[],len:0,lastCalc:-1};
 const chevGeo=(()=>{const s=new THREE.Shape();s.moveTo(-.2,.3);s.lineTo(-.02,.3);s.lineTo(.22,0);s.lineTo(-.02,-.3);s.lineTo(-.2,-.3);s.lineTo(.04,0);s.lineTo(-.2,.3);const g=new THREE.ShapeGeometry(s);g.rotateX(-Math.PI/2);return g})();
 const chevs=[];for(let i=0;i<110;i++){const m=new THREE.Mesh(chevGeo,new THREE.MeshBasicMaterial({color:0xff6a00,transparent:true,opacity:1,depthWrite:false,toneMapped:false}));m.visible=false;m.renderOrder=2;m.scale.setScalar(1.45);scene.add(m);chevs.push(m)}
@@ -535,7 +557,7 @@ function drawTag(t){bcx.clearRect(0,0,256,96);bcx.fillStyle='rgba(255,122,42,.92
 beacon.visible=false;scene.add(beacon);
 
 // walkable waypoints (plan px)
-const NODES=[[739,775],[739,830],[739,880],[739,930],[775,775],[815,775],[815,815],[880,775],[922,815],[922,775],[1000,775],[1100,775],[1165,775],[1165,815],[1220,790],[1296,790],[1296,830],[1296,880],[1296,930],[1250,700],[1200,730],[1250,640],[1056,775],[848,775]].map(([a,b])=>[X(a),Z(b)]);
+const NODES=[[729,740],[729,830],[729,880],[729,930],[775,740],[810,790],[860,790],[897,790],[897,835],[897,860],[900,740],[960,750],[1000,740],[1100,740],[1195,750],[1230,790],[1296,790],[1296,830],[1296,880],[1296,930],[1250,700],[1215,730],[1250,640],[1092,722],[850,722]].map(([a,b])=>[X(a),Z(b)]);
 function los(a,b,r=.3){const dx=b[0]-a[0],dz=b[1]-a[1],n=Math.ceil(Math.hypot(dx,dz)/.25);for(let i=1;i<n;i++){const t=i/n;if(blocked(a[0]+dx*t,a[1]+dz*t,r))return false}return true}
 const NL=NODES.map(a=>NODES.map(b=>a===b?false:los(a,b)));
 function findPath(start,goal){
@@ -568,6 +590,7 @@ function startNav(R){
 form.addEventListener('submit',e=>{
   e.preventDefault();const raw=input.value.trim(),v=norm(raw);
   if(!v){say('Type a room like 5.142, 5.108, "elevator" or "CBA".');return}
+  if(/^(men|mens|menroom|mensroom|restroom|restrooms|bathroom|bathrooms|toilet|wc|rr)$/.test(v)||/^men(s)?(restroom|bathroom)$/.test(v)){stopNav();say("The men's restroom is behind the wood wall by the escalators. Its entrance isn't modeled yet, so that area is blocked off.");return}
   if(ROOM_DB[v]){startNav(ROOM_DB[v]);input.blur();el.focus();return}
   stopNav();
   if(/^5\d{3}[a-z]?$/.test(v))say(`${raw} isn't mapped on Level 5 yet. Try 5.142, 5.108, elevator, stair or CBA.`);
@@ -576,9 +599,10 @@ form.addEventListener('submit',e=>{
 $('rcancel').addEventListener('click',()=>{stopNav();el.focus()});
 
 const ENTRANCES=[
-  {id:'esc',name:'Escalators · top landing',pos:[930,776],look:[1250,790]},
-  {id:'seat',name:'Seating area · outside 5.142A',pos:[1245,705],look:[1000,780]},
-  {id:'west',name:'West corridor · rooms 5.102–5.112',pos:[739,900],look:[739,770]},
+  {id:'esc',name:'Escalators · top landing',pos:[955,758],look:[1250,775]},
+  {id:'lift',name:'Recess · facing Stair 1 door',pos:[897,832],look:[897,875]},
+  {id:'seat',name:'Seating area · outside 5.142A',pos:[1275,700],look:[1000,770]},
+  {id:'west',name:'West corridor · rooms 5.102–5.112',pos:[731,900],look:[731,770]},
   {id:'east',name:'East corridor · doors to CBA',pos:[1296,935-14],look:[1296,800]},
 ];
 const entSel=$('entrance');ENTRANCES.forEach(e=>{const o=document.createElement('option');o.value=e.id;o.textContent=e.name;entSel.appendChild(o)});
