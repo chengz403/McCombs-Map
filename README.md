@@ -11,9 +11,13 @@ Open `floor4.html` for the GSB 4th floor. It's built from `reference/4th-floor/`
 - **Balcony:** the bronze storefront with doors, plus the balcony outside it (pavers, parapet, benches, trees). You can look out but can't go outside.
 - **Stair 2 lobby:** stair doors, lockers and the fire hose cabinet.
 - **Ford Career Center (4.114):** the curved oak and glass front, with open doorways into a lobby you can walk around in.
-- **Doors only for now:** NRG Productivity Center (4.112A), AIM Reading Room (4.112B), and the CBA passage toward the 4.3xx classrooms.
+- **Escalator up to the 5th floor:** next to the two that go down. You board at the east end and it rises through the ceiling to a small slice of Level 5.
+- **CBA passage (heading south from the escalators):** the wood-clad restroom block with Women 4.120, Electrical 4.122, 4.124 and the drinking fountain, the bulletin board, display cases and a bench.
+- **Recruiting Operations (4.128):** the glass entrance with the QR poster. You can walk in: there's a carpeted corridor with the 4.128 offices, benches and a window at the end.
+- **GSB/CBA corridor:** Storage 4.302 and the MPA Lounge (4.352) doors. The passage and this corridor end at temporary walls for now, where the CBA escalators and the classrooms will go.
+- **Doors only for now:** NRG Productivity Center (4.112A) and AIM Reading Room (4.112B).
 
-In the room finder you can type room numbers or names like `MPA`, `Ford`, `NRG`, `balcony` or `stair`. A 4.3xx classroom routes you to the CBA doors, since the CBA wing isn't built yet. Coordinates in `floor4.html` are pixels on `reference/4th-floor/gsb-fourth-floor-plan.png` at 0.07 m per pixel.
+In the room finder you can type room numbers or names like `MPA`, `Ford`, `NRG`, `balcony` or `stair`. A 4.3xx classroom routes you to the CBA doors, since the CBA wing isn't built yet. Coordinates in `floor4.html` are pixels on `reference/4th-floor/gsb-fourth-floor-plan.png` at 0.07 m per pixel. The minimap is `reference/4th-floor/minimap.jpg`: the directory photo from the building, warped onto those same plan pixels (within about 0.2 m), so it also covers the CBA wing.
 
 ## Run it
 

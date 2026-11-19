@@ -16,6 +16,13 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `4100-rooms-toward-escalators.jpg` | The same row of doors from further east, looking toward the escalators |
 | `balcony-doors.jpg` | The space in front of 4.112CF with the bronze glass doors out to the balcony |
 | `stair2-lobby.jpg` | Stair 2 lobby: stair doors, fire hose cabinet, lockers |
+| `split-sign-and-4112cb.jpg` | The two-sided wayfinding sign, the oak 4.112CB door and the MPA TV screen, looking toward the Ford Career Center |
+| `cba-passage-looking-south.jpg` | The passage south from the escalators: Recruiting Operations Offices sign, display cases and bench on the left, the women's restroom on the right |
+| `womens-restroom-corner.jpg` | The wood-clad corner by the escalators: Women 4.120, the restroom signs, the floor plan directory, the bulletin board and the bins |
+| `recruiting-operations-4128-entrance.jpg` | The 4.128 glass entrance with the QR poster, looking into the Recruiting Operations corridor |
+| `4124-and-electrical-4122.jpg` | 4.124 door, drinking fountain, Electrical 4.122 |
+
+`minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 
 ## Key areas (GSB wing)
 

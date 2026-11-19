@@ -56,7 +56,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hi
 #zone{font-size:15px;font-weight:500;line-height:1.25}
 .mini-wrap{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));
   background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;pointer-events:none}
-#mini{display:block;width:200px;height:auto;border-radius:5px}
+#mini{display:block;width:230px;height:auto;border-radius:5px}
 .mini-cap{font-family:var(--font-sign);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:5px 2px 0;display:flex;justify-content:space-between}
 .mini-cap b{color:#e8473b;font-weight:600}
 .hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));
@@ -201,6 +201,9 @@ const [oc,ox]=cvs(256,256);
 ox.fillStyle='#c39058';ox.fillRect(0,0,256,256);
 for(let i=0;i<220;i++){ox.fillStyle=`rgba(${120+rnd()*40|0},${70+rnd()*30|0},30,${rnd()*.25})`;ox.fillRect(rnd()*256,0,1+rnd()*3,256)}
 const oakTex=tex(oc,true);
+// darker raised-panel wood (Ford Career Center counter)
+const [fc,fx]=cvs(256,128);fx.fillStyle='#6e4127';fx.fillRect(0,0,256,128);for(let i=0;i<4;i++){fx.fillStyle='#5a331d';fx.fillRect(i*64+8,14,48,100);fx.fillStyle='#82502f';fx.fillRect(i*64+12,18,40,92);fx.fillStyle='rgba(255,220,180,.12)';fx.fillRect(i*64+12,18,40,4)}
+const fordTex=tex(fc,true);
 
 // orange-brown laminate door leaf
 function leafTex(base){
@@ -266,6 +269,7 @@ const M={
   wood:std({map:woodTex,roughness:.6}),
   oak:std({map:oakTex,roughness:.55}),
   oakDark:std({color:0x8a5a2e,roughness:.5}),
+  ford:std({map:fordTex,roughness:.55}),fordDark:std({color:0x4a2a17,roughness:.5}),
   door:std({map:doorTex,roughness:.6}),
   stairDoor:std({map:stairDoorTex,roughness:.6}),
   carpet:std({color:0x47505a,roughness:1}),
@@ -275,12 +279,14 @@ const M={
 
 // ---------- floor plan (plan px) ----------
 const PIT=[1060,1007,1210,1047];
-const INTERIOR=[[780,850],[1430,850],[1600,1020],[1600,1150],[780,1150]];   // NE edge = the balcony glass line (x - y = 580)
+const INTERIOR=[[780,850],[1430,850],[1600,1020],[1600,1340],[1100,1340],[1100,1150],[780,1150]];   // NE edge = the balcony glass line (x - y = 580)
+const SHAFT=[1078,985,1166,1009];   // ceiling opening where the escalator up to the 5th floor passes through
 function shapeOf(pts,flip){const s=new THREE.Shape();pts.forEach((p,i)=>{const x=X(p[0]),z=flip?Z(p[1]):-Z(p[1]);i?s.lineTo(x,z):s.moveTo(x,z)});return s}
 {
   const fs=shapeOf(INTERIOR);const h=new THREE.Path();[[PIT[0],PIT[1]],[PIT[2],PIT[1]],[PIT[2],PIT[3]],[PIT[0],PIT[3]]].forEach((p,i)=>i?h.lineTo(X(p[0]),-Z(p[1])):h.moveTo(X(p[0]),-Z(p[1])));fs.holes.push(h);
   const fg=new THREE.ShapeGeometry(fs);fg.rotateX(-Math.PI/2);scene.add(new THREE.Mesh(fg,M.floor));
-  const cg=new THREE.ShapeGeometry(shapeOf(INTERIOR,true));cg.rotateX(Math.PI/2);cg.translate(0,H,0);scene.add(new THREE.Mesh(cg,M.ceil));
+  const cs=shapeOf(INTERIOR,true),ch=new THREE.Path();[[SHAFT[0],SHAFT[1]],[SHAFT[2],SHAFT[1]],[SHAFT[2],SHAFT[3]],[SHAFT[0],SHAFT[3]]].forEach((p,i)=>i?ch.lineTo(X(p[0]),Z(p[1])):ch.moveTo(X(p[0]),Z(p[1])));cs.holes.push(ch);
+  const cg=new THREE.ShapeGeometry(cs);cg.rotateX(Math.PI/2);cg.translate(0,H,0);scene.add(new THREE.Mesh(cg,M.ceil));
 }
 addCollider(X(PIT[0]),Z(PIT[1]),X(PIT[2]+2),Z(PIT[3]));
 
@@ -302,14 +308,17 @@ function solid(pts,mat,o={}){
 }
 const NW=[[780,850],[945,850],[945,940],[852,985],[780,985]];              // NRG Productivity Center wing
 const WEST=[[780,985],[852,985],[852,1150],[780,1150]];                     // 4.102-4.110
-const SOUTH=[[852,1047],[1290,1047],[1290,1150],[852,1150]];                // elevators, 4.116, restrooms, 4.122/4.124
+// elevators, 4.116, restrooms, 4.120-4.124 (wood-clad), then Storage 4.302 below them on the CBA side
+const SOUTH=[[852,1047],[1292,1047],[1292,1092],[1280,1092],[1280,1193],[852,1193]];
 const FORDBACK=[[945,836],[1115,836],[1115,860],[945,860]];                 // back wall of the Ford Career Center lobby
 const NORTH=[[1115,850],[1430,850],[1475,895],[1425,945],[1172,945],[1142,918],[1115,943]]; // AIM, 4.112CB, MPA, 4.112CE, 4.112CF
-const B100=[[1342,987],[1500,987],[1500,1150],[1342,1150]];                 // 4.100A-H + Recruiting Operations
+const B100=[[1342,987],[1500,987],[1500,1053],[1342,1053]];                 // 4.100A-H + 4.128A/C/E/G
+const B126=[[1342,1081],[1507,1081],[1507,1065],[1600,1065],[1600,1340],[1342,1340]]; // 4.128B-J, 4.126A-L
+const RECEND=[[1500,1053],[1507,1053],[1507,1081],[1500,1081]];             // east end of the Recruiting Operations corridor
+const CORREND=[[1100,1193],[1150,1193],[1150,1230],[1100,1230]];            // GSB/CBA corridor: built this far west so far
+const LOUNGE=[[1100,1230],[1280,1230],[1280,1265],[1342,1265],[1342,1340],[1100,1340]]; // MPA Lounge 4.352 (+ the end of the passage for now)
 const EAST=[[1530,950],[1600,1020],[1600,1065],[1565,1065],[1565,990],[1530,990]]; // 4.132/4.130 + Stair 2
-const LOBBYS=[[1500,1065],[1600,1065],[1600,1150],[1500,1150]];
-const CBAEND=[[1290,1140],[1342,1140],[1342,1150],[1290,1150]];
-for(const p of [NW,WEST,SOUTH,FORDBACK,NORTH,B100,EAST,LOBBYS,CBAEND])solid(p,M.wall);
+for(const p of [NW,WEST,SOUTH,FORDBACK,NORTH,B100,B126,RECEND,EAST,CORREND,LOUNGE])solid(p,M.wall);
 
 // ---------- lower level seen down the escalator well ----------
 {const lf=plane(X(1250)-X(990),Z(1080)-Z(985),std({map:(()=>{const t=floorTex.clone();t.needsUpdate=true;t.repeat.set(5,2.5);return t})(),color:0xa09088,roughness:.5}));
@@ -319,41 +328,58 @@ box(PIT[0]-3,PIT[1],PIT[0],PIT[3],-4.6,-.02,M.pit);
 box(PIT[0],PIT[3],PIT[2],PIT[3]+2,-4.6,0,M.wood);
 
 // ---------- escalators (top landing at the east end, running down to the 3rd floor) ----------
-const stepTexes=[];
+const stepTexes=[],lightPanelLater=[];
 function stepTex(){
   const [c,x]=cvs(64,256);x.fillStyle='#3b3d40';x.fillRect(0,0,64,256);
   for(let i=0;i<256;i+=6){x.fillStyle='#55585c';x.fillRect(0,i,64,2)}
   x.fillStyle='#d8b32a';x.fillRect(0,0,64,4);x.fillRect(0,0,4,256);x.fillRect(60,0,4,256);
   const t=tex(c,true);t.rotation=Math.PI/2;t.center.set(.5,.5);return t;
 }
-function escalator(mz,dirSign){
-  const zc=Z(mz),xTop=X(1210),xBot=X(1096),yTop=0,yBot=-4.6;
-  const L=Math.hypot(xTop-xBot,yTop-yBot),ang=Math.atan2(yTop-yBot,xTop-xBot);
-  const g=grp();g.position.set((xTop+xBot)/2,(yTop+yBot)/2,zc);g.rotation.z=ang;
+// A runs from (xA,yA) to (xB,yB) in meters; landings stick out past both ends.
+function escalator(mz,xA,yA,xB,yB,dirSign,bodyMat){
+  const zc=Z(mz);
+  const L=Math.hypot(xA-xB,yA-yB),ang=Math.atan2(yA-yB,xA-xB);
+  const g=grp();g.position.set((xA+xB)/2,(yA+yB)/2,zc);g.rotation.z=ang;
   const st=stepTex();st.repeat.set(L/0.42,1);stepTexes.push({t:st,dir:dirSign});
   const tread=new THREE.Mesh(new THREE.PlaneGeometry(L,1.0),std({map:st,roughness:.5,metalness:.4}));tread.rotation.x=-Math.PI/2;tread.position.y=.02;g.add(tread);
-  const body=new THREE.Mesh(new THREE.BoxGeometry(L,.7,1.36),M.brushed);body.position.y=-.36;g.add(body);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(L,.7,1.36),bodyMat||M.brushed);body.position.y=-.36;g.add(body);
   for(const s of [-1,1]){
     const gl=new THREE.Mesh(new THREE.PlaneGeometry(L,.95),M.glass);gl.position.set(0,.5,s*.6);g.add(gl);
     const rail=new THREE.Mesh(new THREE.BoxGeometry(L,.09,.11),M.black);rail.position.set(0,1.0,s*.62);g.add(rail);
     const skirt=new THREE.Mesh(new THREE.BoxGeometry(L,.14,.06),M.steel);skirt.position.set(0,.07,s*.56);g.add(skirt);
   }
   scene.add(g);
-  for(const [x,y,top] of [[xTop,yTop,true],[xBot,yBot,false]]){
-    const lg=grp();lg.position.set(x+(top?0.6:-0.6),y,zc);
+  for(const [x,y,o] of [[xA,yA,Math.sign(xA-xB)],[xB,yB,Math.sign(xB-xA)]]){
+    const lg=grp();lg.position.set(x+o*.6,y,zc);
     const plate=new THREE.Mesh(new THREE.BoxGeometry(1.2,.06,1.0),M.steel);plate.position.y=-.02;lg.add(plate);
-    const comb=new THREE.Mesh(new THREE.BoxGeometry(.05,.012,1.0),std({color:0xd8b32a}));comb.position.set(top?-.58:.58,.015,0);lg.add(comb);
+    const comb=new THREE.Mesh(new THREE.BoxGeometry(.05,.012,1.0),std({color:0xd8b32a}));comb.position.set(-o*.58,.015,0);lg.add(comb);
     for(const s of [-1,1]){
       const gl=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.95),M.glass);gl.position.set(0,.5,s*.6);lg.add(gl);
       const rail=new THREE.Mesh(new THREE.BoxGeometry(1.2,.09,.11),M.black);rail.position.set(0,1.0,s*.62);lg.add(rail);
-      const nose=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.11,16,1,false,0,Math.PI),M.black);nose.rotation.z=Math.PI/2;nose.rotation.y=top?Math.PI/2:-Math.PI/2;nose.position.set(top?0.6:-0.6,.5,s*.62);lg.add(nose);
+      const nose=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.11,16,1,false,0,Math.PI),M.black);nose.rotation.z=Math.PI/2;nose.rotation.y=o>0?Math.PI/2:-Math.PI/2;nose.position.set(o*.6,.5,s*.62);lg.add(nose);
       const newel=new THREE.Mesh(new THREE.BoxGeometry(1.2,.95,.08),M.brushed);newel.position.set(0,.47,s*.6);lg.add(newel);
     }
     scene.add(lg);
   }
 }
-escalator(1017,1);
-escalator(1037,-1);
+// down to (and up from) the 3rd floor: top landings at the east end, running down into the well
+escalator(1017,X(1210),0,X(1096),-4.6,1);
+escalator(1037,X(1210),0,X(1096),-4.6,-1);
+// up to the 5th floor: board at the east end beside the others, rise west through the ceiling.
+// Its underside is boxed in white, the bulkhead you see over the escalators in the photos.
+escalator(997,X(1210),0,X(1096),4.6,-1,M.wall);
+addCollider(X(1094),Z(988),X(1210),Z(1006));
+// the shaft above the ceiling opening, and a slice of the 5th floor at the top
+box(SHAFT[0],SHAFT[1]-2,SHAFT[2],SHAFT[1],H,4.6+H,M.wall);
+box(SHAFT[0],SHAFT[3],SHAFT[2],SHAFT[3]+2,H,4.6+H,M.wall);
+box(SHAFT[2],SHAFT[1],SHAFT[2]+2,SHAFT[3],H,4.6+H,M.wall);
+box(1000,975,1003,1020,4.6,4.6+H,M.wall);box(1000,973,SHAFT[0],975,4.6,4.6+H,M.wall);box(1000,1020,SHAFT[0],1022,4.6,4.6+H,M.wall);
+{const f5=plane(X(SHAFT[0])-X(1000),Z(1020)-Z(975),std({map:(()=>{const t=floorTex.clone();t.needsUpdate=true;t.repeat.set(1.6,1);return t})(),roughness:.3}));f5.rotation.x=-Math.PI/2;f5.position.set((X(1000)+X(SHAFT[0]))/2,4.6,(Z(975)+Z(1020))/2);scene.add(f5);
+ const c5=plane(X(SHAFT[2])-X(1000),Z(1022)-Z(973),M.ceil);c5.rotation.x=Math.PI/2;c5.position.set((X(1000)+X(SHAFT[2]))/2,4.6+H-.01,(Z(973)+Z(1022))/2);scene.add(c5);
+ const l5=new THREE.PointLight(0xfff4e2,.6,10,1.5);l5.position.set(X(1060),4.6+2.4,Z(997));scene.add(l5);
+ for(const mx of [1030,1075,1120])lightPanelLater.push([mx,997,4.6+H-.012]);
+ const [c,x]=cvs(512,128);x.fillStyle='#f3f1ec';x.fillRect(0,0,512,128);x.fillStyle='#232528';x.font=`600 64px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('Level 5',256,66);
+ const sg=plane(1.2,.3,basic(tex(c)));sg.position.set(X(1003)+.02,4.6+2.2,Z(997));sg.rotation.y=Math.PI/2;scene.add(sg);}
 function railing(ax,az,bx,bz){
   const len=Math.hypot(bx-ax,bz-az),ang=Math.atan2(bz-az,bx-ax);
   const g=grp();g.position.set((ax+bx)/2,0,(az+bz)/2);g.rotation.y=-ang;
@@ -366,10 +392,10 @@ function railing(ax,az,bx,bz){
 railing(X(PIT[0]),Z(PIT[1]),X(PIT[2]),Z(PIT[1]));
 railing(X(PIT[0]),Z(PIT[1]),X(PIT[0]),Z(PIT[3]));
 // white bulkhead over the escalators and the wood wall behind them
-box(PIT[0],PIT[1]-3,1196,PIT[3],2.35,H,M.wall);
-box(PIT[0],PIT[1]-3,1196,PIT[1]-2.6,2.33,2.36,M.base);
-{const w=(1290-1040)*S,wt=woodTex.clone();wt.needsUpdate=true;wt.repeat.set(w/2.6,H/2.6);
- const p=plane(w,H,std({map:wt,roughness:.6}));p.position.set((X(1040)+X(1290))/2,H/2,Z(1047)-.008);p.rotation.y=Math.PI;scene.add(p);}
+box(PIT[0],SHAFT[3]+2,1196,PIT[3],2.35,H,M.wall);
+// diagonal wood boards wrap the restroom block (north face behind the escalators, east face on the CBA passage)
+function woodFace(A,Bp,toward,y0=0){const W_=wall(A,Bp,toward),wt=woodTex.clone();wt.needsUpdate=true;wt.repeat.set(W_.L/2.6,(H-y0)/2.6);W_.put(plane(W_.L,H-y0,std({map:wt,roughness:.6})),.5,(H+y0)/2,.008);return W_}
+woodFace([985,1047],[1292,1047],[1150,1000]);woodFace([1292,1047],[1292,1092],[1320,1070]);woodFace([1292,1092],[1280,1092],[1300,1100]);woodFace([1280,1092],[1280,1120],[1320,1106]);
 
 // ---------- doors, plaques, signs ----------
 function doorObj(o={}){
@@ -397,10 +423,10 @@ const tOf=(W,p)=>{const q=V(p),dx=W.b[0]-W.a[0],dz=W.b[1]-W.a[1];return((q[0]-W.
 
 // North corridor wall: 4.112CB, TV, MPA Program Office portal, 4.112CE
 const WN=wall([1172,945],[1425,945],[1300,970]);
-WN.put(doorObj({leaf:std({map:leafTex('#9a6438'),roughness:.55})}),tOf(WN,[1262,945]));plaque(WN,tOf(WN,[1252.5,945]),'4.112CB');
+WN.put(doorObj({leaf:std({map:oakTex,color:0xe6c9a0,roughness:.5}),frame:M.wall}),tOf(WN,[1262,945]));plaque(WN,tOf(WN,[1252.5,945]),'4.112CB');
 {const g=grp();B(g,1.25,.74,.06,0,0,.03,M.black);
  const [c,x]=cvs(256,150);const gr=x.createLinearGradient(0,0,256,150);gr.addColorStop(0,'#1d3557');gr.addColorStop(1,'#3d6e9e');x.fillStyle=gr;x.fillRect(0,0,256,150);
- x.fillStyle='#bf5700';x.fillRect(0,0,256,10);x.fillStyle='#fff';x.font=`700 30px ${SIGNF}`;x.fillText('MPA EVENTS',18,52);x.font='400 16px Rubik,sans-serif';x.fillText('Recruiting week · Thu 5 PM',18,84);x.fillText('Resume reviews · 4.112CA',18,108);
+ x.fillStyle='#bf5700';x.fillRect(0,0,256,10);x.fillStyle='#e9c46a';x.font=`700 24px ${SIGNF}`;x.fillText('MPA STUDENT SPOTLIGHT',14,40);x.fillStyle='#c9d6e3';x.fillRect(14,54,60,74);x.fillStyle='#fff';x.font='400 11px Rubik,sans-serif';['“The MPA program pushed me','to ask better questions.”','Class of 2026','Stop by 4.112CA'].forEach((t,i)=>x.fillText(t,84,68+i*17));
  const sc=plane(1.18,.67,basic(tex(c),{toneMapped:false}));sc.position.z=.061;g.add(sc);WN.put(g,tOf(WN,[1288,945]),1.75)}
 // MPA Program Office: oak portal with carved lettering and glass doors
 {const g=grp(),pw=.34,dw=1.9,h=2.3;
@@ -457,9 +483,48 @@ for(let i=0;i<8;i++){
  qx.fillStyle='#fff';qx.fillRect(52,52,24,56);qx.beginPath();qx.moveTo(36,52);qx.lineTo(92,108);qx.stroke();qx.font=`700 30px ${SIGNF}`;qx.textAlign='center';qx.fillText('QUIET',64,170);qx.fillText('PLEASE',64,206);
  W100.put(signObj(tex(q),.15,.3),tOf(W100,[1496.4,987]),1.2,.02);}
 // Recruiting Operations: double doors on the west end of the 4.128 corridor
-const WREC=wall([1342,987],[1342,1140],[1320,1060]);
-WREC.put(doubleDoor({glassLeaf:true,leaf:std({map:leafTex('#9a6438'),roughness:.55})}),tOf(WREC,[1342,1062]));
-WREC.put(signObj(plaqueTex('Recruiting Operations','Ford Career Center Recruitment Services · 4.128',640,140),1.35,.3),tOf(WREC,[1342,1062]),2.5,.012);
+// Recruiting Operations 4.128: glass entrance with the QR poster, and the carpeted corridor behind it (walk in)
+const WREC=wall([1342,1053],[1342,1081],[1320,1067]);   // local -x is the north end
+{const g=grp(),w=28*S,dw=1.1;
+ B(g,w,.08,.09,0,2.36,0,M.bronze);B(g,.08,2.4,.09,-w/2,1.2,0,M.bronze);B(g,.08,2.4,.09,w/2,1.2,0,M.bronze);B(g,.08,2.4,.09,-w/2+dw,1.2,0,M.bronze);
+ const sl=plane(w-dw,2.32,M.glass);sl.position.set(dw/2,1.16,0);g.add(sl);
+ const lf=grp();lf.position.set(-w/2+.05,0,-.04);lf.rotation.y=-1.35;g.add(lf);   // door leaf, propped open into the corridor
+ const lg=plane(dw-.1,2.28,M.glass);lg.position.set((dw-.1)/2,1.14,0);lf.add(lg);for(const [x,y,ww,hh] of [[(dw-.1)/2,2.26,dw-.1,.06],[(dw-.1)/2,.05,dw-.1,.1],[.02,1.14,.05,2.28],[dw-.12,1.14,.05,2.28]])B(lf,ww,hh,.05,x,y,0,M.bronze);
+ B(lf,.03,.6,.03,dw-.2,1.05,.05,M.steel);
+ const [c,x]=cvs(300,400);x.fillStyle='#c1561d';x.fillRect(0,0,300,400);x.fillStyle='#fff';x.fillRect(16,18,72,72);x.fillRect(16,104,72,72);x.fillStyle='#222';for(let i=0;i<60;i++){x.fillRect(20+((i*7)%64),22+((i*13)%64),6,6);x.fillRect(20+((i*11)%64),108+((i*5)%64),6,6)}
+ x.fillStyle='#fff';x.font=`600 15px ${SIGNF}`;x.fillText('HEADSHOTS AT McCOMBS',100,34);x.fillText('QUESTIONS',100,120);x.font='400 11px Rubik,sans-serif';x.fillText('Book at the Ford Career Center',100,52);x.fillText('Scan to email the team',100,138);
+ x.font=`500 18px ${SIGNF}`;x.fillText('Ford Career Center',16,236);x.font=`700 40px ${SIGNF}`;x.fillText('Recruiting Operations',16,280);x.fillStyle='rgba(255,255,255,.6)';for(let i=0;i<4;i++)x.fillRect(16,304+i*16,220+(i%2)*40,4);
+ const pt=tex(c);for(const z of [.006,-.006]){const pp=plane(.42,.56,basic(pt));pp.position.set(dw/2+.05,1.35,z);if(z<0)pp.rotation.y=Math.PI;g.add(pp)}
+ const hd=new THREE.Mesh(new THREE.BoxGeometry(w,H-2.4,.2),M.wall);hd.position.y=(H+2.4)/2;g.add(hd);
+ WREC.put(g,.5);
+ const q1=V([1342,1053+dw/S+1]),q2=V([1342,1081]);segs.push({ax:q1[0],az:q1[1],bx:q2[0],bz:q2[1],h:.05});}
+// inside: carpet, office doors, benches with teal cushions, literature pockets, window at the far end
+{const cp=plane((1500-1342)*S,(1081-1053)*S,std({color:0x6f6d68,roughness:1}));cp.rotation.x=-Math.PI/2;cp.position.set(X(1421),.004,Z(1067));scene.add(cp);
+ const RN=wall([1342,1053],[1500,1053],[1420,1070]),RS=wall([1342,1081],[1500,1081],[1420,1060]);
+ const oakLeaf=std({map:leafTex('#a9773f'),roughness:.55});
+ for(const [mx,L] of [[1365,'A'],[1405,'C'],[1445,'E'],[1485,'G']]){RN.put(doorObj({leaf:oakLeaf,frame:M.dark}),tOf(RN,[mx,1053]));plaque(RN,tOf(RN,[mx+9,1053]),'4.128'+L)}
+ for(const [mx,L] of [[1352,'B'],[1432,'D'],[1462,'F'],[1492,'H']]){RS.put(doorObj({leaf:oakLeaf,frame:M.dark,w:.86}),tOf(RS,[mx,1081]));plaque(RS,tOf(RS,[mx-9,1081]),'4.128'+L)}
+ for(const mx of [1378,1405]){const g=grp();B(g,1.5,.4,.45,0,.2,.225,M.oak);B(g,1.5,.1,.45,0,.45,.225,std({color:0x4f9a96,roughness:.8}));RS.put(g,tOf(RS,[mx,1081]));
+   const pk=grp();for(let i=0;i<3;i++){B(pk,.3,.32,.1,-.4+i*.4,0,.05,M.oak);B(pk,.26,.2,.02,-.4+i*.4,.08,.11,std({color:[0xe9e2d0,0xbf5700,0x1d3557][i]}))}RS.put(pk,tOf(RS,[mx,1081]),1.25);}
+ const RE=wall([1500,1053],[1500,1081],[1450,1067]);
+ const [c,x]=cvs(256,512);const gr=x.createLinearGradient(0,0,0,512);gr.addColorStop(0,'#d7e7ee');gr.addColorStop(1,'#9fb59a');x.fillStyle=gr;x.fillRect(0,0,256,512);
+ for(let i=0;i<40;i++){x.fillStyle=['#3d5a2a','#4b6b33','#2f4a24'][i%3];x.beginPath();x.arc(rnd()*256,40+rnd()*380,30+rnd()*40,0,7);x.fill()}
+ x.fillStyle='#3a332d';x.fillRect(0,0,256,12);x.fillRect(0,500,256,12);x.fillRect(0,0,12,512);x.fillRect(244,0,12,512);x.fillRect(0,330,256,10);
+ RE.put(plane(1.15,2.4,basic(tex(c))),.5,1.2,.01);
+ const bk=new THREE.Mesh(new THREE.CylinderGeometry(.17,.14,.4,14),M.black);bk.position.set(X(1350),.2,Z(1076));scene.add(bk);
+ const l=new THREE.PointLight(0xfff4e2,.55,10,1.5);l.position.set(X(1420),H-.4,Z(1067));scene.add(l);
+ for(const mx of [1370,1420,1470])lightPanelLater.push([mx,1067,H-.012,1]);}
+// CBA passage, east side: 4.128 plaque, display cases, bench, 4.126L
+const WP=wall([1342,1081],[1342,1265],[1316,1150]);
+WP.put(signObj(plaqueTex('4.128','',128,180),.16,.22),tOf(WP,[1342,1084.5]),1.6,.012);
+function displayCase(W_,t,w,h){const g=grp();B(g,w+.08,h+.08,.12,0,0,.06,M.brushed);const [c,x]=cvs(256,256);x.fillStyle='#2c3a3a';x.fillRect(0,0,256,256);
+  for(let i=0;i<6;i++){x.fillStyle=['#f2efe8','#bf5700','#e9c46a','#d9d9d9'][i%4];x.fillRect(20+(i%3)*78,24+(i/3|0)*110,64,90)}
+  const p=plane(w,h,std({map:tex(c),roughness:.3}));p.position.z=.121;g.add(p);const gl=plane(w,h,M.glass);gl.position.z=.125;g.add(gl);B(g,.02,h,.02,0,0,.13,M.brushed);W_.put(g,t,1.5)}
+displayCase(WP,tOf(WP,[1342,1104]),.9,.95);WP.put(plane(.36,.6,std({color:0x7a1f2b,roughness:.6})),tOf(WP,[1342,1118]),1.45,.012);displayCase(WP,tOf(WP,[1342,1131]),.65,.8);
+{const g=grp();B(g,1.3,.4,.45,0,.2,.225,M.oak);B(g,1.3,.1,.45,0,.45,.225,std({color:0x4f9a96,roughness:.8}));WP.put(g,tOf(WP,[1342,1150]));
+ const p=V([1338,1150]);addCollider(p[0]-.5,p[1]-.7,p[0]+.05,p[1]+.7);}
+{const t=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.75,16),std({color:0xe2dccb,roughness:.5}));const p=V([1336,1164]);t.position.set(p[0],.375,p[1]);scene.add(t);addCollider(p[0]-.2,p[1]-.2,p[0]+.2,p[1]+.2);}
+WP.put(doorObj({leaf:std({map:leafTex('#a9773f'),roughness:.55}),frame:M.dark}),tOf(WP,[1342,1191]));plaque(WP,tOf(WP,[1342,1182]),'4.126L');
 
 // 4.132 / 4.130
 const W132=wall([1530,950],[1530,990],[1510,970]);
@@ -495,10 +560,31 @@ function restroomSign(W,t,women){const [c,x]=cvs(160,200);x.fillStyle='#1d4f91';
   x.fillRect(64,136,12,40);x.fillRect(84,136,12,40);x.font=`700 24px ${SIGNF}`;x.textAlign='center';x.fillText(women?'WOMEN':'MEN',80,196);
   W.put(signObj(tex(c),.24,.3),t,1.55,.012)}
 WS.put(doorObj({leaf:std({map:leafTex('#8c5a32'),roughness:.55})}),tOf(WS,[1034,1047]));restroomSign(WS,tOf(WS,[1044,1047]),false);
-WS.put(doorObj({leaf:std({map:leafTex('#8c5a32'),roughness:.55}),hinge:'r'}),tOf(WS,[1248,1047]));restroomSign(WS,tOf(WS,[1238,1047]),true);
-const WSE=wall([1290,1047],[1290,1140],[1316,1090]);
-WSE.put(doorObj(),tOf(WSE,[1290,1066]));plaque(WSE,tOf(WSE,[1290,1076]),'4.122');
-WSE.put(doorObj({hinge:'r'}),tOf(WSE,[1290,1104]));plaque(WSE,tOf(WSE,[1290,1094]),'4.124');
+// restroom block, east side on the CBA passage: Women 4.120 (white auto door), Electrical 4.122, then 4.124 + fountain
+const WE1=wall([1292,1047],[1292,1092],[1320,1070]),WE2=wall([1280,1092],[1280,1193],[1320,1140]);
+{const g=doorObj({leaf:std({color:0xf1efe9,roughness:.5}),frame:M.black,w:1.05,h:2.2});B(g,.7,.12,.14,.1,2.12,.08,M.brushed);WE1.put(g,tOf(WE1,[1292,1060]));
+ WE1.put(signObj(plaqueTex('4.120','WOMEN',128,200),.12,.2),tOf(WE1,[1292,1069]),1.55,.012);
+ const pb=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,.04,24),M.dark);pb.rotation.x=Math.PI/2;WE1.put(pb,tOf(WE1,[1292,1070]),1.0,.02);
+ const pi=plane(.09,.09,basic(plaqueTex('♿','',96,96)));WE1.put(pi,tOf(WE1,[1292,1070]),1.32,.012);}
+// projecting restroom signs at the corner, one on each face
+{const [c,x]=cvs(200,200);x.fillStyle='#f6f6f4';x.fillRect(0,0,200,200);x.fillStyle='#111';x.beginPath();x.arc(62,40,14,0,7);x.fill();x.beginPath();x.moveTo(62,58);x.lineTo(88,120);x.lineTo(36,120);x.fill();x.fillRect(50,118,9,48);x.fillRect(66,118,9,48);
+ x.lineWidth=9;x.strokeStyle='#111';x.beginPath();x.arc(140,128,28,0,7);x.stroke();x.beginPath();x.arc(134,52,11,0,7);x.fill();x.fillRect(128,66,10,46);
+ const t=tex(c);
+ for(const [W_,pt] of [[WE1,[1292,1050]],[WS,[1289,1047]]]){const g=grp();B(g,.04,.34,.36,0,0,.2,M.black);for(const s_ of [-1,1]){const p=plane(.32,.32,basic(t));p.position.set(s_*.022,0,.2);p.rotation.y=s_*Math.PI/2;g.add(p)}W_.put(g,tOf(W_,pt),2.45)}}
+{const g=doorObj({leaf:std({color:0xece9e2,roughness:.5}),w:.9,hinge:'r'});WE1.put(g,tOf(WE1,[1292,1083]));WE1.put(signObj(plaqueTex('Electrical','4.122',128,200),.12,.2),tOf(WE1,[1292,1076]),1.55,.012);}
+WE2.put(doorObj({leaf:std({map:oakTex,color:0xf0dcc0,roughness:.55}),frame:M.wall}),tOf(WE2,[1280,1112.5]));WE2.put(signObj(plaqueTex('4.124','',128,200),.09,.17),tOf(WE2,[1280,1104.6]),1.55,.012);
+{const g=grp();B(g,.62,.85,.02,0,.15,.01,M.brushed);B(g,.52,.42,.4,0,-.08,.22,M.brushed);B(g,.56,.08,.44,0,.17,.22,M.steel);B(g,.36,.4,.3,0,-.45,.17,M.brushed);WE2.put(g,tOf(WE2,[1280,1098]),.95);
+ const p=V([1280,1098]);addCollider(p[0],p[1]-.3,p[0]+.45,p[1]+.3);}
+WE2.put(signObj(plaqueTex('Storage','CBA 4.302',128,200),.12,.2),tOf(WE2,[1280,1160]),1.55,.012);
+// north face by the corner: floor-plan directory, bulletin board, landfill + recycle bins
+{const g=grp();B(g,.62,.82,.03,0,0,.015,M.glass);const [mc,mx_]=cvs(180,240);mx_.fillStyle='#111';mx_.fillRect(0,0,180,240);mx_.fillStyle='#e9c8cf';mx_.fillRect(20,30,140,170);
+ for(let i=0;i<26;i++){mx_.fillStyle=['#ee6c24','#1e8fd0','#2fa84f','#ee6c24'][i%4];mx_.fillRect(24+rnd()*120,34+rnd()*150,8+rnd()*22,8+rnd()*18)}
+ mx_.fillStyle='#fff';mx_.font=`600 12px ${SIGNF}`;mx_.fillText('CBA/GSB FLOOR PLAN',30,222);
+ const p=plane(.56,.76,basic(tex(mc)));   // a texture from the photo can't be used when the page is opened from disk, so this is drawnp.position.z=.008;g.add(p);WS.put(g,tOf(WS,[1270,1047]),1.55);
+ const bb=grp();B(bb,1.7,1.25,.05,0,0,.025,std({color:0x3a1f14,roughness:.6}));const [c,x]=cvs(512,384);x.fillStyle='#b38a5a';x.fillRect(0,0,512,384);x.fillStyle='#bf5700';x.fillRect(0,0,512,46);x.fillStyle='#fff';x.font=`600 26px ${SIGNF}`;x.fillText('Human-Centered · Future-Focused',14,32);
+ for(let i=0;i<16;i++){x.save();x.translate(30+(i%6)*80+rnd()*14,70+(i/6|0)*100+rnd()*10);x.rotate((rnd()-.5)*.1);x.fillStyle=['#fff','#f4d35e','#ee964b','#e9e9e9','#faf0ca','#0d3b66'][i%6];x.fillRect(0,0,62,84);x.fillStyle='rgba(0,0,0,.4)';for(let k=0;k<5;k++)x.fillRect(6,10+k*12,40+rnd()*12,4);x.restore()}
+ const bp=plane(1.62,1.17,std({map:tex(c),roughness:.8}));bp.position.z=.052;bb.add(bp);WS.put(bb,tOf(WS,[1235,1047]),1.55);}
+bin(1286,1041,0x8a8e92,'LANDFILL');bin(1276,1041,0x1f4fa8,'RECYCLE');
 const WW=wall([852,985],[852,1047],[900,1010]);
 WW.put(doorObj(),tOf(WW,[852,998]));plaque(WW,tOf(WW,[852,1007]),'4.110');
 WW.put(doorObj({hinge:'r'}),tOf(WW,[852,1030]));plaque(WW,tOf(WW,[852,1021]),'4.108');
@@ -512,11 +598,14 @@ const WNRG=wall([945,940],[852,985],[930,1000]);
  WNRG.put(signObj(tex(sc),1.9,.4),.5,2.55,.012);}
 
 // CBA passage: glass doors at the end, toward the 4.3xx classrooms
-const WCBA=wall([1290,1140],[1342,1140],[1316,1100]);
-{const g=doubleDoor({glassLeaf:true,pull:true,leaf:M.glass,frame:M.bronze,w:.95});WCBA.put(g,.5);
- const [c,x]=cvs(256,512);const gr=x.createLinearGradient(0,0,0,512);gr.addColorStop(0,'#e9e3d8');gr.addColorStop(1,'#8f7a6c');x.fillStyle=gr;x.fillRect(0,0,256,512);x.fillStyle='#d8cfbf';x.fillRect(90,60,76,300);
- WCBA.put(plane(2,2.15,std({map:tex(c),roughness:.8})),.5,1.075,.005);
- WCBA.put(signObj(hangTex(['CBA  ↓','Classrooms 4.302–4.352 · MPA Lounge'],{w:1024,h:220,size:56}),1.9,.41),.5,2.55,.012);}
+// GSB/CBA corridor heading west, MPA Lounge 4.352, end of what's built so far
+const WST2=wall([1150,1193],[1280,1193],[1200,1210]),WLN=wall([1150,1230],[1280,1230],[1200,1210]),WPE=wall([1280,1265],[1342,1265],[1316,1240]);
+WST2.put(doorObj({leaf:std({map:leafTex('#9a6438'),roughness:.55})}),tOf(WST2,[1195,1193]));plaque(WST2,tOf(WST2,[1205,1193]),'4.302');
+WLN.put(doubleDoor({glassLeaf:true,pull:true,leaf:M.glass,frame:M.bronze,w:.9}),tOf(WLN,[1215,1230]));
+{const [c,x]=cvs(256,512);x.fillStyle='#3a2d25';x.fillRect(0,0,256,512);x.fillStyle='#bf5700';x.fillRect(30,260,90,160);x.fillStyle='#d9cbb0';x.fillRect(140,300,90,120);x.fillStyle='#fff6e0';x.fillRect(20,40,216,8);
+ WLN.put(plane(1.9,2.15,std({map:tex(c),roughness:.8})),tOf(WLN,[1215,1230]),1.075,.005);
+ WLN.put(signObj(plaqueTex('MPA Lounge','CBA 4.352',512,140),.9,.25),tOf(WLN,[1215,1230]),2.5,.012);}
+WPE.put(signObj(hangTex(null,{w:1100,h:200,split:[['Classrooms 4.304 – 4.350','Atrium · MPA Lounge'],['CBA Escalators','Faculty Offices · Management']]}),2.6,.47),.5,2.0,.012);
 
 // ---------- hanging signs (both faces readable) ----------
 function hanging(mx,my,rotY,front,back,w,h,y){
@@ -532,6 +621,9 @@ hanging(1258,966,Math.PI/2,
   hangTex(null,{w:1100,h:200,split:[['Recruiting Operations Offices','MPA Lounge · Green Room','Management / Accounting'],['AIM Reading Room','Ford Career Center','NRG Productivity Center']]}),
   hangTex(null,{w:1100,h:200,split:[['AIM Reading Room','Ford Career Center','NRG Productivity Center'],['Recruiting Operations Offices','MPA Lounge · Green Room','Management / Accounting']]}),
   1.95,.355,2.62);
+// CBA passage: the sign from the photo, and the small Faculty Offices sign at the far end
+hanging(1316,1063,Math.PI,hangTex(['Recruiting Operations','Offices'],{w:700,h:260,size:72}),null,1.3,.48,2.5);
+hanging(1316,1245,Math.PI,hangTex(['←  Faculty Offices'],{w:640,h:120,size:60}),null,.95,.18,2.66);
 const exitTex=(()=>{const [c,x]=cvs(256,96);x.fillStyle='#e9e7e2';x.fillRect(0,0,256,96);x.fillStyle='#ff2d22';x.font=`700 74px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('EXIT',128,52);return tex(c)})();
 const exitMat=basic(exitTex,{toneMapped:false});
 hanging(1372,962,Math.PI/2,exitTex,null,.36,.15,2.7).children.forEach(c=>{if(c.material&&c.material.map===exitTex)c.material=exitMat});
@@ -544,11 +636,11 @@ const A_E=55,A_S=65,A_T=115,A_W=125;           // east column, solid arc from A_
 function seg3(p,q,h0,h1,t,mat,cam){const L=Math.hypot(q[0]-p[0],q[1]-p[1]),ang=Math.atan2(q[1]-p[1],q[0]-p[0]);const m=new THREE.Mesh(new THREE.BoxGeometry(L+.02,h1-h0,t),mat);m.position.set((p[0]+q[0])/2,(h0+h1)/2,(p[1]+q[1])/2);m.rotation.y=-ang;scene.add(m);if(cam)camBlockers.push(m);return m}
 {const N=12;
  for(let i=0;i<N;i++){const a0=A_S+(A_T-A_S)*i/N,a1=A_S+(A_T-A_S)*(i+1)/N,p=arcP(a0),q=arcP(a1);
-   seg3(p,q,0,1.0,.24,M.oak,true);seg3(p,q,1.0,1.06,.32,M.oakDark);seg3(p,q,1.06,2.4,.02,M.glass,true);seg3(p,q,2.4,H,.22,M.wall,true);
+   seg3(p,q,0,1.0,.24,M.ford,true);seg3(p,q,1.0,1.06,.32,M.fordDark);seg3(p,q,1.06,2.4,.02,M.glass,true);seg3(p,q,2.4,H,.22,M.wall,true);
    seg3(p,q,0,.1,.25,M.base);
    segs.push({ax:p[0],az:p[1],bx:q[0],bz:q[1],h:.13});
-   for(const r of (i===N-1?[p,q]:[p])){const m=new THREE.Mesh(new THREE.BoxGeometry(.09,1.34,.12),M.oakDark);m.position.set(r[0],1.73,r[1]);scene.add(m)}}
- for(const a of [A_E,A_W]){const c=arcP(a),m=new THREE.Mesh(new THREE.BoxGeometry(.5,H,.5),M.oak);m.position.set(c[0],H/2,c[1]);m.rotation.y=Math.PI/4;scene.add(m);camBlockers.push(m);
+   for(const r of (i===N-1?[p,q]:[p])){const m=new THREE.Mesh(new THREE.BoxGeometry(.09,1.34,.12),M.fordDark);m.position.set(r[0],1.73,r[1]);scene.add(m)}}
+ for(const a of [A_E,A_W]){const c=arcP(a),m=new THREE.Mesh(new THREE.BoxGeometry(.5,H,.5),M.ford);m.position.set(c[0],H/2,c[1]);m.rotation.y=Math.PI/4;scene.add(m);camBlockers.push(m);
    const r=.354,pts=[[c[0]+r,c[1]],[c[0],c[1]+r],[c[0]-r,c[1]],[c[0],c[1]-r]];for(let k=0;k<4;k++){const p=pts[k],q=pts[(k+1)%4];segs.push({ax:p[0],az:p[1],bx:q[0],bz:q[1],h:.01})}}
  seg3(arcP(A_E),arcP(A_S),2.4,H,.22,M.wall,true);seg3(arcP(A_T),arcP(A_W),2.4,H,.22,M.wall,true);
  // carpet inside
@@ -636,12 +728,13 @@ benchOut(.46,.55);benchOut(.72,.55);benchOut(.2,.55);
 // ---------- lights ----------
 scene.add(new THREE.HemisphereLight(0xfffaf0,0x6b5a50,.66));
 scene.add(new THREE.AmbientLight(0xffffff,.16));
-for(const [mx,my,i] of [[950,1000,.75],[1135,985,.8],[1300,968,.8],[1440,966,.75],[1534,1028,.7],[1030,905,.75],[1316,1095,.6],[1488,925,.55]]){const l=new THREE.PointLight(0xfff4e2,i,15,1.4);l.position.set(X(mx),H-.35,Z(my));scene.add(l)}
+for(const [mx,my,i] of [[950,1000,.75],[1135,985,.8],[1300,968,.8],[1440,966,.75],[1534,1028,.7],[1030,905,.75],[1316,1110,.6],[1316,1215,.55],[1215,1212,.5],[1488,925,.55]]){const l=new THREE.PointLight(0xfff4e2,i,15,1.4);l.position.set(X(mx),H-.35,Z(my));scene.add(l)}
 {const l=new THREE.PointLight(0xfff0dd,.6,12,1.4);l.position.set(X(1130),-2.4,Z(1027));scene.add(l)}
 const panel=new THREE.PlaneGeometry(1.2,.6),panelR=new THREE.PlaneGeometry(.6,1.2);
 function lightPanel(mx,my,rot){const p=new THREE.Mesh(rot?panelR:panel,M.light);p.rotation.x=Math.PI/2;p.position.set(X(mx),H-.012,Z(my));scene.add(p)}
 for(let mx=1180;mx<=1490;mx+=24)lightPanel(mx,962.5);
-for(const [mx,my] of [[1240,1010],[1270,1030],[1316,1070],[1316,1110],[1532,1010],[1532,1045],[1515,968],[1470,930],[1450,950],[900,1000],[960,990],[1010,1000],[1070,985],[1150,990],[880,1025],[1000,1030]])lightPanel(mx,my);
+for(const [mx,my] of [[1240,1010],[1270,1030],[1316,1070],[1316,1110],[1532,1010],[1532,1045],[1515,968],[1470,930],[1450,950],[900,1000],[960,990],[1010,1000],[1060,972],[1205,975],[880,1025],[1000,1030],[1316,1100],[1316,1135],[1316,1170],[1316,1205],[1316,1240],[1175,1212],[1215,1212],[1255,1212]])lightPanel(mx,my);
+for(const [mx,my,y,rot] of lightPanelLater){const p=new THREE.Mesh(rot?panelR:panel,M.light);p.rotation.x=Math.PI/2;p.position.set(X(mx),y,Z(my));scene.add(p)}
 for(const [mx,my] of [[990,880],[1070,880],[990,910],[1070,910],[1030,935]])lightPanel(mx,my);
 
 // ---------- blocky avatars ----------
@@ -681,7 +774,7 @@ const sitter=avatar({shirt:0x2f5d50,skin:0xd2a07e,skinHex:'#d2a07e',hair:0x5a3b2
 // walkers
 const walker=avatar({shirt:0x161616,skin:0xe0b090,skinHex:'#e0b090',hair:0x2a1a12,pants:0x2b2f36,shoes:0x2b2b2b});walker.g.scale.setScalar(.92);
 const walker2=avatar({shirt:0x1f2d44,skin:0x9c6a48,skinHex:'#9c6a48',hair:0x18110d,curly:true,pants:0xbfae8a,shoes:0xf0f0f0,pack:0x2a2a2a});walker2.g.scale.setScalar(.9);
-const WK=[{av:walker,a:V([1185,972]),b:V([1490,972]),t:.6,dir:-1,phase:0,sp:1.35},{av:walker2,a:V([960,990]),b:V([1195,992]),t:.2,dir:1,phase:0,sp:1.25}];
+const WK=[{av:walker,a:V([1185,972]),b:V([1490,972]),t:.6,dir:-1,phase:0,sp:1.35},{av:walker2,a:V([905,1005]),b:V([1060,982]),t:.2,dir:1,phase:0,sp:1.25}];
 function updateWalkers(dt){for(const w of WK){const dx=w.b[0]-w.a[0],dz=w.b[1]-w.a[1],L=Math.hypot(dx,dz);w.t+=w.dir*w.sp*dt/L;if(w.t>1){w.t=1;w.dir=-1}if(w.t<0){w.t=0;w.dir=1}
   const x=w.a[0]+dx*w.t,z=w.a[1]+dz*w.t;w.phase+=dt*7;w.av.g.position.set(x,0,z);w.av.g.rotation.y=angLerp(w.av.g.rotation.y,Math.atan2(dx*w.dir,dz*w.dir),Math.min(1,dt*6));w.av.sh.position.set(x,.015,z);animLimbs(w.av,w.phase,1,false)}}
 
@@ -728,7 +821,10 @@ function moveP(dx,dz){
 const FORDPOLY=(()=>{const pts=[[945,860],[1115,860]];for(let a=A_E;a<=A_W;a+=5){const p=arcP(a);pts.push([p[0]/S+1300,p[1]/S+980])}return pts})();
 const ZONES=[
   [[1500,990,1565,1065],'Stair 2 · lockers'],
-  [[1290,1047,1342,1140],'CBA passage · toward the 4.3xx classrooms'],
+  [[1342,1053,1500,1081],'Recruiting Operations · 4.128'],
+  [[1280,1047,1342,1130],'CBA passage · Recruiting Operations · Women 4.120'],
+  [[1280,1130,1342,1265],'CBA passage · toward the CBA escalators'],
+  [[1150,1193,1280,1230],'GSB/CBA corridor · MPA Lounge 4.352'],
   [[1342,945,1500,995],'4.100 rooms · Quiet/Lactation Room 4.100H'],
   [[1280,945,1342,1000],'MPA Program Office · 4.112CA'],
   [[852,940,1050,1047],'Elevators · NRG Productivity Center'],
@@ -740,43 +836,27 @@ function zoneAt(){const mx=P.x/S+1300,my=P.z/S+980;
   if(mx>1425&&my<960)return 'Balcony doors · look out (no outside access)';
   for(const [r,n] of ZONES)if(mx>=r[0]&&mx<=r[2]&&my>=r[1]&&my<=r[3])return n;return 'Level 4 hallway'}
 
-// ---------- minimap (colored like the wall directory) ----------
-const MB={x1:840,y1:700,x2:1660,y2:1160};
-const mini=document.getElementById('mini');const MW=400,MH=Math.round(MW*(MB.y2-MB.y1)/(MB.x2-MB.x1));mini.width=MW;mini.height=MH;
+// ---------- minimap: the in-building directory map, lined up with the plan and scrolling with you ----------
+// reference/4th-floor/minimap.jpg is the directory photo warped onto plan pixels: image px = (plan px - origin) * 1.5
+const MMI={x0:560,y0:440,s:1.5,img:new Image(),ok:false};MMI.img.onload=()=>{MMI.ok=true};MMI.img.src='reference/4th-floor/minimap.jpg';
+const mini=document.getElementById('mini');const MW=400,MH=280;mini.width=MW;mini.height=MH;
 const mctx=mini.getContext('2d');
-const mmx=m=>(m-MB.x1)/(MB.x2-MB.x1)*MW,mmy=m=>(m-MB.y1)/(MB.y2-MB.y1)*MH;
-const base=document.createElement('canvas');base.width=MW;base.height=MH;
-{const b=base.getContext('2d');b.fillStyle='#3a302b';b.fillRect(0,0,MW,MH);
- const poly=(pts,col)=>{b.fillStyle=col;b.beginPath();pts.forEach((p,i)=>i?b.lineTo(mmx(p[0]),mmy(p[1])):b.moveTo(mmx(p[0]),mmy(p[1])));b.closePath();b.fill()};
- const rr=(r,col)=>poly([[r[0],r[1]],[r[2],r[1]],[r[2],r[3]],[r[0],r[3]]],col);
- const OR='#ee6c24',BL='#1e8fd0',GR='#2fa84f',HALL='#ddd0c4';
- poly(INTERIOR,HALL);
- poly([[840,700],[945,700],[945,940],[852,985],[840,985]],BL);rr([840,985,852,1160],OR);
- rr([945,700,1115,860],OR);poly(FORDPOLY,'#e9dccb');
- poly([[1115,760],[1230,760],[1230,945],[1172,945],[1142,918],[1115,943]],BL);
- poly([[1230,700],[1280,700],[1430,850],[1475,895],[1425,945],[1230,945]],OR);rr([1115,700,1230,760],OR);
- rr([852,1047,980,1160],OR);rr([980,1047,1290,1160],GR);rr([1290,1140,1342,1160],OR);
- rr([1342,987,1500,1160],OR);poly(EAST,OR);rr([1500,1065,1600,1160],OR);
- b.strokeStyle='rgba(0,0,0,.35)';b.lineWidth=1;for(const mx of DOOR100){b.beginPath();b.moveTo(mmx(mx+9.9),mmy(987));b.lineTo(mmx(mx+9.9),mmy(1010));b.stroke()}
- b.beginPath();b.moveTo(mmx(1342),mmy(1010));b.lineTo(mmx(1500),mmy(1010));b.stroke();
- poly(BAL,'#9bb08a');b.strokeStyle='#7fd3ff';b.lineWidth=3;b.beginPath();b.moveTo(mmx(1475),mmy(895));b.lineTo(mmx(1530),mmy(950));b.stroke();
- rr(PIT,'#8f8a84');b.strokeStyle='#6c6762';b.lineWidth=1;for(let y=mmy(PIT[1])+3;y<mmy(PIT[3]);y+=4){b.beginPath();b.moveTo(mmx(PIT[0]),y);b.lineTo(mmx(PIT[2]),y);b.stroke()}
- b.fillStyle='#b3221c';b.fillRect(mmx(872),mmy(1047),mmx(960)-mmx(872),5);
- b.fillStyle='#fff';b.font=`600 13px ${SIGNF}`;b.textAlign='center';b.textBaseline='middle';
- const L=(t,x,y)=>b.fillText(t,mmx(x),mmy(y));
- L('NRG',892,880);L('AIM',1185,860);L('MPA',1322,925);L('FORD 4.114',1030,905);L('4.100',1421,1020);L('REC OPS',1421,1090);L('STAIR',1582,1040);L('ELEV',915,1080);L('WC',1150,1090);L('ESC',1135,1027);L('CBA ↓',1316,1120);
- b.save();b.translate(mmx(1500),mmy(845));b.rotate(Math.PI/4);b.fillStyle='#2f4a2a';b.fillText('BALCONY',0,0);b.restore();}
+const VW=420,VH=VW*MH/MW;   // plan px shown across the minimap
+let vx0=0,vy0=0;const mmx=m=>(m-vx0)*MW/VW,mmy=m=>(m-vy0)*MH/VH;
 function drawMini(){
-  mctx.drawImage(base,0,0);
-  const px=mmx(P.x/S+1300),py=mmy(P.z/S+980);
+  const cxp=P.x/S+1300,cyp=P.z/S+980;
+  vx0=Math.max(MMI.x0,Math.min(1800-VW,cxp-VW/2));vy0=Math.max(MMI.y0,Math.min(1720-VH,cyp-VH/2));
+  mctx.fillStyle='#111';mctx.fillRect(0,0,MW,MH);
+  if(MMI.ok)mctx.drawImage(MMI.img,(vx0-MMI.x0)*MMI.s,(vy0-MMI.y0)*MMI.s,VW*MMI.s,VH*MMI.s,0,0,MW,MH);
+  const px=mmx(cxp),py=mmy(cyp);
   const ca=Math.atan2(-Math.cos(yaw),-Math.sin(yaw));
-  mctx.fillStyle='rgba(232,71,59,.2)';mctx.beginPath();mctx.moveTo(px,py);mctx.arc(px,py,46,ca-.55,ca+.55);mctx.closePath();mctx.fill();
+  mctx.fillStyle='rgba(232,71,59,.28)';mctx.beginPath();mctx.moveTo(px,py);mctx.arc(px,py,46,ca-.55,ca+.55);mctx.closePath();mctx.fill();
   if(nav.active&&!nav.arrived&&nav.path.length>1){
-    mctx.strokeStyle='#ff7a2a';mctx.lineWidth=4;mctx.setLineDash([8,6]);mctx.lineDashOffset=-clock.elapsedTime*20;mctx.beginPath();
+    mctx.strokeStyle='#ff7a2a';mctx.lineWidth=5;mctx.setLineDash([8,6]);mctx.lineDashOffset=-clock.elapsedTime*20;mctx.beginPath();
     nav.path.forEach((p,i)=>{const x=mmx(p[0]/S+1300),y=mmy(p[1]/S+980);i?mctx.lineTo(x,y):mctx.moveTo(x,y)});mctx.stroke();mctx.setLineDash([]);
-    const d=nav.path[nav.path.length-1];mctx.fillStyle='#ff7a2a';mctx.beginPath();mctx.arc(mmx(d[0]/S+1300),mmy(d[1]/S+980),6,0,7);mctx.fill();
+    const d=nav.path[nav.path.length-1];mctx.fillStyle='#ff7a2a';mctx.beginPath();mctx.arc(mmx(d[0]/S+1300),mmy(d[1]/S+980),7,0,7);mctx.fill();
   }
-  mctx.fillStyle='#e8473b';mctx.strokeStyle='#fff';mctx.lineWidth=2.5;mctx.beginPath();mctx.arc(px,py,7,0,7);mctx.fill();mctx.stroke();
+  mctx.fillStyle='#e8473b';mctx.strokeStyle='#fff';mctx.lineWidth=3;mctx.beginPath();mctx.arc(px,py,8,0,7);mctx.fill();mctx.stroke();
 }
 
 // ---------- room finder: floor-projected directions ----------
@@ -786,30 +866,37 @@ const ROOM_DB={
   '4112b':RM('AIM Reading Room','GSB 4.112B',[1168,956],'4.112B','The AIM Reading Room doors are',[1162,945]),
   '4114':RM('Ford Career Center','GSB 4.114 · front desk',[1030,916],'4.114','The Ford Career Center front desk is'),
   '4112a':RM('NRG Productivity Center','GSB 4.112A',[908,982],'NRG','The NRG Productivity Center doors are',[902,972]),
-  '4128':RM('Recruiting Operations','GSB 4.128 · Recruitment Services',[1325,1062],'4.128','The Recruiting Operations doors are'),
+  '4128':RM('Recruiting Operations','GSB 4.128 · Ford Career Center Recruitment Services',[1372,1067],'4.128','Recruiting Operations is',[1372,1067]),
+  '4120':RM('Women\'s restroom','GSB 4.120',[1310,1060],'4.120','The women\'s room is'),
+  '4126l':RM('GSB 4.126L','',[1324,1191],'4.126L','4.126L is'),
+  '4302':RM('Storage','CBA 4.302',[1195,1210],'4.302','4.302 is'),
+  '4352':RM('MPA Lounge','CBA 4.352',[1215,1213],'LOUNGE','The MPA Lounge doors are',[1215,1222]),
+  'escup':RM('Escalator up to the 5th floor','Board at the east end',[1240,996],'UP','The escalator up is'),
   '4112cb':RM('GSB 4.112CB','Office',[1262,963],'4.112CB','4.112CB is'),
   '4112ce':RM('GSB 4.112CE','Office',[1392,963],'4.112CE','4.112CE is'),
   '4132':RM('GSB 4.132','Room',[1515,961],'4.132','4.132 is'),
   '4130':RM('GSB 4.130','Room',[1515,980],'4.130','4.130 is'),
   '4116':RM('GSB 4.116','Room',[992,1030],'4.116','4.116 is'),
-  '4122':RM('GSB 4.122','Room',[1308,1066],'4.122','4.122 is'),
-  '4124':RM('GSB 4.124','Room',[1308,1104],'4.124','4.124 is'),
+  '4122':RM('Electrical','GSB 4.122',[1310,1083],'4.122','4.122 is'),
+  '4124':RM('GSB 4.124','Room',[1300,1112],'4.124','4.124 is'),
   '4110':RM('GSB 4.110','Room',[870,998],'4.110','4.110 is'),
   '4108':RM('GSB 4.108','Room',[870,1030],'4.108','4.108 is'),
   'stair':RM('Stair 2','Exit stairs',[1540,1030],'EXIT','Stair 2 is'),
   'balcony':RM('Balcony doors','Look out only · no outside access in the model',[1484,942],'BALCONY','The balcony doors are'),
   'elevators':RM('Elevators','',[917,1026],'ELEV','The elevators are'),
   'escalators':RM('Escalators','Down to the 3rd floor',[1238,1027],'ESC','The escalators are'),
-  'cba':RM('CBA passage','To the 4.3xx classrooms and MPA Lounge',[1316,1118],'CBA','The CBA doors are',[1316,1128]),
+  'cba':RM('GSB/CBA corridor','Toward the 4.3xx classrooms (not built yet)',[1162,1212],'CBA','The corridor toward the classrooms is',[1158,1212]),
   'mens':RM('Men\'s restroom','',[1034,1030],'WC','The men\'s room is'),
-  'womens':RM('Women\'s restroom','',[1248,1030],'WC','The women\'s room is'),
+
 };
 {const p=WCF.at(.24,.95);ROOM_DB['4112cf']=RM('GSB 4.112CF','Office',[p[0]/S+1300,p[1]/S+980],'4.112CF','4.112CF is');}
 DOOR100.forEach((mx,i)=>{const L='ABCDEFGH'[i];ROOM_DB['4100'+L.toLowerCase()]=RM('GSB 4.100'+L,i===7?'Quiet/Lactation Room':'Small room',[mx-1.5,969],'4.100'+L,'4.100'+L+' is',[mx-1.5,977])});
+for(const [mx,L] of [[1365,'a'],[1405,'c'],[1445,'e'],[1485,'g']])ROOM_DB['4128'+L]=RM('GSB 4.128'+L.toUpperCase(),'Recruiting Operations office',[mx,1063],'4.128'+L.toUpperCase(),'4.128'+L.toUpperCase()+' is');
+for(const [mx,L] of [[1352,'b'],[1432,'d'],[1462,'f'],[1492,'h']])ROOM_DB['4128'+L]=RM('GSB 4.128'+L.toUpperCase(),'Recruiting Operations office',[mx,1071],'4.128'+L.toUpperCase(),'4.128'+L.toUpperCase()+' is');
 const ALIAS={mpa:'4112ca',mpaoffice:'4112ca',mpaprogramoffice:'4112ca',aim:'4112b',aimreadingroom:'4112b',readingroom:'4112b',ford:'4114',fordcareercenter:'4114',careercenter:'4114',fcc:'4114',
   nrg:'4112a',nrgproductivitycenter:'4112a',productivitycenter:'4112a',reliant:'4112a',recruiting:'4128',recruitingoperations:'4128',recops:'4128',
   exit:'stair',stairs:'stair',stair2:'stair',balconies:'balcony',outside:'balcony',elevator:'elevators',elev:'elevators',escalator:'escalators',esc:'escalators',
-  mpalounge:'cba',classroom:'cba',classrooms:'cba',lactation:'4100h',lactationroom:'4100h',quietroom:'4100h',quiet:'4100h',men:'mens',mensroom:'mens',women:'womens',womensroom:'womens',
+  mpalounge:'4352',lounge:'4352',storage:'4302',fifth:'escup','5th':'escup','5thfloor':'escup','5':'escup',fifthfloor:'escup',floor5:'escup',level5:'escup',up:'escup',escalatorup:'escup',electrical:'4122',classroom:'cba',classrooms:'cba',lactation:'4100h',lactationroom:'4100h',quietroom:'4100h',quiet:'4100h',men:'mens',mensroom:'mens',women:'4120',womens:'4120',womensroom:'4120',
   restroom:'mens',restrooms:'mens',bathroom:'mens',bathrooms:'mens'};
 const nav={active:false,arrived:false,room:null,goal:null,goalVis:[],path:[],len:0,lastCalc:-1};
 const chevGeo=(()=>{const s=new THREE.Shape();s.moveTo(-.2,.3);s.lineTo(-.02,.3);s.lineTo(.22,0);s.lineTo(-.02,-.3);s.lineTo(-.2,-.3);s.lineTo(.04,0);s.lineTo(-.2,.3);const g=new THREE.ShapeGeometry(s);g.rotateX(-Math.PI/2);return g})();
@@ -826,7 +913,8 @@ beacon.visible=false;scene.add(beacon);
 // walkable waypoints (plan px) for routing around the escalator well, the Ford counter and the room blocks
 const NODES=[[1190,962],[1260,966],[1330,966],[1400,964],[1460,966],[1515,968],[1515,1000],[1540,1030],[1460,940],
   [1250,1000],[1238,1027],[1316,1010],[1316,1090],[1316,1120],
-  [1085,988],[1000,990],[1125,966],[935,966],[1096,930],[964,930],[1030,918],
+  [1070,978],[1000,990],[1240,996],[1150,970],
+  [1316,1060],[1316,1100],[1316,1150],[1316,1212],[1316,1250],[1250,1212],[1190,1212],[1160,1212],[1330,1067],[1372,1067],[1430,1067],[1485,1067],[1125,966],[935,966],[1096,930],[964,930],[1030,918],
   [905,1010],[917,1026],[1040,1000]].map(([a,b])=>[X(a),Z(b)]);
 function los(a,b,r=.26){const dx=b[0]-a[0],dz=b[1]-a[1],n=Math.ceil(Math.hypot(dx,dz)/.2);for(let i=1;i<n;i++){const t=i/n;if(blocked(a[0]+dx*t,a[1]+dz*t,r))return false}return true}
 const NL=NODES.map(a=>NODES.map(b=>a===b?false:los(a,b)));
@@ -878,7 +966,10 @@ const ENTRANCES=[
   {id:'stair',name:'Stair 2',pos:[1533,994],look:[1533,1065]},
   {id:'elev',name:'Elevators · NRG Productivity Center',pos:[960,1020],look:[880,960]},
   {id:'ford',name:'Inside the Ford Career Center',pos:[1030,935],look:[1030,870]},
-  {id:'cba',name:'CBA passage',pos:[1316,1108],look:[1316,990]},
+  {id:'cba',name:'CBA passage · looking south',pos:[1316,1052],look:[1316,1250]},
+  {id:'rec',name:'Inside Recruiting Operations',pos:[1352,1067],look:[1500,1067]},
+  {id:'lounge',name:'MPA Lounge · GSB/CBA corridor',pos:[1300,1212],look:[1150,1212]},
+  {id:'up5',name:'Escalator up to the 5th floor',pos:[1250,990],look:[1100,997]},
 ];
 const entSel=$('entrance');ENTRANCES.forEach(e=>{const o=document.createElement('option');o.value=e.id;o.textContent=e.name;entSel.appendChild(o)});
 function place(pos,lk){
