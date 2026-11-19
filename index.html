@@ -209,7 +209,7 @@ function doorTex(kind){
     x.fillStyle=g;x.fillRect(lx,ly,lw,lh);for(let i=0;i<180;i++){x.fillStyle=`rgba(255,255,255,${rnd()*.12})`;x.fillRect(lx,ly+rnd()*lh,lw,1)}
     x.fillStyle='#55595e';x.fillRect(127,ly,3,lh);
   }else{
-    const base=kind==='suite'?[196,132,58]:kind==='tan'?[190,172,112]:[214,168,118];
+    const base=kind==='suite'?[196,132,58]:kind==='tan'?[190,172,112]:kind==='yellow'?[222,186,72]:[214,168,118];
     x.fillStyle=`rgb(${base})`;x.fillRect(lx,ly,lw,lh);
     for(let i=0;i<260;i++){const xx=lx+rnd()*lw;x.fillStyle=`rgba(120,70,30,${.05+rnd()*.12})`;x.fillRect(xx,ly,1+rnd()*1.5,lh)}
     if(kind==='oak'){x.lineWidth=1.6;for(let k=0;k<3;k++){const cxk=lx+40+k*76;for(let j=0;j<9;j++){x.strokeStyle=`rgba(140,85,40,${.25+rnd()*.2})`;x.beginPath();const y0=60+j*52+rnd()*10;x.moveTo(cxk-22,y0+50);x.quadraticCurveTo(cxk,y0-30,cxk+22,y0+50);x.stroke()}}}
@@ -267,7 +267,7 @@ const M={
   red:std({color:0xb3221c,roughness:.5}),
 };
 M.copper.color.convertSRGBToLinear();M.green.color.convertSRGBToLinear();
-const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
+const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan','yellow'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
 
 // ---------- the plan: rooms as solid blocks, corridors are what's left ----------
 // [label, x1,y1,x2,y2, door] door: side n/s/e/w + optional position along that side (0..1), '' = none
@@ -300,7 +300,7 @@ const ROOMS=[
   ['STAIR',1135,855,1320,945,'n'],['6.418',1060,855,1135,945,'n'],['MEN',940,855,1060,945,'n.3'],['6.414',905,855,940,945,'n'],['WOMEN',795,855,905,945,'n.7'],
   ['6.410',750,855,795,945,'n'],['6.408',720,855,750,945,'n'],['6.406',690,855,720,945,'n'],['6.404A',595,855,690,945,'n'],['6.404',485,855,595,945,'n'],
   ['ELEVATOR',400,855,485,945,'n'],['STAIR',205,855,400,945,'n'],
-  ['6.499',290,530,390,790,'s.5'],['6.402',390,530,540,790,'s.4'],
+  ['6.499',290,530,390,790,'w.07'],['6.402',390,530,540,790,'s.4'],
   // 6.304 suite
   ['6.304A',90,565,210,610,'s.3'],['6.304B',15,565,90,640,'e.88'],['6.304C',15,640,90,745,'e'],['6.304D',15,745,90,855,'e'],['6.304H',125,650,210,730,'w'],['6.304G',125,730,210,815,'w'],
   ['6.304E',15,855,115,945,'n'],['6.304F',115,855,205,945,'n'],
@@ -327,7 +327,7 @@ for(const R of ROOMS){
   if(side==='n'){dx=x1+(x2-x1)*t;dy=y1}else if(side==='s'){dx=x1+(x2-x1)*t;dy=y2}else if(side==='e'){dx=x2;dy=y1+(y2-y1)*t}else{dx=x1;dy=y1+(y2-y1)*t}
   const n=DIR[side].n;
   const suite=inR(SUITE,dx+n[0]*3,dy+n[1]*3);
-  const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':opt&&opt.walk?'tan':'oak';
+  const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':label==='6.499'?'yellow':opt&&opt.walk?'tan':'oak';
   const dw=label==='ELEVATOR'?1.25:.98;
   decal(dx,dy,side,dw,2.24,1.12,doorMats[kind],.014);
   const rt=[n[1],-n[0]];// viewer's right
@@ -348,7 +348,7 @@ function rectPath(p,a,b,c,d){p.moveTo(X(a),-Z(b));p.lineTo(X(c),-Z(b));p.lineTo(
 function polyPath(p,pts){pts.forEach(([a,b],i)=>i?p.lineTo(X(a),-Z(b)):p.moveTo(X(a),-Z(b)));p.lineTo(X(pts[0][0]),-Z(pts[0][1]))}
 function flat(shape,mat,y){const g=new THREE.ShapeGeometry(shape);g.rotateX(-Math.PI/2);const m=new THREE.Mesh(g,mat);m.position.y=y;scene.add(m);return m}
 const PIT=[wu(540),wv(300),wu(1170),wv(515)];
-const WALK=[[wu(165),wv(220)],[wu(1460),wv(220)],[wu(1460),wv(265)],[wu(1660),wv(265)],[wu(1660),wv(485)],[wu(1495),wv(485)],[wu(1495),wv(905)],[wu(165),wv(905)]];
+const WALK=[[wu(165),wv(220)],[wu(1460),wv(220)],[wu(1460),wv(140)],[wu(1660),wv(140)],[wu(1660),wv(485)],[wu(1495),wv(485)],[wu(1495),wv(905)],[wu(165),wv(905)]];
 {
   const main=new THREE.Shape();rectPath(main,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);main.holes.push(h)}
   flat(main,M.vct,0);
@@ -457,7 +457,43 @@ chair(1205,500,0,'black');chair(1228,500,0,'teal');chair(1258,502,0,'orange');ch
 
 // ---------- walkway between CBA and CBA North ----------
 const wb=(u1,v1,u2,v2,y0,y1,mat,o)=>box(wu(u1),wv(v1),wu(u2),wv(v2),y0,y1,mat,o);
-wb(165,205,1460,220,0,H+.35,M.white);wb(1460,205,1475,265,0,H+.35,M.white);wb(1475,250,1660,265,0,H+.35,M.white);
+wb(165,205,1460,220,0,H+.35,M.white);wb(1460,135,1475,265,0,H+.35,M.white);wb(1460,135,1660,150,0,H+.35,M.white);
+// ---- top of the escalator, CBA end (video): glass waiting room on the left, bench right, Rosenbaum Center ahead ----
+{
+  const gz=Z(wv(262)),xa=X(wu(1475)),xb=X(wu(1660));
+  {const cs=new THREE.Shape();rectPath(cs,wu(1475),wv(150),wu(1660),wv(262));flat(cs,std({map:(()=>{const t=carpetTex.clone();t.needsUpdate=true;return t})(),color:0xb8b8bc,roughness:1}),.004)}
+  const gp=new THREE.Mesh(new THREE.PlaneGeometry(xb-xa,H+.25),M.glass);gp.position.set((xa+xb)/2,(H+.25)/2,gz);scene.add(gp);
+  boxM(xa,gz-.05,xb,gz+.05,0,.1,M.black,{collide:false,cam:false});
+  boxM(xa,gz-.05,xb,gz+.05,H+.25,H+.35,M.black,{collide:false,cam:false});
+  addCollider(xa,gz-.05,xb,gz+.05);
+  const dx=X(wu(1515));
+  for(const s_ of [-1,1]){boxM(dx+s_*.92-.025,gz-.03,dx+s_*.92+.025,gz+.03,0,2.3,M.black,{collide:false,cam:false})}
+  boxM(dx-.95,gz-.03,dx+.95,gz+.03,2.27,2.33,M.black,{collide:false,cam:false});
+  for(const s_ of [-1,1]){const bar=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.85,10),M.black);bar.position.set(dx+s_*.12,1.1,gz+.07);scene.add(bar);
+    for(const y of [.72,1.48]){const st=new THREE.Mesh(new THREE.BoxGeometry(.025,.025,.07),M.black);st.position.set(dx+s_*.12,y,gz+.035);scene.add(st)}}
+  // waiting chairs inside
+  chair(wu(1500),wv(175),0,'black');chair(wu(1540),wv(175),0,'teal');chair(wu(1580),wv(175),0,'teal');chair(wu(1625),wv(200),-Math.PI/2,'black');
+  // header over the opening into CBA with the center's name, EXIT sign above
+  box(-4,485,15,565,2.3,H+.35,M.white,{collide:false});
+  const [lc,lx]=cvs(1024,200);lx.fillStyle='rgba(0,0,0,0)';lx.clearRect(0,0,1024,200);lx.fillStyle='#3a3530';lx.textAlign='center';
+  lx.font=`600 72px ${SIGNF}`;lx.fillText('Rosenbaum Center for',512,82);lx.fillText('Behavioral Business Studies',512,166);
+  decal(-4,525,'w',2.7,.53,2.62,new THREE.MeshBasicMaterial({map:tex(lc),transparent:true}),.012);
+  exitSign(-6,525,'w',H+.35-.13);
+  // wood bench with a teal cushion on the right
+  box(wu(1580),wv(455),wu(1650),wv(482),.38,.46,M.wood,{cam:false});
+  box(wu(1582),wv(457),wu(1648),wv(480),.46,.52,std({color:0x5f9a98,roughness:.9}),{collide:false,cam:false});
+  // A-frame sign by the opening
+  const [ac,ax]=cvs(256,384);ax.fillStyle='#f4f3ef';ax.fillRect(0,0,256,384);ax.fillStyle='#222';ax.fillRect(0,0,256,10);ax.fillRect(0,374,256,10);ax.fillRect(0,0,10,384);ax.fillRect(246,0,10,384);
+  ax.fillStyle='#bf5700';ax.fillRect(24,30,208,70);ax.fillStyle='#fff';ax.font=`700 30px ${SIGNF}`;ax.fillText('STUDY SIGN-UP',36,76);
+  ax.fillStyle='#444';ax.font=`500 22px ${SIGNF}`;['Behavioral lab sessions','Earn credit or cash','Check in at 6.402'].forEach((t,i)=>ax.fillText(t,30,150+i*40));
+  const am=new THREE.MeshStandardMaterial({map:tex(ac),roughness:.7,side:THREE.DoubleSide});
+  const ag=new THREE.Group();ag.position.set(X(wu(1630)),0,Z(wv(320)));ag.rotation.y=Math.PI/2;
+  for(const s_ of [-1,1]){const pnl=new THREE.Mesh(new THREE.PlaneGeometry(.6,1.05),am);pnl.position.set(0,.6,s_*.16);pnl.rotation.x=s_*.28;ag.add(pnl)}
+  scene.add(ag);addCollider(X(wu(1630))-.25,Z(wv(320))-.35,X(wu(1630))+.25,Z(wv(320))+.35);
+  // hanging sign on the right
+  const hm=new THREE.MeshBasicMaterial({map:signTex('Behavioral Lab →','6.402 · 6.499 · Waiting room','#2f6f7e')});
+  const hs=new THREE.Mesh(new THREE.BoxGeometry(1.4,.35,.05),[M.dark,M.dark,M.dark,M.dark,hm,hm]);hs.position.set(X(wu(1420)),H+.35-.4,Z(wv(468)));hs.rotation.y=Math.PI/2;scene.add(hs);
+}
 wb(145,205,165,920,0,H+.35,M.white);wb(165,905,1495,920,0,H+.35,M.white);wb(1495,485,1515,920,0,H+.35,M.white);wb(1495,485,1660,500,0,H+.35,M.white);
 for(const u of [182,508,832,1158])wb(u-14,220,u+14,248,0,H+.35,M.copper);
 wb(165,555,192,585,0,H+.35,M.copper);wb(1470,555,1495,585,0,H+.35,M.copper);
@@ -564,7 +600,7 @@ function blocked(x,z,r){return !!(boxHit(x,z,r)||segHit(x,z,r))}
 
 // troffers on a grid wherever there is open floor below
 {const panel=new THREE.PlaneGeometry(.6,1.2);
- const inside=(mx,my)=>(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&mx>wu(165)&&my>wv(220)&&my<wv(905));
+ const inside=(mx,my)=>(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&mx>wu(165)&&my>wv(140)&&my<wv(905));
  for(let mx=-940;mx<1540;mx+=58)for(let my=30;my<950;my+=58){
    if(!inside(mx,my)||blocked(X(mx),Z(my),.55))continue;
    const alongX=!blocked(X(mx)+1.2,Z(my),.3)&&!blocked(X(mx)-1.2,Z(my),.3);
@@ -579,10 +615,10 @@ function bin(mx,my,blue){
   scene.add(g);addCollider(X(mx)-.22,Z(my)-.22,X(mx)+.22,Z(my)+.22);
 }
 bin(132,440);bin(132,350,true);bin(327,300,true);bin(327,440);bin(1132,700);bin(1100,740);bin(520,840);bin(1310,840,true);
-function exitSign(mx,my,dir){
+function exitSign(mx,my,dir,y=H-.2){
   const [c,x]=cvs(128,64);x.fillStyle='#f2f0ea';x.fillRect(0,0,128,64);x.fillStyle='#d4141a';x.font=`700 40px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('EXIT',64,34);
   const m=new THREE.MeshBasicMaterial({map:tex(c),toneMapped:false});const b=new THREE.Mesh(new THREE.BoxGeometry(.34,.18,.06),[M.plain,M.plain,M.plain,M.plain,m,m]);
-  b.position.set(X(mx),H-.2,Z(my));b.rotation.y=DIR[dir].r;scene.add(b);
+  b.position.set(X(mx),y,Z(my));b.rotation.y=DIR[dir].r;scene.add(b);
 }
 exitSign(121,45,'s');exitSign(165,102,'e');exitSign(1277,140,'s');exitSign(300,840,'s');exitSign(1228,840,'s');exitSign(wu(167),wv(665),'e');exitSign(1412,200,'s');
 // elevator call button
@@ -757,7 +793,7 @@ beacon.visible=false;scene.add(beacon);
 const CS=10,CW=GW/CS|0,CHh=GH/CS|0;
 const walk=new Uint8Array(CW*CHh);
 for(let j=0;j<CHh;j++)for(let i=0;i<CW;i++){const mx=GX0+(i+.5)*CS,my=GY0+(j+.5)*CS;
-  const inside=(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&my>wv(220)&&my<wv(905)&&mx>wu(165));
+  const inside=(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&my>wv(140)&&my<wv(905)&&mx>wu(165));
   walk[j*CW+i]=inside&&!blocked(X(mx),Z(my),.27)?1:0}
 const cellOf=(x,z)=>{const i=Math.floor((mxOf(x)-GX0)/CS),j=Math.floor((myOf(z)-GY0)/CS);return [i,j]};
 const cellPos=(i,j)=>[X(GX0+(i+.5)*CS),Z(GY0+(j+.5)*CS)];
@@ -812,6 +848,7 @@ form.addEventListener('submit',e=>{
 $('rcancel').addEventListener('click',()=>{stopNav();el.focus()});
 
 const ENTRANCES=[
+  {id:'escalator',name:'Top of the escalator · arriving on 6',pos:[wu(1300),wv(400)],look:[wu(1660),wv(375)]},
   {id:'atrium',name:'Atrium overlook',pos:[772,805],look:[772,500]},
   {id:'elev',name:'Elevator · west corridor',pos:[442,825],look:[900,825]},
   {id:'north',name:'North hallway · photo spot',pos:[121,478],look:[121,20]},
@@ -875,7 +912,7 @@ function updateNav(){
 
 // ---------- loop ----------
 const clock=new THREE.Clock();const ray=new THREE.Raycaster();const tgt=new THREE.Vector3(),dirV=new THREE.Vector3();
-teleport('atrium',true);
+teleport('escalator',true);
 function tick(){
   const dt=Math.min(clock.getDelta(),.05);
   let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joy.y;

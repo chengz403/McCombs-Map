@@ -30,6 +30,7 @@ Then go to http://localhost:8000.
 - **Atrium:** open from the ground floor up to a skylight, with a glass railing along the west corridor.
 - **West corridor:** elevator, stairs, restrooms and 6.404–6.418.
 - **Sixth Floor Walkway:** dark speckled terrazzo, terracotta columns, a solid half-wall with a black rail around the two escalators down to level 5, green club chairs, tan doors for offices 6.202–6.220, and the glass doors into the Finance Office with the clock and STAIR 4 sign beside them (from the walkway video). Start at "Walkway · toward the Finance Office" to match the video's view.
+- **Top of the escalator (the default start):** a glass-walled waiting room with chairs on the left, a wood bench and hanging sign on the right, an A-frame sign, and the opening into CBA under the "Rosenbaum Center for Behavioral Business Studies" lettering, with the yellow 6.499 door at the end of the hall.
 
 On the plan, north is to the left. The minimap follows you and keeps the plan's orientation.
 
