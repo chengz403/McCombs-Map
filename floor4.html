@@ -281,7 +281,8 @@ const stoolMat=std({color:0x1f2933,roughness:.6}),stoolMat2=std({color:0x22262b,
 
 // ---------- floor plan (plan px) ----------
 const PIT=[1060,1007,1210,1047];
-const INTERIOR=[[780,850],[1430,850],[1600,1020],[1600,1270],[1547,1270],[1547,1520],[978,1520],[978,1232],[712,1232],[712,1520],[560,1520],[560,1140],[780,1140]];   // NE edge = the balcony glass line (x - y = 580)
+const INTERIOR=[[780,850],[1430,850],[1600,1020],[1600,1270],[1547,1270],[1547,1610],[530,1610],[530,1140],[780,1140]];
+const ATR=[712,1232,980,1528];   // the atrium: open to the floors below, not part of this floor   // NE edge = the balcony glass line (x - y = 580)
 const SHAFT=[1078,985,1166,1009];   // ceiling opening where the escalator up to the 5th floor passes through
 const SHAFT2=[1380,1373,1500,1396]; // ceiling opening over the CBA escalator up to the Mezzanine
 const PIT2=[1336,1353,1500,1373];   // CBA escalator well (down to the 3rd floor)
@@ -289,9 +290,11 @@ function shapeOf(pts,flip){const s=new THREE.Shape();pts.forEach((p,i)=>{const x
 {
   const fs=shapeOf(INTERIOR);const h=new THREE.Path();[[PIT[0],PIT[1]],[PIT[2],PIT[1]],[PIT[2],PIT[3]],[PIT[0],PIT[3]]].forEach((p,i)=>i?h.lineTo(X(p[0]),-Z(p[1])):h.moveTo(X(p[0]),-Z(p[1])));fs.holes.push(h);
   {const h2=new THREE.Path();[[PIT2[0],PIT2[1]],[PIT2[2],PIT2[1]],[PIT2[2],PIT2[3]],[PIT2[0],PIT2[3]]].forEach((p,i)=>i?h2.lineTo(X(p[0]),-Z(p[1])):h2.moveTo(X(p[0]),-Z(p[1])));fs.holes.push(h2);}
+  {const h3=new THREE.Path();[[ATR[0],ATR[1]],[ATR[2],ATR[1]],[ATR[2],ATR[3]],[ATR[0],ATR[3]]].forEach((p,i)=>i?h3.lineTo(X(p[0]),-Z(p[1])):h3.moveTo(X(p[0]),-Z(p[1])));fs.holes.push(h3);}
   const fg=new THREE.ShapeGeometry(fs);fg.rotateX(-Math.PI/2);scene.add(new THREE.Mesh(fg,M.floor));
   const cs=shapeOf(INTERIOR,true),ch=new THREE.Path();[[SHAFT[0],SHAFT[1]],[SHAFT[2],SHAFT[1]],[SHAFT[2],SHAFT[3]],[SHAFT[0],SHAFT[3]]].forEach((p,i)=>i?ch.lineTo(X(p[0]),Z(p[1])):ch.moveTo(X(p[0]),Z(p[1])));cs.holes.push(ch);
   {const c2=new THREE.Path();[[SHAFT2[0],SHAFT2[1]],[SHAFT2[2],SHAFT2[1]],[SHAFT2[2],SHAFT2[3]],[SHAFT2[0],SHAFT2[3]]].forEach((p,i)=>i?c2.lineTo(X(p[0]),Z(p[1])):c2.moveTo(X(p[0]),Z(p[1])));cs.holes.push(c2);}
+  {const c3=new THREE.Path();[[ATR[0],ATR[1]],[ATR[2],ATR[1]],[ATR[2],ATR[3]],[ATR[0],ATR[3]]].forEach((p,i)=>i?c3.lineTo(X(p[0]),Z(p[1])):c3.moveTo(X(p[0]),Z(p[1])));cs.holes.push(c3);}
   const cg=new THREE.ShapeGeometry(cs);cg.rotateX(Math.PI/2);cg.translate(0,H,0);scene.add(new THREE.Mesh(cg,M.ceil));
 }
 addCollider(X(PIT[0]),Z(PIT[1]),X(PIT[2]+2),Z(PIT[3]));
@@ -322,15 +325,17 @@ const NORTH=[[1115,850],[1430,850],[1475,895],[1425,945],[1172,945],[1142,918],[
 const B100=[[1342,987],[1500,987],[1500,1053],[1342,1053]];                 // 4.100A-H + 4.128A/C/E/G
 const B126=[[1342,1081],[1507,1081],[1507,1065],[1600,1065],[1600,1262],[1547,1262],[1547,1268],[1342,1268]]; // 4.128B-J, 4.126A-L
 const RECEND=[[1500,1053],[1507,1053],[1507,1081],[1500,1081]];             // east end of the Recruiting Operations corridor
-const WSW=[[560,1140],[832,1140],[832,1193],[560,1193]];                    // CBA: stair, Electrical 4.320, men's, women's
-const CL=[[560,1230],[712,1230],[712,1520],[560,1520]];                     // classroom 4.322 (west of the atrium)
-const ENDW=[[540,1140],[560,1140],[560,1520],[540,1520]];                   // west end of the CBA north corridor
-const CW=[[978,1230],[1122,1230],[1122,1520],[978,1520]];                   // classrooms 4.304, TA room 4.304A, 4.344
-const LOUNGE=[[1162,1230],[1280,1230],[1280,1520],[1162,1520]];             // MPA Lounge 4.352, Green Room, classroom 4.350
-const SEND=[[1122,1505],[1162,1505],[1162,1520],[1122,1520]];               // double doors at the south end of the lounge hallway
-const SKYB=[[1280,1396],[1547,1396],[1547,1520],[1280,1520]];               // the tall grey wall beside the escalators (skylight block behind)
+const WSW=[[530,1140],[832,1140],[832,1193],[530,1193]];                    // CBA: stair, Electrical 4.320, men's, women's
+const CL=[[572,1230],[712,1230],[712,1530],[572,1530]];                     // 4.322, tiered 4.328, Storage 4.334 (west of the atrium)
+const OUTW=[[420,1193],[530,1193],[530,1610],[420,1610]];                   // 4.324, 4.326, 4.330, 4.332 (outer west row)
+const SWST=[[530,1575],[572,1575],[572,1610],[530,1610]];                   // south-west exit stair
+const SROW=[[572,1572],[1122,1572],[1122,1610],[572,1610]];                 // 4.336-4.346 (south row) + chases
+const CW=[[980,1230],[1122,1230],[1122,1530],[980,1530]];                   // classrooms 4.304, TA room 4.304A, 4.344
+const LOUNGE=[[1162,1230],[1280,1230],[1280,1610],[1162,1610]];             // MPA Lounge 4.352, Green Room, classroom 4.350
+const SEND=[[1122,1598],[1162,1598],[1162,1610],[1122,1610]];               // double doors at the south end of the lounge hallway
+const SKYB=[[1280,1396],[1547,1396],[1547,1610],[1280,1610]];               // the tall grey wall beside the escalators (skylight block behind)
 const EAST=[[1530,950],[1600,1020],[1600,1065],[1565,1065],[1565,990],[1530,990]]; // 4.132/4.130 + Stair 2
-for(const p of [NW,WEST,SOUTH,FORDBACK,NORTH,B100,B126,RECEND,EAST,WSW,CL,ENDW,CW,LOUNGE,SEND])solid(p,M.wall);
+for(const p of [NW,WEST,SOUTH,FORDBACK,NORTH,B100,B126,RECEND,EAST,WSW,CL,OUTW,SWST,SROW,CW,LOUNGE,SEND])solid(p,M.wall);
 solid(SKYB,std({color:0xc9cac7,roughness:.85}));
 
 // ---------- lower level seen down the escalator well ----------
@@ -664,9 +669,10 @@ function oakDouble(W_,p,label,sub){const g=doubleDoor({leaf:oakDoorMat,frame:M.b
 oakDouble(WLE,[1162,1385],'Classroom','CBA 4.350');
 {const g=grp();B(g,.62,.85,.02,0,.15,.01,M.brushed);B(g,.52,.42,.4,0,-.08,.22,M.brushed);B(g,.56,.08,.44,0,.17,.22,M.steel);B(g,.36,.4,.3,0,-.45,.17,M.brushed);WLE.put(g,tOf(WLE,[1162,1438]),.95);const p=V([1162,1438]);addCollider(p[0]-.45,p[1]-.3,p[0],p[1]+.3);}
 WLE.put(doorObj({leaf:oakDoorMat,frame:M.bronze}),tOf(WLE,[1162,1418]));WLE.put(signObj(plaqueTex('Classroom','CBA 4.350',256,140),.3,.165),tOf(WLE,[1162,1409]),1.55,.012);
-oakDouble(WLE,[1162,1472]);
+oakDouble(WLE,[1162,1472],'Classroom','CBA 4.350');
+WLE.put(doorObj({leaf:oakDoorMat,frame:M.bronze}),tOf(WLE,[1162,1545]));WLE.put(signObj(plaqueTex('Classroom','CBA 4.348',256,140),.3,.165),tOf(WLE,[1162,1555]),1.55,.012);
 {const [c,x]=cvs(256,160);x.fillStyle='#f1f0ec';x.fillRect(0,0,256,160);x.fillStyle='#17191b';x.fillRect(6,6,244,148);x.fillStyle='#fff';x.font=`700 54px ${SIGNF}`;x.textAlign='center';x.fillText('STAIR 7',128,70);x.font=`500 40px ${SIGNF}`;x.fillText('Floor 4',128,122);
- const t=tex(c);const g=grp();B(g,.04,.32,.5,0,0,.25,M.dark);for(const s_ of [-1,1]){const p=plane(.48,.3,basic(t));p.position.set(s_*.021,0,.25);p.rotation.y=s_*Math.PI/2;g.add(p)}WLE.put(g,tOf(WLE,[1162,1458]),2.55);}
+ const t=tex(c);const g=grp();B(g,.04,.32,.5,0,0,.25,M.dark);for(const s_ of [-1,1]){const p=plane(.48,.3,basic(t));p.position.set(s_*.021,0,.25);p.rotation.y=s_*Math.PI/2;g.add(p)}WLE.put(g,tOf(WLE,[1162,1592]),2.55);}
 // west side: classroom 4.304, TA room 4.304A, the bench row, 4.344
 WLW.put(doorObj({leaf:oakDoorMat,frame:M.bronze}),tOf(WLW,[1122,1262]));WLW.put(signObj(plaqueTex('Classroom','CBA 4.304',256,140),.3,.165),tOf(WLW,[1122,1272]),1.55,.012);
 WLW.put(doorObj({leaf:oakDoorMat,frame:M.bronze,hinge:'r'}),tOf(WLW,[1122,1376]));WLW.put(signObj(plaqueTex('TA Room','CBA 4.304A',256,140),.3,.165),tOf(WLW,[1122,1366]),1.55,.012);
@@ -675,7 +681,7 @@ for(let i=0;i<4;i++){const g=grp();B(g,.7,.4,.45,0,.2,.225,M.oak);B(g,.7,.1,.45,
 WLW.put(doorObj({leaf:oakDoorMat,frame:M.bronze}),tOf(WLW,[1122,1446]));WLW.put(signObj(plaqueTex('Classroom','CBA 4.344',256,140),.3,.165),tOf(WLW,[1122,1455]),1.55,.012);
 WLW.put(new THREE.Mesh(new THREE.BoxGeometry(.1,.16,.06),M.red),tOf(WLW,[1122,1480]),1.7,.03);
 bin(1127,1436,0x1f4fa8,'RECYCLE');
-{const WSN=wall([1122,1505],[1162,1505],[1142,1480]);const g=doubleDoor({leaf:oakDoorMat,frame:M.bronze,w:.95});for(const s_ of [-1,1]){const v=plane(.22,.22,std({color:0x22292d,roughness:.15}));v.position.set(s_*.48,1.6,.02);g.add(v)}WSN.put(g,.5);WSN.put(signObj(exitTex,.36,.15),.5,2.55,.02).material=basic(exitTex,{toneMapped:false});}
+{const WSN=wall([1122,1598],[1162,1598],[1142,1570]);const g=doubleDoor({leaf:oakDoorMat,frame:M.bronze,w:.95});for(const s_ of [-1,1]){const v=plane(.22,.22,std({color:0x22292d,roughness:.15}));v.position.set(s_*.48,1.6,.02);g.add(v)}WSN.put(g,.5);WSN.put(signObj(exitTex,.36,.15),.5,2.55,.02).material=basic(exitTex,{toneMapped:false});}
 hanging(1142,1300,Math.PI,hangTex(['MPA Lounge'],{w:640,h:200,size:64}),null,1.15,.36,2.5);
 hanging(1142,1345,Math.PI,hangTex(['Green Room'],{w:640,h:160,size:56}),null,.95,.24,2.6);
 
@@ -751,9 +757,6 @@ hanging(1316,1285,Math.PI/2,hangTex(['CBA Escalators','3rd floor · Mezzanine'],
  WCW.put(doorObj({leaf:std({map:leafTex('#7b4a2a'),roughness:.5}),frame:M.black,h:2.3}),tOf(WCW,[852,1070]));plaque(WCW,tOf(WCW,[852,1080]),'4.106');
  WCW.put(doorObj({leaf:std({map:leafTex('#7b4a2a'),roughness:.5}),frame:M.black,h:2.3,hinge:'r'}),tOf(WCW,[852,1108]));plaque(WCW,tOf(WCW,[852,1098]),'4.102');
  WCE.put(doorObj({leaf:std({map:leafTex('#7b4a2a'),roughness:.5}),frame:M.black}),tOf(WCE,[885,1100]));plaque(WCE,tOf(WCE,[885,1090]),'4.104');
- // GSB | CBA line: an open cherry frame
- const cf=grp(),w=(880-852)*S;B(cf,.14,2.6,.2,-w/2+.07,1.3,0,M.cherryF);B(cf,.14,2.6,.2,w/2-.07,1.3,0,M.cherryF);B(cf,w,.18,.2,0,2.6,0,M.cherryF);B(cf,w,H-2.69,.16,0,(H+2.69)/2,0,M.wall);
- cf.position.set(X(866),0,Z(1140));scene.add(cf);
  const WCE2=wall([880,1140],[880,1193],[860,1170]),WCW2=wall([832,1140],[832,1193],[860,1170]);
  const wd=doubleDoor({leaf:std({color:0xf0ede6,roughness:.5}),frame:M.wall,w:.75,h:2.4});WCE2.put(wd,tOf(WCE2,[880,1158]));
  WCE2.put(signObj(plaqueTex('Comm Chase','4.312',128,200),.12,.2),tOf(WCE2,[880,1146]),1.55,.012);
@@ -769,12 +772,16 @@ hanging(1316,1285,Math.PI/2,hangTex(['CBA Escalators','3rd floor · Mezzanine'],
  hanging(856,1192,0,tex(c),null,2.6,.52,2.5);}
 
 // ---------- CBA north corridor: service rooms to the north, atrium windows to the south ----------
-const WNC=wall([560,1193],[1280,1193],[800,1212]),WSC=wall([560,1230],[1122,1230],[800,1212]);
+let lockerBank;
+const WNC=wall([530,1193],[1280,1193],[800,1212]),WSC=wall([560,1230],[1122,1230],[800,1212]);
 {const oak2=std({map:oakTex,color:0xf0d6ae,roughness:.5});
  const sd=(x_,o)=>WNC.put(doorObj(Object.assign({leaf:oak2,frame:M.black},o||{})),tOf(WNC,[x_,1193]));
  // stair at the west end
- sd(602,{leaf:M.stairDoor,frame:M.bronze,h:2.3});WNC.put(signObj(exitTex,.36,.15),tOf(WNC,[602,1193]),2.55,.02).material=basic(exitTex,{toneMapped:false});
- WNC.put(signObj(plaqueTex('STAIR','Floor 4',128,180),.14,.2),tOf(WNC,[592,1193]),1.6,.012);
+ {const g=doubleDoor({leaf:std({color:0x2a211c,roughness:.5}),frame:M.black,w:.62,h:2.3});WNC.put(g,tOf(WNC,[553,1193]));
+  WNC.put(signObj(exitTex,.36,.15),tOf(WNC,[553,1193]),2.55,.02).material=basic(exitTex,{toneMapped:false});
+  const [c,x]=cvs(256,160);x.fillStyle='#f1f0ec';x.fillRect(0,0,256,160);x.fillStyle='#17191b';x.fillRect(6,6,244,148);x.fillStyle='#fff';x.font=`700 54px ${SIGNF}`;x.textAlign='center';x.fillText('STAIR 8',128,70);x.font=`500 40px ${SIGNF}`;x.fillText('Floor 4',128,122);
+  const t=tex(c),sg=grp();B(sg,.04,.32,.5,0,0,.25,M.dark);for(const s_ of [-1,1]){const pp=plane(.48,.3,basic(t));pp.position.set(s_*.021,0,.25);pp.rotation.y=s_*Math.PI/2;sg.add(pp)}WNC.put(sg,tOf(WNC,[566,1193]),2.55);
+  const bn=grp();B(bn,1.4,.4,.45,0,.2,.225,M.oak);B(bn,1.4,.1,.45,0,.45,.225,std({color:0x4f9a96,roughness:.8}));WNC.put(bn,tOf(WNC,[600,1193]));const q=V([600,1197]);addCollider(q[0]-.7,q[1]-.25,q[0]+.7,q[1]+.25);}
  sd(650,{hinge:'r'});WNC.put(signObj(plaqueTex('Electrical','4.320',128,200),.12,.2),tOf(WNC,[660,1193]),1.55,.012);
  sd(697);WNC.put(signObj(plaqueTex('MEN','',128,200),.12,.2),tOf(WNC,[707,1193]),1.55,.012);
  sd(766);sd(824,{hinge:'r'});WNC.put(signObj(plaqueTex('WOMEN','',128,200),.12,.2),tOf(WNC,[814,1193]),1.55,.012);
@@ -793,15 +800,15 @@ const WNC=wall([560,1193],[1280,1193],[800,1212]),WSC=wall([560,1230],[1122,1230
  WCL.put(doubleDoor({leaf:oak2,frame:M.bronze,w:.86}),tOf(WCL,[592,1230]));WCL.put(signObj(plaqueTex('Classroom','CBA 4.322',256,140),.3,.165),tOf(WCL,[610,1230]),1.55,.012);
  hanging(600,1218,0,hangTex(['Classroom 4.322'],{w:640,h:120,size:58}),null,.95,.18,2.66);
  const lockMat=std({map:(()=>{const [c,x]=cvs(256,512);x.fillStyle='#7d7b76';x.fillRect(0,0,256,512);for(let i=0;i<4;i++)for(let j=0;j<5;j++){x.fillStyle='#55534f';x.fillRect(i*64,j*102,64,3);x.fillRect(i*64,j*102,3,102);x.fillStyle='#c9b27a';x.fillRect(i*64+8,j*102+34,6,10)}return tex(c)})(),roughness:.5,metalness:.3});
- function lockerBank(W_,p,w,label){const g=grp();B(g,w,2.0,.45,0,1.0,.225,std({color:0x6f6d68,roughness:.5,metalness:.3}));const f=plane(w,2.0,lockMat);f.position.set(0,1.0,.452);g.add(f);
+ lockerBank=function(W_,p,w,label){const g=grp();B(g,w,2.0,.45,0,1.0,.225,std({color:0x6f6d68,roughness:.5,metalness:.3}));const f=plane(w,2.0,lockMat);f.position.set(0,1.0,.452);g.add(f);
    if(label){const lb=plane(.3,.36,basic(plaqueTex('Locker',label,128,150)));lb.position.set(-w/2+.2,2.25,.01);g.add(lb)}W_.put(g,tOf(W_,p));const q=W_.at(tOf(W_,p),.25);addCollider(q[0]-w/2,q[1]-.25,q[0]+w/2,q[1]+.25)}
  lockerBank(WCL,[690,1230],1.4,'E');
  bin(668,1225,0x8a8e92,'LANDFILL');bin(660,1225,0x1f4fa8,'RECYCLE');
  {const g=grp();B(g,1.4,.4,.45,0,.2,.225,M.oak);B(g,1.4,.1,.45,0,.45,.225,std({color:0x4f9a96,roughness:.8}));WCL.put(g,tOf(WCL,[637,1230]));const q=V([637,1227]);addCollider(q[0]-.7,q[1]-.25,q[0]+.7,q[1]+.25);}
  // west end wall: fire extinguisher cabinet + fountain
- const WE_=wall([560,1193],[560,1230],[600,1212]);
- {const g=grp();B(g,.35,.6,.04,0,0,.02,M.wall);B(g,.3,.55,.02,0,0,.04,M.glass);const e=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.4,12),M.red);e.position.set(0,-.02,.0);g.add(e);WE_.put(g,tOf(WE_,[560,1202]),1.3)}
- {const g=grp();B(g,.55,.28,.42,0,0,.21,M.brushed);B(g,.5,.05,.38,0,.15,.21,M.steel);B(g,.35,.35,.3,0,-.3,.15,M.brushed);WE_.put(g,tOf(WE_,[560,1218]),.9)}
+ const WE_=wall([530,1193],[530,1230],[560,1212]);
+ {const g=grp();B(g,.35,.6,.04,0,0,.02,M.wall);B(g,.3,.55,.02,0,0,.04,M.glass);const e=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.4,12),M.red);e.position.set(0,-.02,.0);g.add(e);WE_.put(g,tOf(WE_,[530,1202]),1.3)}
+ {const g=grp();B(g,.55,.28,.42,0,0,.21,M.brushed);B(g,.5,.05,.38,0,.15,.21,M.steel);B(g,.35,.35,.3,0,-.3,.15,M.brushed);WE_.put(g,tOf(WE_,[530,1218]),.9)}
  // east of the atrium: lockers by classroom 4.304, and its doors on the corridor
  const WCWN=wall([978,1230],[1122,1230],[1040,1212]);
  lockerBank(WCWN,[990,1230],1.1);
@@ -838,20 +845,76 @@ const WNC=wall([560,1193],[1280,1193],[800,1212]),WSC=wall([560,1230],[1122,1230
  // the atrium itself: a deep brick court with a skylight, seen through the glass
  const brick=std({map:(()=>{const [c,x]=cvs(256,256);x.fillStyle='#b5714d';x.fillRect(0,0,256,256);for(let r=0;r<16;r++)for(let k=0;k<8;k++){x.fillStyle=`hsl(${16+rnd()*8},${38+rnd()*12}%,${42+rnd()*10}%)`;x.fillRect(k*32+(r%2)*16+1,r*16+1,30,14)}return tex(c,true)})(),roughness:.9});
  const facade=(w,h)=>{const t=brick.map.clone();t.needsUpdate=true;t.repeat.set(w/2,h/2);return std({map:t,roughness:.9})};
- const AB=-9.2,AT=5.0,ax0=X(712),ax1=X(978),az0=Z(1232),az1=Z(1500);
+ const AB=-9.2,AT=5.0,ax0=X(712),ax1=X(980),az0=Z(1232),az1=Z(1528);
  const fl=plane(ax1-ax0,az1-az0,std({map:(()=>{const t=floorTex.clone();t.needsUpdate=true;t.repeat.set(5,3);return t})(),roughness:.4}));fl.rotation.x=-Math.PI/2;fl.position.set((ax0+ax1)/2,AB,(az0+az1)/2);scene.add(fl);
  const sk=plane(ax1-ax0,az1-az0,basic(null,{color:0xf4f8fb,toneMapped:false}));sk.rotation.x=Math.PI/2;sk.position.set((ax0+ax1)/2,AT,(az0+az1)/2);scene.add(sk);
- const S_=plane(ax1-ax0,AT-AB,facade(ax1-ax0,AT-AB));S_.position.set((ax0+ax1)/2,(AT+AB)/2,az1-.01);S_.rotation.y=Math.PI;scene.add(S_);
+ const S_=plane(ax1-ax0,-AB,facade(ax1-ax0,-AB));S_.position.set((ax0+ax1)/2,AB/2,az1-.3);S_.rotation.y=Math.PI;scene.add(S_);
+ const S2=plane(ax1-ax0,AT-H,facade(ax1-ax0,AT-H));S2.position.set((ax0+ax1)/2,(AT+H)/2,az1-.01);S2.rotation.y=Math.PI;scene.add(S2);
  const N_=plane(ax1-ax0,-AB,facade(ax1-ax0,-AB));N_.position.set((ax0+ax1)/2,AB/2,az0+.3);scene.add(N_);   // below our floor only
  const E_=plane(az1-az0,AT-AB,facade(az1-az0,AT-AB));E_.position.set(ax1-.01,(AT+AB)/2,(az0+az1)/2);E_.rotation.y=-Math.PI/2;scene.add(E_);
  const W_=plane(az1-az0,AT-AB,facade(az1-az0,AT-AB));W_.position.set(ax0+.01,(AT+AB)/2,(az0+az1)/2);W_.rotation.y=Math.PI/2;scene.add(W_);
  // windows on the far walls, three floors of them, plus an exit sign
  const winMat=std({color:0x3c4a52,roughness:.2,metalness:.3}),frm=std({color:0xe9e4da,roughness:.6});
- for(const lv of [AB+1.2,AB+1.2+4.6,1.2]){for(let i=0;i<6;i++){const wx=ax0+2+i*(ax1-ax0-4)/5;const f=plane(1.3,1.7,frm);f.position.set(wx,lv+.85,az1-.03);f.rotation.y=Math.PI;scene.add(f);const g=plane(1.1,1.5,winMat);g.position.set(wx,lv+.85,az1-.04);g.rotation.y=Math.PI;scene.add(g)}
+ for(const lv of [AB+1.2,AB+1.2+4.6,1.2]){if(lv<0)for(let i=0;i<6;i++){const wx=ax0+2+i*(ax1-ax0-4)/5;const f=plane(1.3,1.7,frm);f.position.set(wx,lv+.85,az1-.03);f.rotation.y=Math.PI;scene.add(f);const g=plane(1.1,1.5,winMat);g.position.set(wx,lv+.85,az1-.04);g.rotation.y=Math.PI;scene.add(g)}
    for(let i=0;i<4;i++){const wz=az0+2.5+i*(az1-az0-5)/3;for(const [xx,ry] of [[ax1-.03,-Math.PI/2],[ax0+.03,Math.PI/2]]){const f=plane(1.3,1.7,frm);f.position.set(xx,lv+.85,wz);f.rotation.y=ry;scene.add(f);const g=plane(1.1,1.5,winMat);g.position.set(xx+(ry<0?-.01:.01),lv+.85,wz);g.rotation.y=ry;scene.add(g)}}}
  const ex=plane(.5,.2,basic(exitTex,{toneMapped:false}));ex.position.set(ax0+4,2.6,az1-.05);ex.rotation.y=Math.PI;scene.add(ex);
  for(const [px_,pz] of [[.3,.3],[.7,.6],[.45,.8]]){const g=grp();const pot=new THREE.Mesh(new THREE.CylinderGeometry(.5,.4,.6,16),M.dark);pot.position.y=.3;g.add(pot);for(let i=0;i<6;i++){const l=new THREE.Mesh(new THREE.IcosahedronGeometry(.4+rnd()*.3,0),std({color:0x3f7a3a,roughness:.8,flatShading:true}));l.position.set((rnd()-.5)*.7,1+rnd()*1.2,(rnd()-.5)*.7);g.add(l)}g.position.set(ax0+(ax1-ax0)*px_,AB,az0+(az1-az0)*pz);scene.add(g)}
  const al=new THREE.PointLight(0xfff7ea,.9,40,1.2);al.position.set((ax0+ax1)/2,0,(az0+az1)/2);scene.add(al);}
+
+// ---------- CBA classroom loop: west corridor and south corridor ----------
+const oak3=std({map:oakTex,color:0xf0d6ae,roughness:.5});
+function projSign(W_,p,txt,y){const [c,x]=cvs(256,180);x.fillStyle='#f3f1ec';x.fillRect(0,0,256,180);x.fillStyle='#17191b';x.fillRect(0,0,256,10);x.font=`500 46px ${SIGNF}`;x.textBaseline='middle';x.fillText('Classroom',18,64);x.font=`600 46px ${SIGNF}`;x.fillText(txt,18,124);
+  const t=tex(c),g=grp();B(g,.04,.34,.48,0,0,.24,M.dark);for(const s_ of [-1,1]){const pp=plane(.46,.32,basic(t));pp.position.set(s_*.022,0,.24);pp.rotation.y=s_*Math.PI/2;g.add(pp)}W_.put(g,tOf(W_,p),y||2.45)}
+function classDoor(W_,p,num,o={}){W_.put(doorObj(Object.assign({leaf:oak3,frame:M.bronze},o)),tOf(W_,p));const q=o.plaqueAt||[p[0]+(W_.a[0]===W_.b[0]?0:9),p[1]+(W_.a[0]===W_.b[0]?9:0)];
+  W_.put(signObj(plaqueTex('Classroom','CBA '+num,256,140),.3,.165),tOf(W_,q),1.55,.012)}
+function benchAt(W_,p,len){const g=grp();B(g,len||1.4,.4,.45,0,.2,.225,M.oak);B(g,len||1.4,.1,.45,0,.45,.225,std({color:0x4f9a96,roughness:.8}));W_.put(g,tOf(W_,p));const q=W_.at(tOf(W_,p),.25);addCollider(q[0]-.7,q[1]-.7,q[0]+.7,q[1]+.7)}
+function chairAt(mx,my,rot){const g=grp();const m=std({color:0x4a3c33,roughness:.9});B(g,.5,.08,.5,0,.45,0,m);B(g,.5,.5,.08,0,.78,-.22,m);for(const [a,b] of [[-.22,-.22],[.22,-.22],[-.22,.22],[.22,.22]])B(g,.03,.45,.03,a,.22,b,M.black);g.position.set(X(mx),0,Z(my));g.rotation.y=rot;scene.add(g);addCollider(X(mx)-.3,Z(my)-.3,X(mx)+.3,Z(my)+.3)}
+// west corridor, west side (outer classrooms)
+const WOW=wall([530,1193],[530,1575],[551,1400]),WOE=wall([572,1230],[572,1530],[551,1400]);
+classDoor(WOW,[530,1250],'4.324');projSign(WOW,[530,1258],'4.324');
+classDoor(WOW,[530,1292],'4.326');projSign(WOW,[530,1300],'4.326');
+benchAt(WOW,[530,1322]);benchAt(WOW,[530,1345]);benchAt(WOW,[530,1365]);
+classDoor(WOW,[530,1422],'4.330');projSign(WOW,[530,1430],'4.330');
+classDoor(WOW,[530,1566],'4.332',{plaqueAt:[530,1557]});projSign(WOW,[530,1557],'4.332');
+// west corridor, east side: tiered classroom 4.328, bins
+WOE.put(doubleDoor({leaf:oak3,frame:M.bronze,w:.86}),tOf(WOE,[572,1328]));WOE.put(signObj(plaqueTex('Classroom','CBA 4.328',256,140),.3,.165),tOf(WOE,[572,1342]),1.55,.012);projSign(WOE,[572,1340],'4.328');
+classDoor(WOE,[572,1458],'4.328');
+bin(567,1246,0x8a8e92,'LANDFILL');bin(567,1255,0x1f4fa8,'RECYCLE');
+WOE.put(new THREE.Mesh(new THREE.BoxGeometry(.1,.16,.06),M.red),tOf(WOE,[572,1240]),1.7,.03);
+// south-west exit stair: oak double doors with small windows and push bars
+{const WS8=wall([530,1575],[572,1575],[551,1550]);const g=doubleDoor({leaf:oak3,frame:M.black,w:.95,h:2.25});for(const s_ of [-1,1]){const v=plane(.22,.2,std({color:0x22292d,roughness:.15}));v.position.set(s_*.48,1.62,.02);g.add(v);B(g,.8,.04,.06,s_*.48,1.0,.06,M.dark)}
+ WS8.put(g,.5);WS8.put(signObj(exitTex,.4,.16),.5,2.6,.02).material=basic(exitTex,{toneMapped:false});
+ WS8.put(signObj(plaqueTex('STAIR','Floor 4',128,180),.12,.18),.1,1.6,.012);bin(537,1568,0x1f4fa8,'RECYCLE');}
+// south corridor, north side: Storage 4.334, bench, narrow atrium windows, lockers, study tables, 4.344
+const WSN2=wall([572,1530],[1122,1530],[800,1551]),WSS=wall([572,1572],[1122,1572],[800,1551]);
+WSN2.put(doorObj({leaf:oak3,frame:M.bronze}),tOf(WSN2,[590,1530]));WSN2.put(signObj(plaqueTex('Storage','CBA 4.334',256,140),.3,.165),tOf(WSN2,[600,1530]),1.55,.012);
+benchAt(WSN2,[640,1530]);
+{const wins=[[717,727],[733,743],[749,759],[935,945],[951,961],[967,977]];let x0=712;
+ const piece=(a,b)=>{if(b-a<.5)return;solid([[a,1526],[b,1526],[b,1530],[a,1530]],M.wall);const br=plane((b-a)*S,H,std({color:0xa8643f,roughness:.9}));br.position.set(X((a+b)/2),H/2,Z(1526)-.01);br.rotation.y=Math.PI;scene.add(br)};
+ for(const [a,b] of wins){piece(x0,a);const w=(b-a)*S;const gl=plane(w,2.3,M.glass);gl.position.set(X((a+b)/2),1.4,Z(1528));scene.add(gl);camBlockers.push(gl);
+   segs.push({ax:X(a),az:Z(1528),bx:X(b),bz:Z(1528),h:.05});
+   for(const [y,h] of [[.12,.24],[(H+2.55)/2,H-2.55]]){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,.3),M.wall);m.position.set(X((a+b)/2),y,Z(1528));scene.add(m)}
+   const fr=new THREE.Mesh(new THREE.BoxGeometry(.05,2.3,.08),M.dark);fr.position.set(X((a+b)/2),1.4,Z(1528)+.04);scene.add(fr);x0=b}
+ piece(x0,980);}
+lockerBank(WSN2,[780,1530],1.6);lockerBank(WSN2,[800,1530],1.2);
+{const tbm=std({color:0xe2d6bd,roughness:.5});for(const tx_ of [840,870,900]){const g=grp();const top=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,.035,24,1,false,0,Math.PI),tbm);top.position.y=.74;top.rotation.y=Math.PI/2;g.add(top);
+   const st=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.72,8),M.black);st.position.set(0,.36,.25);g.add(st);g.position.set(X(tx_),0,Z(1530)+.02);scene.add(g);addCollider(X(tx_)-.6,Z(1530),X(tx_)+.6,Z(1530)+.62);
+   for(const dx of [-.35,.3]){const c=grp();const m=std({color:0x8a7a68,roughness:.9});B(c,.46,.07,.46,0,.46,0,m);B(c,.46,.42,.06,0,.75,.22,m);for(const a of [-.21,.21]){B(c,.025,.46,.025,a,.23,-.2,M.black);B(c,.025,.025,.5,a,.02,0,M.black)}
+     c.position.set(X(tx_)+dx,0,Z(1530)+.95);c.rotation.y=Math.PI;scene.add(c)}}}
+WSN2.put(doorObj({leaf:oak3,frame:M.bronze}),tOf(WSN2,[992,1530]));WSN2.put(doorObj({leaf:oak3,frame:M.bronze,hinge:'r'}),tOf(WSN2,[1098,1530]));
+WSN2.put(signObj(plaqueTex('Classroom','CBA 4.344',256,140),.3,.165),tOf(WSN2,[1002,1530]),1.55,.012);projSign(WSN2,[1002,1530],'4.344');
+// south corridor, south side: 4.336-4.346 with benches and a chair
+classDoor(WSS,[662,1572],'4.336');projSign(WSS,[670,1572],'4.336');
+classDoor(WSS,[698,1572],'4.338');projSign(WSS,[706,1572],'4.338');benchAt(WSS,[735,1572]);chairAt(752,1566,0);classDoor(WSS,[772,1572],'4.338',{hinge:'r',plaqueAt:[763,1572]});
+classDoor(WSS,[800,1572],'4.340');projSign(WSS,[808,1572],'4.340');classDoor(WSS,[882,1572],'4.340',{hinge:'r',plaqueAt:[873,1572]});
+classDoor(WSS,[920,1572],'4.342');projSign(WSS,[928,1572],'4.342');classDoor(WSS,[995,1572],'4.342',{hinge:'r',plaqueAt:[986,1572]});
+classDoor(WSS,[1020,1572],'4.346');projSign(WSS,[1028,1572],'4.346');
+benchAt(WSS,[850,1572]);
+// a wall clock over the south corridor
+{const [c,x]=cvs(128,128);x.fillStyle='#f4efe0';x.beginPath();x.arc(64,64,60,0,7);x.fill();x.fillStyle='#111';x.font='700 15px Rubik,sans-serif';x.textAlign='center';x.textBaseline='middle';for(let i=1;i<=12;i++){const a=i/12*Math.PI*2-Math.PI/2;x.fillText(i,64+Math.cos(a)*46,64+Math.sin(a)*46)}
+ x.strokeStyle='#111';x.lineWidth=4;x.beginPath();x.moveTo(64,64);x.lineTo(64,24);x.moveTo(64,64);x.lineTo(96,64);x.stroke();
+ const t=tex(c),g=grp();const rim=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.12,24),M.black);rim.rotation.x=Math.PI/2;g.add(rim);for(const s_ of [-1,1]){const f=plane(.42,.42,basic(t));f.position.z=s_*.062;if(s_<0)f.rotation.y=Math.PI;g.add(f)}
+ g.position.set(X(925),H-.55,Z(1560));g.rotation.y=Math.PI/2;scene.add(g);}
 
 // ---------- Ford Career Center 4.114: curved oak counter with glass above, open doorways at both ends ----------
 const FC={x:X(1030),z:Z(822),r:148*S},D2R=Math.PI/180;
@@ -952,12 +1015,12 @@ benchOut(.46,.55);benchOut(.72,.55);benchOut(.2,.55);
 // ---------- lights ----------
 scene.add(new THREE.HemisphereLight(0xfffaf0,0x6b5a50,.66));
 scene.add(new THREE.AmbientLight(0xffffff,.16));
-for(const [mx,my,i] of [[950,1000,.75],[1135,985,.8],[1300,968,.8],[1440,966,.75],[1534,1028,.7],[1030,905,.75],[1316,1110,.6],[1316,1215,.55],[1215,1212,.5],[1488,925,.55]]){const l=new THREE.PointLight(0xfff4e2,i,15,1.4);l.position.set(X(mx),H-.35,Z(my));scene.add(l)}
+for(const [mx,my,i] of [[950,1000,.75],[1135,985,.8],[1300,968,.8],[1440,966,.75],[1534,1028,.7],[1030,905,.75],[1316,1110,.6],[1316,1215,.55],[551,1400,.6],[850,1551,.65]]){const l=new THREE.PointLight(0xfff4e2,i,15,1.4);l.position.set(X(mx),H-.35,Z(my));scene.add(l)}
 {const l=new THREE.PointLight(0xfff0dd,.6,12,1.4);l.position.set(X(1130),-2.4,Z(1027));scene.add(l)}
 const panel=new THREE.PlaneGeometry(1.2,.6),panelR=new THREE.PlaneGeometry(.6,1.2);
 function lightPanel(mx,my,rot){const p=new THREE.Mesh(rot?panelR:panel,M.light);p.rotation.x=Math.PI/2;p.position.set(X(mx),H-.012,Z(my));scene.add(p)}
 for(let mx=1180;mx<=1490;mx+=24)lightPanel(mx,962.5);
-for(const [mx,my] of [[1240,1010],[1270,1030],[1316,1070],[1316,1110],[1532,1010],[1532,1045],[1515,968],[1470,930],[1450,950],[900,1000],[960,990],[1010,1000],[1060,972],[1205,975],[880,1025],[1000,1030],[1316,1100],[1316,1135],[1316,1170],[1316,1205],[1316,1240],[1175,1212],[1215,1212],[1255,1212]])lightPanel(mx,my);
+for(const [mx,my] of [[1240,1010],[1270,1030],[1316,1070],[1316,1110],[1532,1010],[1532,1045],[1515,968],[1470,930],[1450,950],[900,1000],[960,990],[1010,1000],[1060,972],[1205,975],[880,1025],[1000,1030],[1316,1100],[1316,1135],[1316,1170],[1316,1205],[1316,1240],[1175,1212],[1215,1212],[1255,1212],[551,1250],[551,1300],[551,1350],[551,1400],[551,1450],[551,1500],[551,1550],[620,1551],[680,1551],[740,1551],[800,1551],[860,1551],[920,1551],[980,1551],[1040,1551],[1100,1551],[600,1212],[660,1212],[740,1212],[820,1212],[900,1212],[980,1212],[1060,1212],[1142,1560]])lightPanel(mx,my);
 for(const [mx,my,y,rot] of lightPanelLater){const p=new THREE.Mesh(rot?panelR:panel,M.light);p.rotation.x=Math.PI/2;p.position.set(X(mx),y,Z(my));scene.add(p)}
 for(const [mx,my] of [[990,880],[1070,880],[990,910],[1070,910],[1030,935]])lightPanel(mx,my);
 
@@ -1054,7 +1117,10 @@ const ZONES=[
   [[928,1150,970,1193],'Vending 4.308'],
   [[832,1047,885,1193],'GSB/CBA connector'],
   [[712,1193,978,1232],'CBA north corridor · atrium windows'],
-  [[560,1193,712,1232],'CBA north corridor · Locker E · classroom 4.322'],
+  [[530,1193,712,1232],'CBA north corridor · Locker E · classroom 4.322'],
+  [[530,1232,572,1575],'CBA west corridor · classrooms 4.324–4.332'],
+  [[572,1530,1122,1572],'CBA south corridor · classrooms 4.336–4.346'],
+  [[1122,1505,1162,1598],'MPA Lounge hallway · Stair 7'],
   [[978,1193,1280,1232],'CBA north corridor'],
   [[1342,945,1500,995],'4.100 rooms · Quiet/Lactation Room 4.100H'],
   [[1280,945,1342,1000],'MPA Program Office · 4.112CA'],
@@ -1106,8 +1172,8 @@ const ROOM_DB={
   '4350':RM('Classroom 4.350','CBA',[1142,1385],'4.350','The 4.350 doors are',[1152,1385]),
   '4304':RM('Classroom 4.304','CBA',[1010,1212],'4.304','The 4.304 door is',[1010,1222]),
   '4304a':RM('TA Room','CBA 4.304A',[1142,1376],'4.304A','The TA Room door is',[1132,1376]),
-  '4344':RM('Classroom 4.344','CBA',[1142,1446],'4.344','The 4.344 door is',[1132,1446]),
-  'stair7':RM('Stair 7','Exit stairs',[1142,1472],'STAIR 7','Stair 7 is',[1152,1472]),
+  '4344':RM('Classroom 4.344','CBA',[992,1551],'4.344','The 4.344 door is',[992,1540]),
+  'stair7':RM('Stair 7','Exit stairs',[1142,1585],'STAIR 7','Stair 7 is',[1142,1594]),
   'cbaesc':RM('CBA escalators','Down to the 3rd floor · up to the Mezzanine',[1312,1366],'ESC','The CBA escalators are'),
   'study':RM('CBA study area','Tables, monitors and lockers',[1430,1312],'STUDY','The study area is'),
   'escup':RM('Escalator up to the 5th floor','Board at the east end',[1240,996],'UP','The escalator up is'),
@@ -1131,6 +1197,19 @@ const ROOM_DB={
   '4312':RM('Comm Chase','CBA 4.312',[866,1158],'4.312','4.312 is',[874,1158]),
   '4320':RM('Electrical','CBA 4.320',[650,1210],'4.320','4.320 is',[650,1200]),
   '4322':RM('Classroom 4.322','CBA',[592,1212],'4.322','The 4.322 doors are',[592,1222]),
+  '4324':RM('Classroom 4.324','CBA',[551,1250],'4.324','The 4.324 door is',[540,1250]),
+  '4326':RM('Classroom 4.326','CBA',[551,1292],'4.326','The 4.326 door is',[540,1292]),
+  '4328':RM('Classroom 4.328','CBA · tiered',[551,1328],'4.328','The 4.328 doors are',[562,1328]),
+  '4330':RM('Classroom 4.330','CBA',[551,1422],'4.330','The 4.330 door is',[540,1422]),
+  '4332':RM('Classroom 4.332','CBA',[551,1562],'4.332','The 4.332 door is',[540,1566]),
+  '4334':RM('Storage','CBA 4.334',[590,1551],'4.334','4.334 is',[590,1540]),
+  '4336':RM('Classroom 4.336','CBA',[662,1551],'4.336','The 4.336 door is',[662,1562]),
+  '4338':RM('Classroom 4.338','CBA',[698,1551],'4.338','The 4.338 door is',[698,1562]),
+  '4340':RM('Classroom 4.340','CBA',[800,1551],'4.340','The 4.340 door is',[800,1562]),
+  '4342':RM('Classroom 4.342','CBA',[920,1551],'4.342','The 4.342 door is',[920,1562]),
+  '4346':RM('Classroom 4.346','CBA',[1020,1551],'4.346','The 4.346 door is',[1020,1562]),
+  '4348':RM('Classroom 4.348','CBA',[1142,1545],'4.348','The 4.348 door is',[1152,1545]),
+  'stair8':RM('Stair 8','Exit stairs',[553,1212],'STAIR 8','Stair 8 is',[553,1200]),
   '4102':RM('GSB 4.102','',[868,1108],'4.102','4.102 is',[858,1108]),
   '4104':RM('GSB 4.104','',[868,1100],'4.104','4.104 is',[878,1100]),
   '4106':RM('GSB 4.106','',[868,1070],'4.106','4.106 is',[858,1070]),
@@ -1167,7 +1246,7 @@ beacon.visible=false;scene.add(beacon);
 const NODES=[[1190,962],[1260,966],[1330,966],[1400,964],[1460,966],[1515,968],[1515,1000],[1540,1030],[1460,940],
   [1250,1000],[1238,1027],[1316,1010],[1316,1090],[1316,1120],
   [1070,978],[1000,990],[1240,996],[1150,970],
-  [1316,1060],[1316,1100],[1316,1150],[1316,1212],[1316,1250],[1250,1212],[1190,1212],[1160,1212],[1105,1212],[1142,1212],[868,1060],[868,1100],[868,1130],[856,1165],[856,1212],[949,1212],[949,1172],[780,1212],[700,1212],[620,1212],[1000,1212],[1060,1212],[1142,1262],[1142,1318],[1142,1385],[1142,1446],[1142,1472],[1142,1495],[1310,1290],[1312,1340],[1312,1366],[1380,1316],[1450,1316],[1525,1316],[1330,1067],[1372,1067],[1430,1067],[1485,1067],[1125,966],[935,966],[1096,930],[964,930],[1030,918],
+  [1316,1060],[1316,1100],[1316,1150],[1316,1212],[1316,1250],[1250,1212],[1190,1212],[1160,1212],[1105,1212],[1142,1212],[551,1212],[551,1250],[551,1300],[551,1380],[551,1460],[551,1552],[620,1551],[700,1551],[800,1551],[925,1551],[1040,1551],[1142,1551],[1142,1585],[868,1060],[868,1100],[868,1130],[856,1165],[856,1212],[949,1212],[949,1172],[780,1212],[700,1212],[620,1212],[1000,1212],[1060,1212],[1142,1262],[1142,1318],[1142,1385],[1142,1446],[1142,1472],[1142,1495],[1310,1290],[1312,1340],[1312,1366],[1380,1316],[1450,1316],[1525,1316],[1330,1067],[1372,1067],[1430,1067],[1485,1067],[1125,966],[935,966],[1096,930],[964,930],[1030,918],
   [905,1010],[917,1026],[1040,1000]].map(([a,b])=>[X(a),Z(b)]);
 function los(a,b,r=.26){const dx=b[0]-a[0],dz=b[1]-a[1],n=Math.ceil(Math.hypot(dx,dz)/.2);for(let i=1;i<n;i++){const t=i/n;if(blocked(a[0]+dx*t,a[1]+dz*t,r))return false}return true}
 const NL=NODES.map(a=>NODES.map(b=>a===b?false:los(a,b)));
@@ -1204,7 +1283,7 @@ form.addEventListener('submit',e=>{
   v=ALIAS[v]||v;
   if(ROOM_DB[v]){startNav(ROOM_DB[v]);input.blur();el.focus();return}
   const pretty=/^\d{4}/.test(v)?v.replace(/^(\d)(\d{3})/,'$1.$2').toUpperCase():raw;
-  if(/^43\d\d[a-z]?$/.test(v)){startNav(ROOM_DB.cba,`${pretty} is in the south half of the CBA wing, which isn't built yet. Taking you to the CBA north corridor.`);input.blur();el.focus();return}
+  if(/^43\d\d[a-z]?$/.test(v)){startNav(ROOM_DB.cba,`${pretty} isn't on the CBA directory. Taking you to the CBA north corridor.`);input.blur();el.focus();return}
   stopNav();
   if(/^4\d{3}[a-z]{0,2}$/.test(v))say(`${pretty} isn't mapped yet. Try 4.100H, MPA, Ford, NRG, AIM, 4.128 or balcony.`);
   else say(`"${raw}" doesn't look like a 4th-floor room. Try 4.100H, MPA, Ford, NRG, AIM, 4.128 or balcony.`);
@@ -1228,7 +1307,9 @@ const ENTRANCES=[
   {id:'atrium',name:'CBA north corridor · atrium windows',pos:[1000,1212],look:[600,1212]},
   {id:'connector',name:'GSB/CBA connector',pos:[856,1215],look:[868,1050]},
   {id:'vending',name:'Vending 4.308',pos:[949,1205],look:[949,1150]},
-  {id:'lockere',name:'Locker E · west end',pos:[760,1212],look:[560,1212]},
+  {id:'lockere',name:'Locker E · west end',pos:[760,1212],look:[530,1212]},
+  {id:'west',name:'CBA west corridor · looking south',pos:[551,1225],look:[551,1575]},
+  {id:'south',name:'CBA south corridor · looking east',pos:[600,1551],look:[1122,1551]},
   {id:'up5',name:'Escalator up to the 5th floor',pos:[1250,990],look:[1100,997]},
 ];
 const entSel=$('entrance');ENTRANCES.forEach(e=>{const o=document.createElement('option');o.value=e.id;o.textContent=e.name;entSel.appendChild(o)});

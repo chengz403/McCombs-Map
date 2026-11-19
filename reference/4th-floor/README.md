@@ -31,6 +31,11 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `cba-womens-restroom-and-4312.jpg` | Women's restroom door where the GSB/CBA connector meets the corridor; 4.312 plaque on the right |
 | `gsb-cba-connector-looking-north.jpg` | The GSB/CBA connector looking north toward the GSB and the NRG entrance: hanging sign, fountains, closet doors |
 | `cba-north-corridor-locker-e.jpg` | West end of the CBA north corridor: Locker E, bench, the men's room, classroom 4.322 sign |
+| `cba-north-corridor-west-end-stair8.jpg` | West end of the north corridor: Stair 8 doors, bench, fire extinguisher and fountain on the end wall, 4.322 door |
+| `cba-west-corridor-looking-south.jpg` | West corridor looking south: 4.324/4.326 on the right, benches, bins, exit doors at the far end |
+| `cba-southwest-exit-and-4332.jpg` | South end of the west corridor: exit stair double doors, classroom 4.332 |
+| `cba-south-corridor-looking-east.jpg` | South corridor from the west: benches, chair, 4.336/4.338, lockers and study tables by the atrium windows |
+| `cba-south-corridor-clock-and-4342.jpg` | South corridor further east: atrium windows with study tables, the hanging clock, 4.342 |
 
 `minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 
