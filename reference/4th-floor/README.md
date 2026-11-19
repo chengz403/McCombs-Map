@@ -7,6 +7,16 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `gsb-fourth-floor-plan.png` | Clean line drawing of the GSB 4th floor from the McCombs Maps page (mccombs.utexas.edu/about/tech/av-technology-solutions/mccombs-maps/). Best for room numbers and wall geometry. North arrow points right. |
 | `directory-photo.jpg` | Photo of the "CBA/GSB Floor Plan – Fourth Floor" directory sign in the building. Covers the GSB wing **and** the CBA wing (atrium, 4.3xx classrooms, 4.2xx offices) plus the Fourth Floor Mezz (4M.2xx). The "You Are Here" dot is by the CBA escalators next to MPA Lounge 4.352. |
 
+## Hallway photos (`photos/`)
+
+| File | What it shows |
+| --- | --- |
+| `mpa-office-and-escalators.jpg` | Standing at the MPA Program Office looking west: escalators down on the left, the Ford Career Center counter ahead, hanging signs |
+| `4100-rooms-looking-west.jpg` | The 4.100A–H doors with the Quiet/Lactation Room (4.100H) up front, looking toward the Ford Career Center |
+| `4100-rooms-toward-escalators.jpg` | The same row of doors from further east, looking toward the escalators |
+| `balcony-doors.jpg` | The space in front of 4.112CF with the bronze glass doors out to the balcony |
+| `stair2-lobby.jpg` | Stair 2 lobby: stair doors, fire hose cabinet, lockers |
+
 ## Key areas (GSB wing)
 
 - **Ford Career Center 4.114** – curved front desk area facing the escalators; 4.114 offices (AA–FG, DA–DH, EA–EP, FA–FE) behind it.
