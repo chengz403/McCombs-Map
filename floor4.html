@@ -281,10 +281,10 @@ const M={
 const stoolMat=std({color:0x1f2933,roughness:.6}),stoolMat2=std({color:0x22262b,roughness:.6});
 
 // ---------- floor plan (plan px) ----------
-const PIT=[1080,993,1194,1040];   // well under both escalator lanes
-const INTERIOR=[[780,850],[1430,850],[1600,1020],[1600,1270],[1547,1270],[1547,1610],[1190,1610],[1190,1640],[1100,1640],[1100,1610],[530,1610],[530,1140],[780,1140]];
+const PIT=[1080,1004,1194,1047];   // well under both escalator lanes
+const INTERIOR=[[780,850],[1430,850],[1600,1020],[1600,1270],[1547,1270],[1547,1610],[530,1610],[530,1140],[780,1140]];
 const ATR=[712,1232,980,1528];   // the atrium: open to the floors below, not part of this floor   // NE edge = the balcony glass line (x - y = 580)
-const SHAFT=[1060,993,1200,1040];   // ceiling opening where the escalators to/from the 5th floor pass through
+const SHAFT=[1060,1004,1200,1047];   // ceiling opening where the escalators to/from the 5th floor pass through
 const SHAFT2=[1380,1373,1500,1396]; // ceiling opening over the CBA escalator up to the Mezzanine
 const PIT2=[1336,1353,1500,1373];   // CBA escalator well (down to the 3rd floor)
 function shapeOf(pts,flip){const s=new THREE.Shape();pts.forEach((p,i)=>{const x=X(p[0]),z=flip?Z(p[1]):-Z(p[1]);i?s.lineTo(x,z):s.moveTo(x,z)});return s}
@@ -331,11 +331,11 @@ const RECEND=[[1500,1053],[1507,1053],[1507,1081],[1500,1081]];             // e
 const WSW=[[530,1140],[832,1140],[832,1193],[530,1193]];                    // CBA: stair, Electrical 4.320, men's, women's
 const CL=[[572,1230],[712,1230],[712,1530],[572,1530]];                     // 4.322, tiered 4.328, Storage 4.334 (west of the atrium)
 const OUTW=[[420,1193],[530,1193],[530,1610],[420,1610]];                   // 4.324, 4.326, 4.330, 4.332 (outer west row)
-const SWST=[[530,1575],[572,1575],[572,1610],[530,1610]];                   // south-west exit stair
+const SWST=[[530,1572],[572,1572],[572,1610],[530,1610]];                   // south-west exit stair
 const SROW=[[572,1572],[1122,1572],[1122,1610],[572,1610]];                 // 4.336-4.346 (south row) + chases
 const CW=[[980,1230],[1122,1230],[1122,1530],[980,1530]];                   // classrooms 4.304, TA room 4.304A, 4.344
 const LOUNGE=[[1170,1230],[1280,1230],[1280,1610],[1170,1610]];             // MPA Lounge 4.352, Green Room, classroom 4.350
-const SEND=[[1100,1610],[1122,1610],[1122,1628],[1170,1628],[1170,1610],[1190,1610],[1190,1640],[1100,1640]]; // Stair 7 wall at the south end of the lounge hallway
+const SEND=[[1122,1572],[1170,1572],[1170,1610],[1122,1610]];   // Stair 7, flush with the classroom wall // Stair 7 wall at the south end of the lounge hallway
 const SKYB=[[1280,1396],[1547,1396],[1547,1610],[1280,1610]];               // the tall grey wall beside the escalators (skylight block behind)
 const EAST=[[1530,950],[1600,1020],[1600,1065],[1565,1065],[1565,990],[1530,990]]; // 4.132/4.130 + Stair 2
 for(const p of [NW,WEST,SOUTH,FORDBACK,NORTH,B100,B126,B126E,B126S,RECEND,EAST,WSW,CL,OUTW,SWST,SROW,CW,LOUNGE,SEND])solid(p,M.wall);
@@ -384,17 +384,18 @@ function escalator(mz,xA,yA,xB,yB,dirSign,bodyMat){
   }
 }
 // down to (and up from) the 3rd floor: top landings at the east end, running down into the well
-// Two lanes side by side with a sliver of space between them. Every escalator boards at the west end (by the
-// elevators) and lets you off at the east end, so nobody getting off walks into someone getting on:
-//   AIM side:      4th -> 3rd boards here (west), 5th -> 4th arrives above it at the east end
-//   wood-wall side: 4th -> 5th boards here (west), 3rd -> 4th arrives under it at the east end
-const LANE_AIM=1005,LANE_WOOD=1026;
+// Two lanes side by side with a sliver of space between them, the wood-wall lane against the wall.
+//   West end: 4->3 boards (AIM side), 5->4 lets you off (wood side).
+//   East end: 3->4 lets you off (wood side), 4->5 boards (AIM side).
+const LANE_AIM=1016,LANE_WOOD=1037;   // the wood-wall lane sits right against the wall
 escalator(LANE_AIM,X(1080),0,X(1194),-4.6,1);            // 4th -> 3rd (down)
 escalator(LANE_WOOD,X(1080),-4.6,X(1194),0,1);           // 3rd -> 4th (up, arrives at the east end)
 // up to the 5th floor: board at the west end beside the others, rise east through the ceiling.
 // Its underside is boxed in white, the bulkhead you see over the escalators in the photos.
-escalator(LANE_WOOD,X(1080),0,X(1194),4.6,1,M.dark);    // 4th -> 5th (up)
-escalator(LANE_AIM,X(1080),4.6,X(1194),0,1,M.brushed);  // 5th -> 4th (down, arrives at the east end)
+// 4<->5: up to the 5th boards at the east end right beside where 3->4 lets you off; down from the 5th lets you
+// off at the west end right beside where 4->3 boards. Treads on both run west.
+escalator(LANE_WOOD,X(1080),0,X(1194),4.6,-1,M.dark);   // 5th -> 4th (down, arrives at the west end)
+escalator(LANE_AIM,X(1080),4.6,X(1194),0,-1,M.brushed); // 4th -> 5th (up, boards at the east end)
 // the shaft above the ceiling opening, and a slice of the 5th floor at the top
 box(SHAFT[0],SHAFT[1]-2,SHAFT[2],SHAFT[1],H,4.6+H,M.wall);
 box(SHAFT[0],SHAFT[3],SHAFT[2],SHAFT[3]+2,H,4.6+H,M.wall);
@@ -744,7 +745,7 @@ function oakDouble(W_,p,label,sub){const g=doubleDoor({leaf:oakDoorMat,frame:M.b
 oakDouble(WLE,[1162,1488],'Classroom','CBA 4.350');
 WLE.put(doorObj({leaf:oakDoorMat,frame:M.bronze}),tOf(WLE,[1162,1545]));WLE.put(signObj(plaqueTex('Classroom','CBA 4.348',256,140),.3,.165),tOf(WLE,[1162,1555]),1.55,.012);
 {const [c,x]=cvs(256,160);x.fillStyle='#f1f0ec';x.fillRect(0,0,256,160);x.fillStyle='#17191b';x.fillRect(6,6,244,148);x.fillStyle='#fff';x.font=`700 54px ${SIGNF}`;x.textAlign='center';x.fillText('STAIR 7',128,70);x.font=`500 40px ${SIGNF}`;x.fillText('Floor 4',128,122);
- const t=tex(c);const g=grp();B(g,.04,.32,.5,0,0,.25,M.dark);for(const s_ of [-1,1]){const p=plane(.48,.3,basic(t));p.position.set(s_*.021,0,.25);p.rotation.y=s_*Math.PI/2;g.add(p)}WLE.put(g,tOf(WLE,[1162,1618]),2.55);}
+ const t=tex(c);const g=grp();B(g,.04,.32,.5,0,0,.25,M.dark);for(const s_ of [-1,1]){const p=plane(.48,.3,basic(t));p.position.set(s_*.021,0,.25);p.rotation.y=s_*Math.PI/2;g.add(p)}WLE.put(g,tOf(WLE,[1162,1564]),2.55);}
 // west side: classroom 4.304, TA room 4.304A, the bench row, 4.344
 WLW.put(doorObj({leaf:oakDoorMat,frame:M.bronze}),tOf(WLW,[1122,1262]));WLW.put(signObj(plaqueTex('Classroom','CBA 4.304',256,140),.3,.165),tOf(WLW,[1122,1272]),1.55,.012);
 WLW.put(doorObj({leaf:oakDoorMat,frame:M.bronze,hinge:'r'}),tOf(WLW,[1122,1376]));WLW.put(signObj(plaqueTex('TA Room','CBA 4.304A',256,140),.3,.165),tOf(WLW,[1122,1366]),1.55,.012);
@@ -753,7 +754,7 @@ for(let i=0;i<4;i++){const g=grp();B(g,.7,.4,.45,0,.2,.225,M.oak);B(g,.7,.1,.45,
 
 WLW.put(new THREE.Mesh(new THREE.BoxGeometry(.1,.16,.06),M.red),tOf(WLW,[1122,1480]),1.7,.03);
 bin(1127,1436,0x1f4fa8,'RECYCLE');
-{const WSN=wall([1122,1628],[1170,1628],[1146,1600]);const g=doubleDoor({leaf:oakDoorMat,frame:M.bronze,w:.95});for(const s_ of [-1,1]){const v=plane(.22,.22,std({color:0x22292d,roughness:.15}));v.position.set(s_*.48,1.6,.02);g.add(v)}WSN.put(g,.5);WSN.put(signObj(exitTex,.36,.15),.5,2.55,.02).material=basic(exitTex,{toneMapped:false});}
+{const WSN=wall([1122,1572],[1170,1572],[1146,1550]);const g=doubleDoor({leaf:oakDoorMat,frame:M.bronze,w:.95});for(const s_ of [-1,1]){const v=plane(.22,.22,std({color:0x22292d,roughness:.15}));v.position.set(s_*.48,1.6,.02);g.add(v)}WSN.put(g,.5);WSN.put(signObj(exitTex,.36,.15),.5,2.55,.02).material=basic(exitTex,{toneMapped:false});}
 hanging(1142,1300,Math.PI,hangTex(['MPA Lounge'],{w:640,h:200,size:64}),null,1.15,.36,2.5);
 hanging(1142,1345,Math.PI,hangTex(['Green Room'],{w:640,h:160,size:56}),null,.95,.24,2.6);
 
@@ -955,9 +956,9 @@ classDoor(WOE,[572,1458],'4.328');
 bin(567,1246,0x8a8e92,'LANDFILL');bin(567,1255,0x1f4fa8,'RECYCLE');
 WOE.put(new THREE.Mesh(new THREE.BoxGeometry(.1,.16,.06),M.red),tOf(WOE,[572,1240]),1.7,.03);
 // south-west exit stair: oak double doors with small windows and push bars
-{const WS8=wall([530,1575],[572,1575],[551,1550]);const g=doubleDoor({leaf:oak3,frame:M.black,w:.95,h:2.25});for(const s_ of [-1,1]){const v=plane(.22,.2,std({color:0x22292d,roughness:.15}));v.position.set(s_*.48,1.62,.02);g.add(v);B(g,.8,.04,.06,s_*.48,1.0,.06,M.dark)}
+{const WS8=wall([530,1572],[572,1572],[551,1550]);const g=doubleDoor({leaf:oak3,frame:M.black,w:.95,h:2.25});for(const s_ of [-1,1]){const v=plane(.22,.2,std({color:0x22292d,roughness:.15}));v.position.set(s_*.48,1.62,.02);g.add(v);B(g,.8,.04,.06,s_*.48,1.0,.06,M.dark)}
  WS8.put(g,.5);WS8.put(signObj(exitTex,.4,.16),.5,2.6,.02).material=basic(exitTex,{toneMapped:false});
- WS8.put(signObj(plaqueTex('STAIR','Floor 4',128,180),.12,.18),.1,1.6,.012);bin(537,1568,0x1f4fa8,'RECYCLE');}
+ WS8.put(signObj(plaqueTex('STAIR','Floor 4',128,180),.12,.18),.1,1.6,.012);bin(537,1562,0x1f4fa8,'RECYCLE');}
 // south corridor, north side: Storage 4.334, bench, narrow atrium windows, lockers, study tables, 4.344
 const WSN2=wall([572,1530],[1122,1530],[800,1551]),WSS=wall([572,1572],[1122,1572],[800,1551]);
 WSN2.put(doorObj({leaf:oak3,frame:M.bronze}),tOf(WSN2,[590,1530]));WSN2.put(signObj(plaqueTex('Storage','CBA 4.334',256,140),.3,.165),tOf(WSN2,[600,1530]),1.55,.012);
@@ -1217,7 +1218,7 @@ const ZONES=[
   [[530,1193,712,1232],'CBA north corridor · Locker E · classroom 4.322'],
   [[530,1232,572,1575],'CBA west corridor · classrooms 4.324–4.332'],
   [[572,1530,1122,1572],'CBA south corridor · classrooms 4.336–4.346'],
-  [[1122,1505,1170,1628],'MPA Lounge hallway · Stair 7'],
+  [[1122,1505,1170,1572],'MPA Lounge hallway · Stair 7'],
   [[978,1193,1280,1232],'CBA north corridor'],
   [[1342,945,1500,995],'4.100 rooms · Quiet/Lactation Room 4.100H'],
   [[1280,945,1342,1000],'MPA Program Office · 4.112CA'],
@@ -1273,10 +1274,10 @@ const ROOM_DB={
   '4304':RM('Classroom 4.304','CBA',[1010,1212],'4.304','The 4.304 door is',[1010,1222]),
   '4304a':RM('TA Room','CBA 4.304A',[1142,1376],'4.304A','The TA Room door is',[1132,1376]),
   '4344':RM('Classroom 4.344','CBA',[992,1551],'4.344','The 4.344 door is',[992,1540]),
-  'stair7':RM('Stair 7','Exit stairs',[1146,1612],'STAIR 7','Stair 7 is',[1146,1622]),
+  'stair7':RM('Stair 7','Exit stairs',[1146,1558],'STAIR 7','Stair 7 is',[1146,1566]),
   'cbaesc':RM('CBA escalators','Down to the 3rd floor · up to the Mezzanine',[1312,1366],'ESC','The CBA escalators are'),
   'study':RM('CBA study area','Tables, monitors and lockers',[1430,1312],'STUDY','The study area is'),
-  'escup':RM('Escalator up to the 5th floor','Wood-wall side · board at the west end, by the elevators',[1062,1026],'UP','The escalator up is'),
+  'escup':RM('Escalator up to the 5th floor','Board at the east end, next to where the escalator from the 3rd lets you off',[1218,1016],'UP','The escalator up is'),
   '4112cb':RM('GSB 4.112CB','Office',[1262,963],'4.112CB','4.112CB is'),
   '4112ce':RM('GSB 4.112CE','Office',[1392,963],'4.112CE','4.112CE is'),
   '4132':RM('Quiet/Lactation Room','GSB 4.132',[1515,958],'4.132','The 4.132 lactation room is'),
@@ -1290,7 +1291,7 @@ const ROOM_DB={
   'stair':RM('Stair 2','Exit stairs',[1540,1030],'EXIT','Stair 2 is'),
   'balcony':RM('Balcony doors','Look out only · no outside access in the model',[1484,942],'BALCONY','The balcony doors are'),
   'elevators':RM('Elevators','',[919,1030],'ELEV','The elevators are'),
-  'escalators':RM('Escalators','Down to the 3rd floor · AIM side',[1064,1005],'ESC','The escalators are'),
+  'escalators':RM('Escalators','Down to the 3rd floor · board at the west end',[1064,1016],'ESC','The escalators are'),
   'stair1':RM('Stair 1','Exit stairs · in the hall beside the elevators',[967,1072],'STAIR 1','Stair 1 is',[962,1072]),
   'cba':RM('CBA north corridor','By the atrium windows',[845,1212],'CBA','The atrium windows are',[845,1224]),
   '4308':RM('Vending','CBA 4.308',[949,1172],'4.308','The vending room is'),
@@ -1347,9 +1348,9 @@ beacon.visible=false;scene.add(beacon);
 
 // walkable waypoints (plan px) for routing around the escalator well, the Ford counter and the room blocks
 const NODES=[[1190,962],[1260,966],[1330,966],[1400,964],[1460,966],[1515,968],[1515,1000],[1540,1030],[1460,940],
-  [1250,1000],[1064,1005],[1316,1010],[1316,1090],[1316,1120],
-  [1070,978],[1000,990],[1062,1026],[1215,1016],[1240,985],[977,1040],[977,1072],[977,1095],[1150,970],
-  [1316,1060],[1316,1100],[1316,1150],[1316,1212],[1316,1250],[1250,1212],[1190,1212],[1160,1212],[1105,1212],[1142,1212],[551,1212],[551,1250],[551,1300],[551,1380],[551,1460],[551,1552],[620,1551],[700,1551],[800,1551],[925,1551],[1040,1551],[1146,1551],[1146,1612],[868,1060],[868,1100],[868,1130],[856,1165],[856,1212],[949,1212],[949,1172],[780,1212],[700,1212],[620,1212],[1000,1212],[1060,1212],[1142,1262],[1142,1318],[1146,1385],[1146,1446],[1146,1488],[1146,1520],[1310,1290],[1312,1340],[1312,1366],[1380,1316],[1450,1316],[1525,1316],[1330,1067],[1372,1067],[1430,1067],[1485,1067],[1330,1193],[1380,1193],[1450,1193],[1530,1193],[1125,966],[935,966],[1096,930],[964,930],[1030,918],
+  [1250,1000],[1064,1016],[1316,1010],[1316,1090],[1316,1120],
+  [1070,978],[1000,990],[1218,1016],[1240,985],[977,1040],[977,1072],[977,1095],[1150,970],
+  [1316,1060],[1316,1100],[1316,1150],[1316,1212],[1316,1250],[1250,1212],[1190,1212],[1160,1212],[1105,1212],[1142,1212],[551,1212],[551,1250],[551,1300],[551,1380],[551,1460],[551,1552],[620,1551],[700,1551],[800,1551],[925,1551],[1040,1551],[1146,1551],[868,1060],[868,1100],[868,1130],[856,1165],[856,1212],[949,1212],[949,1172],[780,1212],[700,1212],[620,1212],[1000,1212],[1060,1212],[1142,1262],[1142,1318],[1146,1385],[1146,1446],[1146,1488],[1146,1520],[1310,1290],[1312,1340],[1312,1366],[1380,1316],[1450,1316],[1525,1316],[1330,1067],[1372,1067],[1430,1067],[1485,1067],[1330,1193],[1380,1193],[1450,1193],[1530,1193],[1125,966],[935,966],[1096,930],[964,930],[1030,918],
   [905,1010],[917,1026],[1040,1000]].map(([a,b])=>[X(a),Z(b)]);
 function los(a,b,r=.26){const dx=b[0]-a[0],dz=b[1]-a[1],n=Math.ceil(Math.hypot(dx,dz)/.2);for(let i=1;i<n;i++){const t=i/n;if(blocked(a[0]+dx*t,a[1]+dz*t,r))return false}return true}
 const NL=NODES.map(a=>NODES.map(b=>a===b?false:los(a,b)));
@@ -1395,8 +1396,8 @@ $('rcancel').addEventListener('click',()=>{stopNav();el.focus()});
 
 const ENTRANCES=[
   {id:'mpa',name:'MPA Program Office · toward the escalators',pos:[1340,966],look:[1100,985]},
-  {id:'esc',name:'Top of the escalators',pos:[1054,1005],look:[1250,1005]},
-  {id:'escE',name:'Escalator arrivals · east end',pos:[1232,1016],look:[1060,1016]},
+  {id:'esc',name:'Escalator down to the 3rd floor',pos:[1054,1016],look:[1250,1016]},
+  {id:'escE',name:'Escalators · east end',pos:[1236,1026],look:[1060,1026]},
   {id:'balcony',name:'Balcony doors',pos:[1466,952],look:[1512,906]},
   {id:'hall100',name:'4.100 rooms · by the lactation room',pos:[1494,966],look:[1300,966]},
   {id:'stair',name:'Stair 2',pos:[1533,994],look:[1533,1065]},
@@ -1414,7 +1415,7 @@ const ENTRANCES=[
   {id:'lockere',name:'Locker E · west end',pos:[760,1212],look:[530,1212]},
   {id:'west',name:'CBA west corridor · looking south',pos:[551,1225],look:[551,1575]},
   {id:'south',name:'CBA south corridor · looking east',pos:[600,1551],look:[1122,1551]},
-  {id:'up5',name:'Escalator up to the 5th floor',pos:[1054,1026],look:[1250,1026]},
+  {id:'up5',name:'Escalator up to the 5th floor',pos:[1234,1016],look:[1060,1016]},
   {id:'stair1',name:'Stair 1 · hall beside the elevators',pos:[977,1040],look:[977,1108]},
 ];
 const entSel=$('entrance');ENTRANCES.forEach(e=>{const o=document.createElement('option');o.value=e.id;o.textContent=e.name;entSel.appendChild(o)});
