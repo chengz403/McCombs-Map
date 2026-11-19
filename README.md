@@ -4,14 +4,14 @@ A walkable, third-person 3D model of the McCombs GSB 3rd floor, built from photo
 
 ## 4th floor (`floor4.html`)
 
-Open `floor4.html` for the GSB 4th floor. It's built from `reference/4th-floor/` (the official plan plus hallway photos). What's modeled so far:
+Open `floor4.html` for the GSB 4th floor. The minimap image is built into the file, so it works even if you download just `floor4.html`. It's built from `reference/4th-floor/` (the official plan plus hallway photos). What's modeled so far:
 
 - **Escalator hallway:** two escalators down to the 3rd floor, the wood wall behind them, restrooms, elevators, and the hanging MPA and wayfinding signs.
 - **MPA corridor:** the oak MPA Program Office portal (4.112CA), the 4.100A–H rooms with the Quiet/Lactation Room (4.100H), and the Recruiting Operations doors (4.128).
 - **Balcony:** the bronze storefront with doors, plus the balcony outside it (pavers, parapet, benches, trees). You can look out but can't go outside.
 - **Stair 2 lobby:** stair doors, lockers and the fire hose cabinet.
 - **Ford Career Center (4.114):** the curved oak and glass front, with open doorways into a lobby you can walk around in.
-- **GSB escalators:** all three board at the west end, by the elevators, and run east toward the MPA office. The two down escalators are on the AIM Reading Room side. The one up to the 5th floor runs along the wood wall and rises through the ceiling to a small slice of Level 5.
+- **GSB escalators:** two stacked pairs that meet at the west end, by the elevators. On the AIM side, one escalator comes up from the 3rd floor and the one above it goes up to the 5th. On the wood-wall side, one goes down to the 3rd floor and the one above it comes down from the 5th.
 - **Elevator lobby:** dark brown elevator surrounds and the three-part wayfinding sign. Beside the elevators, a short hall holds Stair 1 and its fire hose cabinet, Custodial 4.116, and the men's room (4.118, with an automatic door) at the end.
 - **NRG and Ford entrances:** the NRG Productivity Center's cherry portal with a glass door and the small nrg plaque. Next to it are the Ford Career Center's glass double doors, which stand open so you can walk in.
 - **CBA passage (heading south from the escalators):** the wood-clad restroom block with Women 4.120, Electrical 4.122, 4.124 and the drinking fountain, the bulletin board, display cases and a bench.

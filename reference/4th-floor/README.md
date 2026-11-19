@@ -43,6 +43,10 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `gsb-escalators-boarding-end.jpg` | Boarding end of the GSB escalators: down escalators on the left, the one up to Level 5 along the wood wall, AIM Reading Room behind |
 | `stair1-hall-mens-4118.jpg` | The short hall beside the elevators: fire hose on the stair side, white cabinet, men's room 4.118 automatic door at the end |
 | `custodial-4116.jpg` | Custodial 4.116 door |
+| `stair2-lobby-two-doors.jpg` | Stair 2: two doors split by a wood post, no exit sign; the fire alarm is on the end wall |
+| `balcony-curved-storefront.jpg` | The curved storefront by the balcony: doors at the left end, a big window to the right |
+| `balcony-outside-curtain-wall.jpg` | Out on the balcony: the glass curtain wall running off to the left, benches, the concrete parapet |
+| `lactation-4100h-door.jpg` / `lactation-4132-door.jpg` | Quiet/Lactation room doors: window with the sign, the access notice, room plaque and QUIET PLEASE sign beside the door |
 
 `minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 
