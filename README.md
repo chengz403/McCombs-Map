@@ -14,7 +14,9 @@ Open `floor4.html` for the GSB 4th floor. It's built from `reference/4th-floor/`
 - **Escalator up to the 5th floor:** next to the two that go down. You board at the east end and it rises through the ceiling to a small slice of Level 5.
 - **CBA passage (heading south from the escalators):** the wood-clad restroom block with Women 4.120, Electrical 4.122, 4.124 and the drinking fountain, the bulletin board, display cases and a bench.
 - **Recruiting Operations (4.128):** the glass entrance with the QR poster. You can walk in: there's a carpeted corridor with the 4.128 offices, benches and a window at the end.
-- **GSB/CBA corridor:** Storage 4.302. It ends at a temporary wall to the west, where the rest of the CBA classrooms will go.
+- **GSB/CBA connector:** runs south from the GSB elevator lobby, past 4.102, 4.104 and 4.106, through a cherry frame into the CBA. It has the hanging sign pointing to AIM, MPA, Ford and Recruiting, plus Comm Chase 4.312 and the drinking fountains.
+- **CBA north corridor:** the north side is the service row, from a stair, Electrical 4.320, the men's and women's rooms, Tele Equip 4.310, Vending 4.308 (you can walk in), Janitor 4.306, the CBA elevator and another stair. The south side has classroom 4.322 and Locker E, then the atrium windows between orange piers with round study tables, then 4.304 and Storage 4.302.
+- **Atrium:** a deep brick court with a skylight. You can look down into it through the windows but can't walk in it.
 - **CBA escalators:** one down to the 3rd floor under a black-clad bulkhead, and one up to the Mezzanine along the gray wall.
 - **CBA study area:** bar tables with wall monitors, cream lockers with orange columns, and a glass wall at the end. Behind the glass is the Mezzanine stair, which you can see but can't climb. The Mezzanine isn't walkable and isn't in the room finder.
 - **MPA Lounge hallway:** the cherry-wood MPA Lounge doors with gold lettering, the Green Room, classrooms 4.304, 4.344 and 4.350, the TA Room, the bench row, a drinking fountain, and Stair 7 at the south end.

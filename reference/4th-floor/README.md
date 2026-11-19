@@ -26,6 +26,11 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `mpa-lounge-hallway-looking-south.jpg` | The hallway west of the MPA Lounge, looking south: lounge doors, Green Room, benches, double doors at the end |
 | `mpa-lounge-hallway-looking-north.jpg` | The same hallway looking north: Stair 7 doors and the drinking fountain on the right |
 | `mpa-lounge-doors.jpg` | The MPA Lounge's cherry double doors with the gold lettering |
+| `cba-north-corridor-atrium-windows.jpg` | CBA north corridor looking west: atrium windows between orange piers on the left, the service rooms and the women's restroom on the right |
+| `vending-4308.jpg` | Inside Vending 4.308 |
+| `cba-womens-restroom-and-4312.jpg` | Women's restroom door where the GSB/CBA connector meets the corridor; 4.312 plaque on the right |
+| `gsb-cba-connector-looking-north.jpg` | The GSB/CBA connector looking north toward the GSB and the NRG entrance: hanging sign, fountains, closet doors |
+| `cba-north-corridor-locker-e.jpg` | West end of the CBA north corridor: Locker E, bench, the men's room, classroom 4.322 sign |
 
 `minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 
