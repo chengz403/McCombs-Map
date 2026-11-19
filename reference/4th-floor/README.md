@@ -21,6 +21,11 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `womens-restroom-corner.jpg` | The wood-clad corner by the escalators: Women 4.120, the restroom signs, the floor plan directory, the bulletin board and the bins |
 | `recruiting-operations-4128-entrance.jpg` | The 4.128 glass entrance with the QR poster, looking into the Recruiting Operations corridor |
 | `4124-and-electrical-4122.jpg` | 4.124 door, drinking fountain, Electrical 4.122 |
+| `cba-escalators.jpg` | CBA escalators from the top: down to the 3rd floor (left, under the black bulkhead), up to the Mezzanine (right) |
+| `cba-study-area.jpg` | Study area north of the escalators: bar tables and monitors, lockers with orange columns, glass wall with the Mezzanine stair |
+| `mpa-lounge-hallway-looking-south.jpg` | The hallway west of the MPA Lounge, looking south: lounge doors, Green Room, benches, double doors at the end |
+| `mpa-lounge-hallway-looking-north.jpg` | The same hallway looking north: Stair 7 doors and the drinking fountain on the right |
+| `mpa-lounge-doors.jpg` | The MPA Lounge's cherry double doors with the gold lettering |
 
 `minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 
