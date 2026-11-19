@@ -47,6 +47,8 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `balcony-curved-storefront.jpg` | The curved storefront by the balcony: doors at the left end, a big window to the right |
 | `balcony-outside-curtain-wall.jpg` | Out on the balcony: the glass curtain wall running off to the left, benches, the concrete parapet |
 | `lactation-4100h-door.jpg` / `lactation-4132-door.jpg` | Quiet/Lactation room doors: window with the sign, the access notice, room plaque and QUIET PLEASE sign beside the door |
+| `gsb-escalators-east-end-arrivals.jpg` | From the east end looking west: bulletin board on the wood wall, escalator arrivals, the back of the three-part sign ("← MPA Lounge, Green Room, Management / Accounting") |
+| `4126-corridor.jpg` | Inside 4.126: grey carpet, offices on both sides, wood benches with navy cushions |
 
 `minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 
