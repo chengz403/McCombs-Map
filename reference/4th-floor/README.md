@@ -36,6 +36,11 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `cba-southwest-exit-and-4332.jpg` | South end of the west corridor: exit stair double doors, classroom 4.332 |
 | `cba-south-corridor-looking-east.jpg` | South corridor from the west: benches, chair, 4.336/4.338, lockers and study tables by the atrium windows |
 | `cba-south-corridor-clock-and-4342.jpg` | South corridor further east: atrium windows with study tables, the hanging clock, 4.342 |
+| `gsb-cba-connector-toward-nrg.jpg` | Connector looking north to the NRG entrance: 4.106/4.102 with dark frames and transoms, black panel and white closet doors |
+| `nrg-and-ford-entrances.jpg` | NRG portal (cherry, single glass door, nrg plaque) next to the Ford Career Center's glass doors and paneled counter |
+| `gsb-escalators-and-elevators.jpg` | From the elevator lobby looking east: three-part wayfinding sign, escalators, wood wall with bulletin board, Stair 1 recess, elevator |
+| `stair1-by-elevators.jpg` | Stair 1 double doors and fire hose cabinet, next to the elevator's dark cladding |
+| `gsb-escalators-boarding-end.jpg` | Boarding end of the GSB escalators: down escalators on the left, the one up to Level 5 along the wood wall, AIM Reading Room behind |
 
 `minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 
