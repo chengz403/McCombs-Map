@@ -41,6 +41,8 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `gsb-escalators-and-elevators.jpg` | From the elevator lobby looking east: three-part wayfinding sign, escalators, wood wall with bulletin board, Stair 1 recess, elevator |
 | `stair1-by-elevators.jpg` | Stair 1 double doors and fire hose cabinet, next to the elevator's dark cladding |
 | `gsb-escalators-boarding-end.jpg` | Boarding end of the GSB escalators: down escalators on the left, the one up to Level 5 along the wood wall, AIM Reading Room behind |
+| `stair1-hall-mens-4118.jpg` | The short hall beside the elevators: fire hose on the stair side, white cabinet, men's room 4.118 automatic door at the end |
+| `custodial-4116.jpg` | Custodial 4.116 door |
 
 `minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
 

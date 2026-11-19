@@ -12,11 +12,11 @@ Open `floor4.html` for the GSB 4th floor. It's built from `reference/4th-floor/`
 - **Stair 2 lobby:** stair doors, lockers and the fire hose cabinet.
 - **Ford Career Center (4.114):** the curved oak and glass front, with open doorways into a lobby you can walk around in.
 - **GSB escalators:** all three board at the west end, by the elevators, and run east toward the MPA office. The two down escalators are on the AIM Reading Room side. The one up to the 5th floor runs along the wood wall and rises through the ceiling to a small slice of Level 5.
-- **Elevator lobby:** dark brown elevator surrounds, Stair 1 (white double doors and a fire hose cabinet in a recess next to the elevators), 4.116, and the three-part wayfinding sign.
+- **Elevator lobby:** dark brown elevator surrounds and the three-part wayfinding sign. Beside the elevators, a short hall holds Stair 1 and its fire hose cabinet, Custodial 4.116, and the men's room (4.118, with an automatic door) at the end.
 - **NRG and Ford entrances:** the NRG Productivity Center's cherry portal with a glass door and the small nrg plaque. Next to it are the Ford Career Center's glass double doors, which stand open so you can walk in.
 - **CBA passage (heading south from the escalators):** the wood-clad restroom block with Women 4.120, Electrical 4.122, 4.124 and the drinking fountain, the bulletin board, display cases and a bench.
 - **Recruiting Operations (4.128):** the glass entrance with the QR poster. You can walk in: there's a carpeted corridor with the 4.128 offices, benches and a window at the end.
-- **GSB/CBA connector:** runs south from the GSB elevator lobby, past 4.102, 4.104 and 4.106, through a cherry frame into the CBA. It has the hanging sign pointing to AIM, MPA, Ford and Recruiting, plus Comm Chase 4.312 and the drinking fountains.
+- **GSB/CBA connector:** runs straight south from the GSB elevator lobby, with its west wall in line with the CBA women's restroom wall, past 4.102, 4.104 and 4.106, through a cherry frame into the CBA. It has the hanging sign pointing to AIM, MPA, Ford and Recruiting, plus Comm Chase 4.312 and the drinking fountains.
 - **CBA north corridor:** the north side is the service row, from a stair, Electrical 4.320, the men's and women's rooms, Tele Equip 4.310, Vending 4.308 (you can walk in), Janitor 4.306, the CBA elevator and another stair. The south side has classroom 4.322 and Locker E, then the atrium windows between orange piers with round study tables, then 4.304 and Storage 4.302.
 - **Atrium:** a deep brick court with a skylight. You can look down into it through the windows but can't walk in it.
 - **CBA classroom loop:** the corridor runs all the way around the atrium.
