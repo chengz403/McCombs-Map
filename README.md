@@ -29,7 +29,7 @@ Then go to http://localhost:8000.
 - **6.432 / 6.426 suite:** grey fabric-panel walls and carpet, a frameless glass entry with one leaf swung open, and waiting chairs (black, teal fabric, orange leather).
 - **Atrium:** open from the ground floor up to a skylight, with a glass railing along the west corridor.
 - **West corridor:** elevator, stairs, restrooms and 6.404–6.418.
-- **Sixth Floor Walkway:** window wall, a long wood ledge, two escalators down to level 5, offices 6.202–6.220 and the doors to CBA North.
+- **Sixth Floor Walkway:** dark speckled terrazzo, terracotta columns, a solid half-wall with a black rail around the two escalators down to level 5, green club chairs, tan doors for offices 6.202–6.220, and the glass doors into the Finance Office with the clock and STAIR 4 sign beside them (from the walkway video). Start at "Walkway · toward the Finance Office" to match the video's view.
 
 On the plan, north is to the left. The minimap follows you and keeps the plan's orientation.
 

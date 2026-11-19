@@ -176,6 +176,13 @@ const [tc,tx]=cvs(512,512);tx.fillStyle='#cfc8bd';tx.fillRect(0,0,512,512);
 const chips=['#f2ede4','#a99f92','#7c7268','#e4dccf','#8f9a9c','#5f5852'];
 for(let i=0;i<22000;i++){tx.fillStyle=chips[rnd()*chips.length|0];const s=.7+rnd()*2.2;tx.fillRect(rnd()*512,rnd()*512,s,s*(.6+rnd()*.8))}
 const terrTex=tex(tc,true);terrTex.repeat.set(1/2.4,1/2.4);
+// walkway: dark speckled terrazzo with divider strips, polished (video)
+const [dc,dx]=cvs(512,512);dx.fillStyle='#4b423e';dx.fillRect(0,0,512,512);
+for(let i=0;i<900;i++){dx.fillStyle=`rgba(${60+rnd()*40|0},${50+rnd()*30|0},${46+rnd()*26|0},.35)`;dx.beginPath();dx.arc(rnd()*512,rnd()*512,3+rnd()*9,0,7);dx.fill()}
+const dchips=['#a9a39b','#7d756e','#2a2523','#8a6448','#5e5650','#1d1a19','#6b5e56','#c4beb5'];
+for(let i=0;i<26000;i++){dx.fillStyle=dchips[rnd()*dchips.length|0];const z=.4+rnd()*1.1;dx.fillRect(rnd()*512,rnd()*512,z,z*(.6+rnd()*.8))}
+dx.fillStyle='#8f8a84';dx.fillRect(0,0,512,2);
+const dterrTex=tex(dc,true);dterrTex.repeat.set(1/1.7,1/1.7);
 // 2'×4' acoustic ceiling tiles
 const [cc,cx]=cvs(256,512);cx.fillStyle='#efede8';cx.fillRect(0,0,256,512);
 for(let i=0;i<5200;i++){cx.fillStyle=`rgba(110,104,96,${.12+rnd()*.3})`;const s=.8+rnd()*1.8;cx.fillRect(rnd()*256,rnd()*512,s,s)}
@@ -202,10 +209,10 @@ function doorTex(kind){
     x.fillStyle=g;x.fillRect(lx,ly,lw,lh);for(let i=0;i<180;i++){x.fillStyle=`rgba(255,255,255,${rnd()*.12})`;x.fillRect(lx,ly+rnd()*lh,lw,1)}
     x.fillStyle='#55595e';x.fillRect(127,ly,3,lh);
   }else{
-    const base=kind==='suite'?[196,132,58]:[214,168,118];
+    const base=kind==='suite'?[196,132,58]:kind==='tan'?[190,172,112]:[214,168,118];
     x.fillStyle=`rgb(${base})`;x.fillRect(lx,ly,lw,lh);
     for(let i=0;i<260;i++){const xx=lx+rnd()*lw;x.fillStyle=`rgba(120,70,30,${.05+rnd()*.12})`;x.fillRect(xx,ly,1+rnd()*1.5,lh)}
-    if(kind!=='suite'){x.lineWidth=1.6;for(let k=0;k<3;k++){const cxk=lx+40+k*76;for(let j=0;j<9;j++){x.strokeStyle=`rgba(140,85,40,${.25+rnd()*.2})`;x.beginPath();const y0=60+j*52+rnd()*10;x.moveTo(cxk-22,y0+50);x.quadraticCurveTo(cxk,y0-30,cxk+22,y0+50);x.stroke()}}}
+    if(kind==='oak'){x.lineWidth=1.6;for(let k=0;k<3;k++){const cxk=lx+40+k*76;for(let j=0;j<9;j++){x.strokeStyle=`rgba(140,85,40,${.25+rnd()*.2})`;x.beginPath();const y0=60+j*52+rnd()*10;x.moveTo(cxk-22,y0+50);x.quadraticCurveTo(cxk,y0-30,cxk+22,y0+50);x.stroke()}}}
     else{const g=x.createLinearGradient(lx,0,lx+lw,0);g.addColorStop(0,'rgba(255,255,255,.06)');g.addColorStop(.5,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.08)');x.fillStyle=g;x.fillRect(lx,ly,lw,lh)}
   }
   if(kind!=='elev'){
@@ -244,6 +251,10 @@ const M={
   vct:std({map:vctTex,roughness:.16,metalness:.02}),
   carpet:std({map:carpetTex,roughness:1}),
   terr:std({map:terrTex,roughness:.22}),
+  dterr:std({map:dterrTex,roughness:.1,metalness:.05}),
+  white:std({map:wallTex('#eceae4','#151515',true),roughness:.5}),
+  copper:std({color:0xb5774f,roughness:.8}),
+  green:std({color:0x4c6156,roughness:.95}),
   ceil:std({map:ceilTex,roughness:1,side:THREE.DoubleSide}),
   steel:std({color:0xb7babd,roughness:.35,metalness:.7}),
   dark:std({color:0x2a2d30,roughness:.6}),
@@ -255,7 +266,8 @@ const M={
   wood:std({color:0x9a6a3e,roughness:.6}),
   red:std({color:0xb3221c,roughness:.5}),
 };
-const doorMats={};for(const k of ['oak','suite','steel','plain','elev'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
+M.copper.color.convertSRGBToLinear();M.green.color.convertSRGBToLinear();
+const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
 
 // ---------- the plan: rooms as solid blocks, corridors are what's left ----------
 // [label, x1,y1,x2,y2, door] door: side n/s/e/w + optional position along that side (0..1), '' = none
@@ -299,7 +311,7 @@ const NAMES={'6.420':['Charles Schwab Foundation','Wealth Management Conference 
   'WOMEN':['Women\'s restroom','Restroom'],'MEN':['Men\'s restroom','Restroom'],'ELEVATOR':['Elevator','South-west elevator'],'STAIR':['Stairs','Stairwell']};
 
 const ATR=[540,252,1005,772];
-function faceMat(mx,my){return inR(SUITE,mx,my)?M.grey:M.cream}
+function faceMat(mx,my){return mx<8?M.white:inR(SUITE,mx,my)?M.grey:M.cream}
 const DOORS=[];
 const roomBoxes=[];
 for(const R of ROOMS){
@@ -315,7 +327,7 @@ for(const R of ROOMS){
   if(side==='n'){dx=x1+(x2-x1)*t;dy=y1}else if(side==='s'){dx=x1+(x2-x1)*t;dy=y2}else if(side==='e'){dx=x2;dy=y1+(y2-y1)*t}else{dx=x1;dy=y1+(y2-y1)*t}
   const n=DIR[side].n;
   const suite=inR(SUITE,dx+n[0]*3,dy+n[1]*3);
-  const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':'oak';
+  const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':opt&&opt.walk?'tan':'oak';
   const dw=label==='ELEVATOR'?1.25:.98;
   decal(dx,dy,side,dw,2.24,1.12,doorMats[kind],.014);
   const rt=[n[1],-n[0]];// viewer's right
@@ -342,7 +354,7 @@ const WALK=[[wu(165),wv(220)],[wu(1460),wv(220)],[wu(1460),wv(265)],[wu(1660),wv
   flat(main,M.vct,0);
   const carpet=new THREE.Shape();rectPath(carpet,1095,205,1400,722);flat(carpet,M.carpet,.004);
   const ws=new THREE.Shape();polyPath(ws,WALK);{const h=new THREE.Path();rectPath(h,...PIT);ws.holes.push(h)}
-  flat(ws,M.terr,0);
+  flat(ws,M.dterr,0);
   const mc=new THREE.Shape();rectPath(mc,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);mc.holes.push(h)}
   flat(mc,M.ceil,H,false);
   const wc=new THREE.Shape();polyPath(wc,WALK);flat(wc,M.ceil,H+.35,false);
@@ -433,14 +445,36 @@ function chair(mx,my,rot,kind){
     for(const sx of [-1,1]){B(.05,.46,.05,fr,sx*.27,.23,.24);B(.05,.46,.05,fr,sx*.27,.23,-.24);B(.06,.05,.56,fr,sx*.3,.68,0);B(.05,.22,.05,fr,sx*.3,.57,.24)}}
   scene.add(g);addCollider(X(mx)-.38,Z(my)-.38,X(mx)+.38,Z(my)+.38);
 }
+function clubChair(mx,my,rot){
+  const g=new THREE.Group();g.position.set(X(mx),0,Z(my));g.rotation.y=rot;
+  const B=(w,h,d,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M.green);o.position.set(x,y,z);g.add(o);return o};
+  B(.84,.3,.78,0,.2,0);B(.6,.14,.6,0,.42,.06);B(.84,.5,.18,0,.6,-.32);B(.15,.32,.74,-.36,.52,0);B(.15,.32,.74,.36,.52,0);
+  for(const [x,z] of [[-.34,-.3],[.34,-.3],[-.34,.3],[.34,.3]]){const f=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.05,8),M.steel);f.position.set(x,.025,z);g.add(f)}
+  scene.add(g);addCollider(X(mx)-.43,Z(my)-.43,X(mx)+.43,Z(my)+.43);
+}
+for(const [u,v,r] of [[250,532,.5],[585,538,0],[628,540,.15],[900,538,0],[945,540,-.15],[1215,538,0],[1258,540,.2]])clubChair(wu(u),wv(v),r);
 chair(1205,500,0,'black');chair(1228,500,0,'teal');chair(1258,502,0,'orange');chair(1288,505,-.3,'black');chair(1312,520,-.9,'teal');chair(1150,560,Math.PI/2,'teal');
 
 // ---------- walkway between CBA and CBA North ----------
 const wb=(u1,v1,u2,v2,y0,y1,mat,o)=>box(wu(u1),wv(v1),wu(u2),wv(v2),y0,y1,mat,o);
-wb(165,205,1460,220,0,H+.35,M.cream);wb(1460,205,1475,265,0,H+.35,M.cream);wb(1475,250,1660,265,0,H+.35,M.cream);
-wb(145,205,165,920,0,H+.35,M.cream);wb(165,905,1495,920,0,H+.35,M.cream);wb(1495,485,1515,920,0,H+.35,M.cream);wb(1495,485,1660,500,0,H+.35,M.cream);
-for(const u of [182,508,832,1158])wb(u-14,220,u+14,248,0,H+.35,M.cream);
-wb(165,555,192,585,0,H+.35,M.cream);wb(1470,555,1495,585,0,H+.35,M.cream);
+wb(165,205,1460,220,0,H+.35,M.white);wb(1460,205,1475,265,0,H+.35,M.white);wb(1475,250,1660,265,0,H+.35,M.white);
+wb(145,205,165,920,0,H+.35,M.white);wb(165,905,1495,920,0,H+.35,M.white);wb(1495,485,1515,920,0,H+.35,M.white);wb(1495,485,1660,500,0,H+.35,M.white);
+for(const u of [182,508,832,1158])wb(u-14,220,u+14,248,0,H+.35,M.copper);
+wb(165,555,192,585,0,H+.35,M.copper);wb(1470,555,1495,585,0,H+.35,M.copper);
+for(const u of [540,855,1170])wb(u-12,516,u+12,540,0,H+.35,M.copper); // terracotta columns at the edge of the escalator well
+// windows in the end wall, north of the doors
+{const [c,x]=cvs(256,256);const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'#8fb9db');g.addColorStop(1,'#d9e6ee');x.fillStyle=g;x.fillRect(0,0,256,256);
+ x.fillStyle='rgba(60,90,130,.35)';x.beginPath();x.moveTo(0,256);x.lineTo(256,120);x.lineTo(256,160);x.lineTo(40,256);x.fill();
+ x.fillStyle='#2b2e31';x.fillRect(0,0,6,256);x.fillRect(250,0,6,256);x.fillRect(0,0,256,6);x.fillRect(0,246,256,10);
+ const t=tex(c,true);const len=(wv(555)-wv(248))*S;t.repeat.set(len/1.6,1);decal(wu(165),(wv(248)+wv(555))/2,'e',len,H-.5,(H+.35)/2+.05,new THREE.MeshBasicMaterial({map:t}),.012);}
+// clock and STAIR 4 plaque on the terracotta pilaster
+{const [c,x]=cvs(128,128);x.fillStyle='#f6f4ef';x.beginPath();x.arc(64,64,60,0,7);x.fill();x.lineWidth=6;x.strokeStyle='#222';x.stroke();
+ x.fillStyle='#222';for(let i=0;i<12;i++){const a=i/12*Math.PI*2;x.fillRect(64+Math.cos(a)*48-2,64+Math.sin(a)*48-2,4,4)}
+ const now=new Date(),hr=(now.getHours()%12+now.getMinutes()/60)/12*Math.PI*2,mn=now.getMinutes()/60*Math.PI*2;
+ x.lineCap='round';x.lineWidth=6;x.beginPath();x.moveTo(64,64);x.lineTo(64+Math.sin(hr)*28,64-Math.cos(hr)*28);x.stroke();x.lineWidth=4;x.beginPath();x.moveTo(64,64);x.lineTo(64+Math.sin(mn)*42,64-Math.cos(mn)*42);x.stroke();
+ const m=new THREE.MeshBasicMaterial({map:tex(c),transparent:true});decal(wu(192),wv(570),'e',.36,.36,2.15,m,.02);
+ const [c2,x2]=cvs(128,56);x2.fillStyle='#111';x2.fillRect(0,0,128,56);x2.fillStyle='#e8e2d4';x2.font=`700 22px ${SIGNF}`;x2.textAlign='center';x2.fillText('STAIR 4',64,24);x2.font=`500 16px ${SIGNF}`;x2.fillText('Floor 6',64,46);
+ decal(wu(192),wv(570),'e',.24,.105,1.62,new THREE.MeshBasicMaterial({map:tex(c2)}),.02);}
 // window wall along the north side of the walkway
 {const [c,x]=cvs(512,256);const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'#9cc7e6');g.addColorStop(.62,'#e3eef2');g.addColorStop(1,'#c9d2c4');x.fillStyle=g;x.fillRect(0,0,512,256);
  x.fillStyle='#cdbd9f';x.fillRect(60,96,260,130);x.fillStyle='#a99a80';for(let i=0;i<8;i++)for(let j=0;j<4;j++)x.fillRect(74+i*31,110+j*28,18,15);
@@ -451,9 +485,21 @@ wb(165,555,192,585,0,H+.35,M.cream);wb(1470,555,1495,585,0,H+.35,M.cream);
 // long wood ledge under the windows
 wb(355,250,1310,295,0,.45,M.wood,{cam:false});
 // CBA North doors at the far end
-{const [c,x]=cvs(512,512);x.fillStyle='#25282b';x.fillRect(0,0,512,512);for(const ox of [16,262]){x.fillStyle='#9fb9c6';x.fillRect(ox,16,234,496);x.fillStyle='rgba(255,255,255,.3)';x.beginPath();x.moveTo(ox+10,30);x.lineTo(ox+90,30);x.lineTo(ox+10,200);x.fill();x.fillStyle='#c0c3c6';x.fillRect(ox+(ox<100?200:20),240,14,120)}
- decal(wu(165),wv(665),'e',1.9,2.3,1.15,new THREE.MeshBasicMaterial({map:tex(c)}),.014);
- decal(wu(165),wv(665),'e',1.9,.45,2.55,new THREE.MeshBasicMaterial({map:signTex('CBA North','Doors to CBA North')}),.02);}
+{const [c,x]=cvs(512,512);x.fillStyle='#1d1f21';x.fillRect(0,0,512,512);
+ for(const ox of [18,262]){
+   const g=x.createLinearGradient(0,0,0,512);g.addColorStop(0,'#e9edef');g.addColorStop(.55,'#d7dde0');g.addColorStop(1,'#a8a49c');x.fillStyle=g;x.fillRect(ox,18,232,494);
+   x.fillStyle='#f6f8f8';for(let i=0;i<3;i++)x.fillRect(ox+40,40+i*34,150-i*30,10);
+   x.fillStyle='#c9cdcf';x.fillRect(ox+70,150,90,300);x.fillStyle='#8c8f91';x.fillRect(ox+110,150,4,300);
+   x.fillStyle='rgba(255,255,255,.28)';x.beginPath();x.moveTo(ox+10,30);x.lineTo(ox+80,30);x.lineTo(ox+10,180);x.fill();
+   x.fillStyle='#1d1f21';x.fillRect(ox+(ox<100?206:18),210,10,150)}
+ x.fillStyle='#2f6fb5';x.fillRect(300,250,120,40);x.fillStyle='#fff';x.font=`700 24px ${SIGNF}`;x.fillText('FINANCE',312,279);
+ x.fillStyle='#6d7276';x.fillRect(80,190,26,90);x.fillStyle='#d8b89a';x.fillRect(84,166,18,24);
+ decal(wu(165),wv(665),'e',2.0,2.35,1.175,new THREE.MeshBasicMaterial({map:tex(c)}),.014);
+ const [hc,hx]=cvs(512,140);hx.fillStyle='#f3f1ec';hx.fillRect(0,0,512,140);hx.fillStyle='#2b2d30';hx.fillRect(0,0,512,8);hx.fillRect(0,132,512,8);
+ hx.font=`600 44px ${SIGNF}`;hx.fillText('↑',30,88);hx.fillText('Finance Office',90,88);
+ const hm=new THREE.MeshBasicMaterial({map:tex(hc)});
+ const hs=new THREE.Mesh(new THREE.BoxGeometry(.05,.34,1.25),[hm,hm,M.dark,M.dark,M.dark,M.dark]);hs.position.set(X(wu(255)),H+.35-.42,Z(wv(665)));scene.add(hs);
+ for(const dz of [-.5,.5]){const r=new THREE.Mesh(new THREE.CylinderGeometry(.01,.01,.25,6),M.steel);r.position.set(X(wu(255)),H+.35-.12,Z(wv(665))+dz);scene.add(r)}}
 // escalators down to the 5th floor
 const stepTexes=[];
 function stepTex(){
@@ -494,8 +540,13 @@ escalator(X(wu(1170)),X(wu(640)),Z(wv(462)),1);
  lf.rotation.x=-Math.PI/2;lf.position.set((a+b)/2,-4.6,(n+s)/2);scene.add(lf);
  boxM(a,n,b,n+.1,-4.6,-.02,M.pit,{collide:false,cam:false});boxM(a,s-.1,b,s,-4.6,-.02,M.pit,{collide:false,cam:false});
  boxM(a,zm-.08,b,zm+.08,-4.6,-.3,M.pit,{collide:false,cam:false});
- railing(a,n,b,n);railing(a,s,b,s);
- railing(a,Z(wv(395)),a,s);railing(b,n,b,Z(wv(410)));
+ const half=(ax,az,bx,bz)=>{boxM(Math.min(ax,bx)-.08,Math.min(az,bz)-.08,Math.max(ax,bx)+.08,Math.max(az,bz)+.08,0,1.0,M.white,{collide:false,cam:false});
+   boxM(Math.min(ax,bx)-.1,Math.min(az,bz)-.1,Math.max(ax,bx)+.1,Math.max(az,bz)+.1,1.0,1.03,M.black,{collide:false,cam:false});
+   const L=Math.hypot(bx-ax,bz-az),n=Math.max(1,Math.round(L/1.5));
+   boxM(Math.min(ax,bx)-.03,Math.min(az,bz)-.03,Math.max(ax,bx)+.03,Math.max(az,bz)+.03,1.2,1.25,M.black,{collide:false,cam:false});
+   for(let i=0;i<=n;i++){const t=i/n,p=new THREE.Mesh(new THREE.BoxGeometry(.03,.19,.03),M.black);p.position.set(ax+(bx-ax)*t,1.11,az+(bz-az)*t);scene.add(p)}};
+ half(a,n,b,n);half(a,s,b,s);
+ half(a,Z(wv(395)),a,s);half(b,n,b,Z(wv(410)));
  }
 
 // ---------- lights ----------
@@ -533,7 +584,7 @@ function exitSign(mx,my,dir){
   const m=new THREE.MeshBasicMaterial({map:tex(c),toneMapped:false});const b=new THREE.Mesh(new THREE.BoxGeometry(.34,.18,.06),[M.plain,M.plain,M.plain,M.plain,m,m]);
   b.position.set(X(mx),H-.2,Z(my));b.rotation.y=DIR[dir].r;scene.add(b);
 }
-exitSign(121,45,'s');exitSign(165,102,'e');exitSign(1277,140,'s');exitSign(300,840,'s');exitSign(1228,840,'s');exitSign(wu(300),wv(665),'e');exitSign(1412,200,'s');
+exitSign(121,45,'s');exitSign(165,102,'e');exitSign(1277,140,'s');exitSign(300,840,'s');exitSign(1228,840,'s');exitSign(wu(167),wv(665),'e');exitSign(1412,200,'s');
 // elevator call button
 decal(492,855,'s',.09,.18,1.1,M.steel,.02);
 // wayfinding signs at junctions
@@ -766,6 +817,7 @@ const ENTRANCES=[
   {id:'north',name:'North hallway · photo spot',pos:[121,478],look:[121,20]},
   {id:'inner',name:'Hallway by 6.492',pos:[312,445],look:[312,180]},
   {id:'suite',name:'6.426 suite · glass doors',pos:[1262,770],look:[1262,500]},
+  {id:'video',name:'Walkway · toward the Finance Office',pos:[wu(760),wv(678)],look:[wu(165),wv(630)]},
   {id:'walkway',name:'Walkway · top of the escalators',pos:[wu(470),wv(350)],look:[wu(1400),wv(380)]},
   {id:'cbanorth',name:'Walkway · CBA North doors',pos:[wu(240),wv(665)],look:[wu(1400),wv(620)]},
 ];
