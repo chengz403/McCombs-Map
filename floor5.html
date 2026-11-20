@@ -99,7 +99,9 @@ const S=0.07, H=2.9, K=S*100;                // meters per plan pixel (0.055 and
 const X=m=>(m-1000)*S; let Z=m=>(m-800)*S;
 // The front door lines up with the west escalator approach on the printed plan.
  const C142={west:865,east:1127,roomEast:1027,front:700,door:964,jamb:8,partition:654,insideWidth:30};
- const FINANCE_HALL={west:744,east:795,center:769.5,alcoveBack:827};
+ // Continue the 5.102–5.112 wall at x=706 without a projecting white return.
+ // Keep the hallway width while extending the Finance Centers frontage west.
+ const FINANCE_HALL={west:706,east:757,center:731.5,alcoveBack:827};
  const BOUNDS={x1:145,y1:250,x2:1560,y2:1545};
 const PIT=[971,784,1187,822];                 // escalator opening (opposing upper landings); hugs the men's-restroom wood wall
 
@@ -1722,13 +1724,14 @@ seed=saved;
   ctx.font='33px Arial';ctx.fillText('YOU ARE HERE',105,514);
  });
 
- function bench(name,mx,my){
-  wingBox(name+'-body',mx-8,my-4,mx+8,my+4,.12,.36,westOak);
-  for(const x of [mx-8,mx+6.3])wingBox(name+'-end',x,my-4,x+1.7,my+4,0,.43,westOak,false);
-  wingBox(name+'-seat',mx-6.3,my-3.8,mx+6.3,my+3.8,.36,.46,teal,false);
+ function bench(name,mx,my,halfWidth=8){
+  wingBox(name+'-body',mx-halfWidth,my-4,mx+halfWidth,my+4,.12,.36,westOak);
+  for(const x of [mx-halfWidth,mx+halfWidth-1.7])wingBox(name+'-end',x,my-4,x+1.7,my+4,0,.43,westOak,false);
+  wingBox(name+'-seat',mx-halfWidth+1.7,my-3.8,mx+halfWidth-1.7,my+3.8,.36,.46,teal,false);
  }
- bench('finance-front-bench-west',east+23,705.7);
- bench('finance-front-bench-east',east+44,705.7);
+ // Two 2.24 m benches with a 0.42 m gap along the widened mural wall.
+ bench('finance-front-bench-west',east+24,705.7,16);
+ bench('finance-front-bench-east',east+62,705.7,16);
 
  // A pane in a built-up oak leaf leaves a real sightline into 5.142 and 5.142A.
  const glass=std({color:0xadc4cf,transparent:true,opacity:.17,roughness:.22,depthWrite:false});
