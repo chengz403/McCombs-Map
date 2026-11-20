@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>GSB Third Floor</title>
+<title>McCombs Map · GSB Level 3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Rubik:wght@400;500;700&display=swap">
@@ -26,6 +26,10 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hi
 #game canvas{display:block;touch-action:none;outline:none}
 .hud-left{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));
   display:flex;flex-direction:column;gap:8px;width:min(300px,calc(100vw - 240px));pointer-events:none}
+.floors{align-self:flex-start;pointer-events:auto;border:1px solid var(--line);border-radius:8px;
+  padding:6px 9px;background:var(--panel);color:var(--muted);font-size:12px;line-height:1.4}
+.floors a{color:#ffac7b;text-underline-offset:2px}
+.floors [aria-current="page"]{color:var(--ink)}
 .hud-zone{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px 9px;display:flex;flex-direction:column;gap:2px;
   backdrop-filter:blur(6px);pointer-events:none}
 .finder{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;
@@ -95,6 +99,7 @@ kbd{font-family:var(--font-ui);font-size:11px;font-weight:700;color:var(--ink);b
     <label for="entrance">Start at an entrance</label>
     <div class="finder-row"><select id="entrance"></select><button class="btn" type="submit">Teleport</button></div>
   </form>
+  <nav class="floors" aria-label="Floor selection">Floor <strong aria-current="page">3rd</strong> · <a href="floor5.html">5th (preview)</a></nav>
 </div>
 <div class="flash" id="flash"></div>
 <div class="mini-wrap"><canvas id="mini" aria-label="Floor map with your position"></canvas><div class="mini-cap"><span>Hallway</span><b>● You</b></div></div>
