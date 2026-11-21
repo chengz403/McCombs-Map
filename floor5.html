@@ -2363,6 +2363,20 @@ angledFace.veneer(-.043,storageDoor-.48);
 angledFace.veneer(storageDoor+.48,angledFace.length);
 angledFace.veneer(storageDoor-.48,storageDoor+.48,2.18);
 angledFace.box('angled-wood-end-return',angledFace.length-.012,H/2,.055,.026,H,.112,wood);
+// Carry the service-wall base around the white return and the 5.302 corner.
+{
+ const returnX=X(1220),cornerX=X(1262),north=Z(945),south=Z(994),depth=.020;
+ const junction=Z(933)+.11;
+ const outline=[
+  angledFace.position(angledFace.length,.109),
+  [returnX,junction],[returnX,north],[cornerX,north],[cornerX,south],
+  [cornerX+depth,south],[cornerX+depth,north-depth],[returnX+depth,north-depth],
+  [returnX+depth,junction],angledFace.position(angledFace.length,.143)
+ ];
+ const profile=new THREE.Shape(outline.map(([x,z])=>new THREE.Vector2(x,-z)));
+ const trim=new THREE.ExtrudeGeometry(profile,{depth:.096,bevelEnabled:false});
+ wingMesh('service-corner-baseboard',trim,black,0,0,0).rotation.x=-Math.PI/2;
+}
 serviceDoor(angledFace,'5.122',storageDoor,.93,1,westOak);
 const fountainAt=angledFace.length*.32;
 angledFace.box('fountain-backsplash',fountainAt,.81,.136,.87,.89,.025,labMetal);
