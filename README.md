@@ -1,39 +1,43 @@
 # McCombs Map
 
-A walkable, third-person 3D model of the McCombs GSB 3rd floor, built from photos of the floor-plan directory and the hallways. It is a single HTML file using three.js from a CDN, so there is no build step.
+A walkable, third-person 3D model of McCombs Levels 3 and 4, built from floor plans and hallway photos. Each floor has its own HTML file and loads Three.js from a CDN.
 
 ## 4th floor (`floor4.html`)
 
-Open `floor4.html` for the GSB 4th floor. The minimap image is built into the file, so it works even if you download just `floor4.html`. It's built from `reference/4th-floor/` (the official plan plus hallway photos). What's modeled so far:
+Open `floor4.html` for the GSB 4th floor. Its minimap and textures are built into the file. The model uses the official plan and hallway photos in `reference/4th-floor/`.
 
 - **Escalator hallway:** two escalators down to the 3rd floor, the wood wall behind them, restrooms, elevators, and the hanging MPA and wayfinding signs.
 - **MPA corridor:** the oak MPA Program Office portal (4.112CA), the 4.100A–H rooms with the Quiet/Lactation Room (4.100H), and the Recruiting Operations doors (4.128).
 - **Balcony:** the bronze storefront with doors, plus the balcony outside it (pavers, parapet, benches, trees). You can look out but can't go outside.
 - **Stair 2 lobby:** stair doors, lockers and the fire hose cabinet.
-- **Ford Career Center (4.114):** the curved oak and glass front, with open doorways into a lobby you can walk around in.
+- **Ford Career Center (4.114).** Both glass entrances lead to the furnished lobby and interview corridors. Find rooms such as 4.114FG by number and look for sponsor plaques on the door sidelights.
 - **GSB escalators:** two lanes side by side with a small gap, the second lane right against the wood wall. At the west end, by the elevators, you board the escalator down to the 3rd floor, and the one from the 5th floor lets you off. At the east end, the escalator from the 3rd floor lets you off right next to where you board the one up to the 5th. There are bulletin boards on the wood wall at both ends.
-- **Elevator lobby:** dark brown elevator surrounds and the three-part wayfinding sign. Beside the elevators, a short hall holds Stair 1 and its fire hose cabinet, Custodial 4.116, and the men's room (4.118, with an automatic door) at the end.
-- **NRG and Ford entrances:** the NRG Productivity Center's cherry portal with a glass door and the small nrg plaque. Next to it are the Ford Career Center's glass double doors, which stand open so you can walk in.
+- **Elevator lobby.** Two recessed elevator doors share a dark metal surround. Face Stair 1 and turn left to follow the hall straight to the men's room (4.118). The closed custodial door (4.116) is on the hall's right wall.
+- **NRG Productivity Center (4.112A).** The entrance opens onto window seating, patterned lounge chairs, communal tables, and computer workstations. Paired study booths flank the corridor for 4.112AM, AN, AO and AP, which ends at the print room. You can find the study rooms by room number or Greek name.
 - **CBA passage (heading south from the escalators):** the wood-clad restroom block with Women 4.120, Electrical 4.122, 4.124 and the drinking fountain, the bulletin board, display cases and a bench.
 - **Recruiting Operations (4.128) and 4.126:** two office suites off the CBA passage. Each has a bronze-and-glass entrance; the doors are shown closed, but you can walk through them. Inside are carpeted corridors with the 4.128A–J and 4.126A–K offices and benches.
-- **GSB/CBA connector:** runs straight south from the GSB elevator lobby, with its west wall in line with the CBA women's restroom wall, past 4.102, 4.104 and 4.106, through a cherry frame into the CBA. It has the hanging sign pointing to AIM, MPA, Ford and Recruiting, plus Comm Chase 4.312 and the drinking fountains.
-- **CBA north corridor:** the north side is the service row, from a stair, Electrical 4.320, the men's and women's rooms, Tele Equip 4.310, Vending 4.308 (you can walk in), Janitor 4.306, the CBA elevator and another stair. The south side has classroom 4.322 and Locker E, then the atrium windows between orange piers with round study tables, then 4.304 and Storage 4.302.
+- **GSB/CBA connector.** The hallway narrows along the four matching wood doors for 4.102, 4.106, 4.108 and 4.110. Across the hall are the angled wall with the John Edward Treleven memorial, the electrical entrance at 4.104 and the drinking fountains.
+- **CBA north corridor:** the north service row includes Stair 8, Electrical 4.320, room 4.316 between the restrooms, Communications 4.312, Telephone Equipment 4.310, Vending 4.308, the Custodial pantry 4.306, the recessed elevator, and Stair 7 beside the fountain and Storage 4.302. On the south side are classroom 4.322 and Locker E, three round study tables along the atrium windows, and Locker D near classroom 4.304.
 - **Atrium:** a deep brick court with a skylight. You can look down into it through the windows but can't walk in it.
 - **CBA classroom loop:** the corridor runs all the way around the atrium.
-  - West corridor: classrooms 4.324, 4.326, 4.330 and 4.332, the tiered classroom 4.328, a row of benches, and the exit stair at the south-west corner.
-  - South corridor: Storage 4.334, classrooms 4.336–4.346, narrow atrium windows, lockers, study tables, benches and a wall clock.
-  - It joins the MPA Lounge hallway, where you'll find 4.348 and Stair 7.
+  - West corridor: classrooms 4.324, 4.326, 4.330 and 4.332, the tiered classroom 4.328, a row of benches, and Stair 9 at the southwest corner.
+  - South corridor: Storage 4.334, classrooms 4.336–4.346, triangular study desks beside the atrium windows, Locker F across from 4.338, Locker G beside 4.344, benches and a wall clock.
+  - It joins the MPA Lounge hallway near 4.348 and Stair 10.
   - Stair 8 is at the west end of the north corridor.
-- **CBA escalators:** one down to the 3rd floor under a black-clad bulkhead, and one up to the Mezzanine along the gray wall.
-- **CBA study area:** bar tables with wall monitors, cream lockers with orange columns, and a glass wall at the end. Behind the glass is the Mezzanine stair, which you can see but can't climb. The Mezzanine isn't walkable and isn't in the room finder.
-- **MPA Lounge hallway:** the cherry-wood MPA Lounge doors with gold lettering, the Green Room, classrooms 4.304, 4.344 and 4.350, the TA Room, the bench row, a drinking fountain, and Stair 7 at the south end.
-- **Doors only for now:** NRG Productivity Center (4.112A) and AIM Reading Room (4.112B).
+- **CBA escalators:** the west landing has the down escalator to Level 3 and the arrival from Level 5. Follow the study-area corridor past the lockers to reach the east landing, where the escalator goes up to Level 5 and the run from Level 3 arrives.
+- **CBA study area:** four six-seat tables with wall TVs, two cream locker banks between three orange pillars, and a view of the mezzanine stair through the Stair 4 glazing. The west escalator landing has a hammer display and floor directory, and the east landing has a recessed desk and chairs by the window.
+- **MPA Lounge hallway:** frosted lounge windows and separate cherry-wood double doors for the MPA Lounge and Green Room. Five green benches line the hall near classrooms 4.350 and 4.348 and Stair 10.
+- **AIM Reading Room (4.112B).** Its paneled entrance meets the east Ford storefront at the corner.
 
-In the room finder you can type room numbers or names like `MPA`, `Ford`, `NRG`, `balcony` or `stair`. A 4.3xx classroom routes you to the CBA doors, since the CBA wing isn't built yet. Coordinates in `floor4.html` are pixels on `reference/4th-floor/gsb-fourth-floor-plan.png` at 0.07 m per pixel. The minimap is `reference/4th-floor/minimap.jpg`: the directory photo from the building, warped onto those same plan pixels (within about 0.2 m), so it also covers the CBA wing.
+In the room finder you can type room numbers or names like `MPA`, `Ford`, `NRG`, `balcony` or `stair`. Coordinates in `floor4.html` are pixels on `reference/4th-floor/gsb-fourth-floor-plan.png` at 0.07 m per pixel. The minimap uses the original directory photo, aligned to that plan and extended to include the west end of NRG.
 
 ## Run it
 
-Open `index.html` in a browser, or serve the folder:
+Save the raw `floor4.html` from the `4th-floor` branch and open it in your browser to play Level 4. Open `index.html` if you want to play Level 3. Both pages need an internet connection to load Three.js.
+
+[Download Level 4 HTML](https://raw.githubusercontent.com/chengz403/McCombs-Map/4th-floor/floor4.html)
+
+You can also serve the repository folder with Python.
 
 ```bash
 python3 -m http.server 8000

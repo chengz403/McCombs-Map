@@ -27,6 +27,7 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `mpa-lounge-hallway-looking-north.jpg` | The same hallway looking north: Stair 7 doors and the drinking fountain on the right |
 | `mpa-lounge-doors.jpg` | The MPA Lounge's cherry double doors with the gold lettering |
 | `cba-north-corridor-atrium-windows.jpg` | CBA north corridor looking west: atrium windows between orange piers on the left, the service rooms and the women's restroom on the right |
+| `cba-atrium-cross-floor-view.jpg` | Looking down into the CBA atrium. Use the skylight, brick walls, window rows and lower seating floor as visual alignment references when joining the floor models. |
 | `vending-4308.jpg` | Inside Vending 4.308 |
 | `cba-womens-restroom-and-4312.jpg` | Women's restroom door where the GSB/CBA connector meets the corridor; 4.312 plaque on the right |
 | `gsb-cba-connector-looking-north.jpg` | The GSB/CBA connector looking north toward the GSB and the NRG entrance: hanging sign, fountains, closet doors |
@@ -50,12 +51,14 @@ Source images for modeling the CBA/GSB 4th floor. Treat these as the outline to 
 | `gsb-escalators-east-end-arrivals.jpg` | From the east end looking west: bulletin board on the wood wall, escalator arrivals, the back of the three-part sign ("← MPA Lounge, Green Room, Management / Accounting") |
 | `4126-corridor.jpg` | Inside 4.126: grey carpet, offices on both sides, wood benches with navy cushions |
 
-`minimap.jpg` is `directory-photo.jpg` warped onto the plan's pixel grid (fit from 9 matching points, within about 3 px, or 0.2 m).
+`minimap.jpg` is `directory-photo.jpg` rectified onto the plan's pixel grid, including the complete western NRG corner and its exit stair.
+
+`textures/treleven-memorial.jpg` is a perspective-corrected crop of the memorial plaque beside 4.104.
 
 ## Key areas (GSB wing)
 
 - **Ford Career Center 4.114** – curved front desk area facing the escalators; 4.114 offices (AA–FG, DA–DH, EA–EP, FA–FE) behind it.
-- **NRG Productivity Center 4.112A** – large open room on the diagonal west edge, with offices 4.112AE–4.112AR. Always label it "NRG Productivity Center" (the in-building sign still says Reliant; ignore that).
+- **NRG Productivity Center 4.112A** – large open room on the diagonal west edge, with study rooms 4.112AC through 4.112AQ. Always label it "NRG Productivity Center" (the in-building sign still says Reliant; ignore that).
 - **AIM Reading Room 4.112B**, **MPA Program Office 4.112CA**, offices 4.112CB–4.112CP along the **balcony** on the diagonal east edge.
 - **Recruiting Operations / Ford Career Center Recruitment Services** – interview rooms 4.126A–L, 4.128A–J, 4.100A–H.
 - **Core:** elevators, escalators, restrooms, 4.102–4.124, stairs at the NW and SE corners.
