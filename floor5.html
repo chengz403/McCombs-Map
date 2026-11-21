@@ -3890,21 +3890,23 @@ function zoneAt(){const mx=P.x/S+1000,my=planY(P.z);for(const [r,n] of ZONES)if(
 const mini=document.getElementById('mini'),mctx=mini.getContext('2d');
 const PHOTO={x:70,y:10,w:1340,h:1050};
 const BW=PHOTO.w,BH=PHOTO.h;
-const base=document.createElement('canvas');base.width=BW;base.height=BH;
+const MAP_RESOLUTION=2;
+const base=document.createElement('canvas');base.width=BW*MAP_RESOLUTION;base.height=BH*MAP_RESOLUTION;
+const planContext=base.getContext('2d');
+planContext.scale(MAP_RESOLUTION,MAP_RESOLUTION);
 const planImage=new Image();planImage.src='fifth-floor-map-corrected.svg';
 try{
   await planImage.decode();
   const scale=planImage.naturalWidth/1448;
-  const planContext=base.getContext('2d');
   planContext.drawImage(planImage,PHOTO.x*scale,PHOTO.y*scale,PHOTO.w*scale,PHOTO.h*scale,0,0,BW,BH);
   // Use the drawn directory if this renderer cannot read the SVG's embedded raster.
   try{
-   const pixel=planContext.getImageData(575-PHOTO.x,185-PHOTO.y,1,1).data;
+   const pixel=planContext.getImageData((575-PHOTO.x)*MAP_RESOLUTION,(185-PHOTO.y)*MAP_RESOLUTION,1,1).data;
    if(pixel[3]===255&&pixel[0]>180&&pixel[1]>150)paintFinanceDirectory(planImage);
   }catch{}
 }catch(error){
-  const b=base.getContext('2d');b.fillStyle='#211c19';b.fillRect(0,0,BW,BH);
-  b.fillStyle='#fff';b.font='28px sans-serif';b.fillText('Floor plan unavailable: keep fifth-floor-map-corrected.svg beside floor5.html.',40,100);
+  planContext.fillStyle='#211c19';planContext.fillRect(0,0,BW,BH);
+  planContext.fillStyle='#fff';planContext.font='28px sans-serif';planContext.fillText('Floor plan unavailable: keep fifth-floor-map-corrected.svg beside floor5.html.',40,100);
   console.error('Could not load the fifth-floor minimap photograph',error);
 }
 // [model plan x, model plan y, photograph x, photograph y, landmark]
@@ -4520,7 +4522,8 @@ function drawMini(){
  let z=viewZoom,ox=viewOX,oy=viewOY;
  if(!bigMode){z=SMALL.zoom;ox=Math.max(0,Math.min(BW-W/z,p[0]-W/z/2));oy=Math.max(0,Math.min(BH-H/z,p[1]-H/z/2));}
  const screen=(x,y)=>{const q=mapPoint(x,y);return [(q[0]-ox)*z,(q[1]-oy)*z];};
- mctx.fillStyle='#211c19';mctx.fillRect(0,0,W,H);mctx.drawImage(base,ox,oy,W/z,H/z,0,0,W,H);
+ mctx.fillStyle='#211c19';mctx.fillRect(0,0,W,H);
+ mctx.drawImage(base,ox*MAP_RESOLUTION,oy*MAP_RESOLUTION,W/z*MAP_RESOLUTION,H/z*MAP_RESOLUTION,0,0,W,H);
  const [px,py]=screen(mx,my),facing=screen(mx-Math.sin(yaw)*2,my-Math.cos(yaw)*2),ca=Math.atan2(facing[1]-py,facing[0]-px);
  mctx.fillStyle='rgba(232,71,59,.25)';mctx.beginPath();mctx.moveTo(px,py);mctx.arc(px,py,70,ca-.55,ca+.55);mctx.closePath();mctx.fill();
  if(nav.active&&!nav.arrived&&nav.path.length>1){
