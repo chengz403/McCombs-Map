@@ -1796,16 +1796,139 @@ for(let a=546;a<893;a+=28){
  if(b<893)wingBox('south-cream-window-pier',b,1428,Math.min(a+28,893),1430,0,H,westCream,false);
 }
 // Brick remains visible beyond the windows, below the fifth-floor sill line.
-// Window-side laptop tables, black chairs and a green upholstered bench.
-const chairBlack=std({color:0x252827,roughness:.7});
-for(const mx of [565,603,641,679,717,755,793,831]){
- const xx=X(mx),zz=Z(1435);
- wingMesh('south-student-table',new THREE.CylinderGeometry(.42,.42,.035,24),tableCream,xx,.74,zz);
- for(const sg of [-1,1])wingPart('south-table-leg',xx+sg*.24,.37,zz,.027,.74,.027,westHardware);
- wingPart('south-chair-seat',xx,.44,zz+.53,.44,.05,.43,chairBlack);
- wingPart('south-chair-back',xx,.66,zz+.73,.44,.39,.035,chairBlack);
- for(const sx of [-1,1])for(const sz of [-1,1])wingPart('south-chair-leg',xx+sx*.18,.22,zz+.53+sz*.16,.025,.44,.025,chairBlack);
- addCollider(xx-.45,zz-.43,xx+.45,zz+.79);
+// Rounded laminate desks tuck under the windows with a scallop at each pier.
+const deskLaminate=std({color:0xdcd0b5,roughness:.48});
+const deskEdge=std({color:0xb7a98d,roughness:.54});
+const furnitureSteel=std({color:0x292a26,metalness:.27,roughness:.48});
+const chairShell=std({color:0x232a2c,roughness:.56});
+const chairFabric=std({color:0x394e4e,roughness:.96});
+const tableOutline=new THREE.Shape();
+tableOutline.moveTo(-.68,-.027);tableOutline.lineTo(-.52,-.027);
+tableOutline.bezierCurveTo(-.41,-.027,-.46,-.151,-.32,-.151);
+tableOutline.lineTo(.29,-.151);tableOutline.bezierCurveTo(.43,-.151,.42,-.043,.52,-.043);
+tableOutline.lineTo(.69,-.043);tableOutline.quadraticCurveTo(.77,-.043,.77,-.143);
+tableOutline.bezierCurveTo(.77,-.25,.78,-.43,.74,-.52);
+tableOutline.quadraticCurveTo(.703,-.57,.62,-.597);
+tableOutline.bezierCurveTo(.28,-.646,-.15,-.751,-.58,-.763);
+tableOutline.quadraticCurveTo(-.77,-.767,-.77,-.615);
+tableOutline.lineTo(-.77,-.118);tableOutline.quadraticCurveTo(-.77,-.027,-.68,-.027);
+const tableGeometry=new THREE.ExtrudeGeometry(tableOutline,{
+ depth:.022,bevelEnabled:true,bevelThickness:.004,bevelSize:.004,bevelSegments:2,curveSegments:8
+});
+tableGeometry.rotateX(-Math.PI/2);
+
+const tubeGeometry=new THREE.CylinderGeometry(1,1,1,8);
+function galleryTube(parent,name,from,to,radius,material){
+ const axis=to.clone().sub(from),tube=new THREE.Mesh(tubeGeometry,material);
+ tube.name=name;tube.position.copy(from).addScaledVector(axis,.5);
+ tube.scale.set(radius,axis.length(),radius);
+ tube.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),axis.normalize());parent.add(tube);
+}
+const chairTemplate=new THREE.Group();
+chairTemplate.name='atrium-south-study-chair';
+const chairSeat=upholsteryMesh(.425,.40,.054,.060,chairFabric);
+chairSeat.name='south-chair-cushion';chairSeat.position.set(0,.459,.016);
+chairSeat.rotation.x=-Math.PI/2;chairTemplate.add(chairSeat);
+const seatPan=upholsteryMesh(.454,.418,.027,.059,chairShell);
+seatPan.position.set(0,.422,.014);seatPan.rotation.x=-Math.PI/2;chairTemplate.add(seatPan);
+
+// Curve the molded shell and form the ribs on its rear face.
+const chairBack=new THREE.BoxGeometry(.47,.346,.028,12,40,1);
+const backVerts=chairBack.attributes.position;
+for(let i=0;i<backVerts.count;i++){
+ const x=backVerts.getX(i),y=backVerts.getY(i),z=backVerts.getZ(i);
+ const across=x/.235,curve=across*across;
+ const tip=Math.max(0,(Math.abs(y)-.141)/.032);
+ const rib=z<0&&y>-.136&&y<.03?.0045*(.5+.5*Math.cos((y+.130)*2*Math.PI/.035))**3:0;
+ backVerts.setXYZ(i,x*(.96+.15*y-.06*tip*tip),y+.014*curve,z+.038*curve-rib*(1-.46*curve));
+}
+chairBack.computeVertexNormals();
+const chairBackMesh=new THREE.Mesh(chairBack,chairShell);
+chairBackMesh.name='south-chair-ribbed-back';chairBackMesh.position.set(0,.692,-.190);
+chairBackMesh.rotation.x=-.20;chairTemplate.add(chairBackMesh);
+for(const side of [-1,1]){
+ galleryTube(chairTemplate,'south-chair-front-leg',new THREE.Vector3(side*.235,.030,.220),
+             new THREE.Vector3(side*.190,.43,.147),.012,furnitureSteel);
+ galleryTube(chairTemplate,'south-chair-rear-leg',new THREE.Vector3(side*.232,.03,-.232),
+             new THREE.Vector3(side*.201,.800,-.207),.012,furnitureSteel);
+ const arm=new THREE.CatmullRomCurve3([[.198,.453,-.152],[.244,.608,-.155],[.249,.655,-.094],
+  [.249,.655,.107],[.236,.602,.164],[.197,.446,.164]].map(([x,y,z])=>new THREE.Vector3(side*x,y,z)));
+ chairTemplate.add(new THREE.Mesh(new THREE.TubeGeometry(arm,12,.013,6,false),furnitureSteel));
+ const pad=upholsteryMesh(.050,.23,.024,.023,chairShell);
+ pad.name='south-chair-arm-pad';pad.position.set(side*.249,.661,.014);
+ pad.rotation.x=-Math.PI/2;chairTemplate.add(pad);
+}
+
+const windowFurnitureZ=Z(1430),furnitureFloor=.019;
+function galleryChair(x,z,heading){
+ const chair=chairTemplate.clone();
+ chair.position.set(x,furnitureFloor,z);chair.rotation.y=heading;scene.add(chair);
+ const {min,max}=new THREE.Box3().setFromObject(chair);
+ addCollider(min.x,min.z,max.x,max.z);
+}
+for(const [i,mx] of [568,596,624,680,708,764,792,848].entries()){
+ const x=X(mx),z=windowFurnitureZ;
+ wingMesh('south-student-table',tableGeometry,[deskLaminate,deskEdge],x,.738,z);
+ for(const [dx,dz] of [[-.61,.119],[.61,.120],[-.61,.589],[.61,.483]]){
+  wingPart('south-table-leg',x+dx,.369+furnitureFloor/2,z+dz,.041,.738-furnitureFloor,.041,furnitureSteel);
+  wingPart('south-table-glide',x+dx,furnitureFloor+.009,z+dz,.047,.018,.047,chairShell);
+ }
+ wingPart('south-table-underframe',x,.705,z+.124,1.225,.043,.029,furnitureSteel);
+ addCollider(x-.778,z+.025,x+.778,z+.771);
+ galleryChair(x+.09,z+.965,Math.PI+(i%3-1)*.055);
+ galleryChair(x-.93,z+.448,Math.PI*.55);
+}
+
+// The tall potted tree sits in the gap between the window desks.
+{
+ const x=X(728),z=windowFurnitureZ+.29;
+ const tree=new THREE.Group();tree.name='atrium-south-window-tree';tree.position.set(x,furnitureFloor,z);scene.add(tree);
+ const [weave,ink]=cvs(256,128);
+ ink.fillStyle='#4c3825';ink.fillRect(0,0,256,128);
+ for(let row=0;row<16;row++)for(let col=-1;col<32;col++){
+  const x=col*8+(row%2)*4,y=row*8;
+  ink.fillStyle=['#624930','#755637','#685038'][(row+col+3)%3];ink.fillRect(x+1,y+1,7,6);
+  ink.fillStyle='#846548';ink.fillRect(x+2,y+1,5,1);
+ }
+ const basket=std({map:tex(weave),roughness:.88}),twig=std({color:0x66503a,roughness:.87});
+ const pot=new THREE.Mesh(new THREE.CylinderGeometry(.194,.144,.30,20),basket);
+ pot.position.y=.15;tree.add(pot);
+ const soil=new THREE.Mesh(new THREE.CircleGeometry(.178,20),std({color:0x2a251b,roughness:1}));
+ soil.position.y=.301;soil.rotation.x=-Math.PI/2;tree.add(soil);
+ const trunkTop=new THREE.Vector3(.065,2.31,.022);
+ galleryTube(tree,'south-tree-trunk',new THREE.Vector3(-.04,.27,.025),trunkTop,.027,twig);
+ galleryTube(tree,'south-tree-trunk',new THREE.Vector3(.05,.28,-.045),new THREE.Vector3(-.072,1.89,-.032),.020,twig);
+ const palette=[0x4a5c3a,0x324940,0x455444,0x6c713e,0x50363b,0x69454a];
+ const leaves=palette.map(()=>[]);
+ for(let i=0;i<9;i++){
+  const angle=i*2.40,reach=.24+Math.sin((i+1)*.29)*.26;
+  const start=new THREE.Vector3(.005,.72+i*.165,0);
+  const end=new THREE.Vector3(Math.cos(angle)*reach,start.y+.22,Math.sin(angle)*reach*.62);
+  galleryTube(tree,'south-tree-branch',start,end,.010,twig);
+  for(const side of [-1,1]){
+   const fork=start.clone().lerp(end,side<0?.45:.73),forkAngle=angle+side*.91;
+   const forkTip=fork.clone().add(new THREE.Vector3(Math.cos(forkAngle)*.17,.11,Math.sin(forkAngle)*.145));
+   galleryTube(tree,'south-tree-twig',fork,forkTip,.004,twig);
+   for(let j=0;j<10;j++){
+    const base=fork.clone().lerp(forkTip,.12+j*.093);
+    const heading=forkAngle+(j%2?1:-1)*(.56+rnd()*.89),length=.108+rnd()*.101;
+    const tip=base.clone().add(new THREE.Vector3(Math.cos(heading)*length,-.065+rnd()*.093,Math.sin(heading)*length*.82));
+    const middle=base.clone().lerp(tip,.47);
+    const cross=new THREE.Vector3(-Math.sin(heading)*length*.28,.012,Math.cos(heading)*length*.28);
+    const left=middle.clone().add(cross),right=middle.clone().sub(cross);middle.y+=.023;
+    const batch=leaves[(i+j*3+(rnd()*6|0))%palette.length];
+    for(const p of [base,left,middle,middle,left,tip,base,middle,right,middle,tip,right])batch.push(p.x,p.y,p.z);
+   }
+  }
+ }
+ const canopy=new THREE.BufferGeometry();
+ let first=0;
+ for(const [i,vertices] of leaves.entries()){
+  const count=vertices.length/3;canopy.addGroup(first,count,i);first+=count;
+ }
+ canopy.setAttribute('position',new THREE.Float32BufferAttribute(leaves.flat(),3));canopy.computeVertexNormals();
+ tree.add(new THREE.Mesh(canopy,palette.map(color=>std({color,side:THREE.DoubleSide,roughness:.86}))));
+ addCollider(x-.195,z-.195,x+.195,z+.195);
 }
 wingBox('south-green-bench-base',901,1430,919,1438,0,.39,westOak);
 wingBox('south-green-bench-cushion',901,1430,919,1438,.39,.46,std({color:0x477a70,roughness:.8}),false);
