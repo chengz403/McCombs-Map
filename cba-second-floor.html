@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CBA Second Floor · McCombs Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1a1411;--panel:rgba(26,20,17,.84);--ink:#f6efe6;--muted:#cdbba8;--accent:#e8702a;--line:rgba(255,255,255,.16);color-scheme:dark}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,system-ui,sans-serif;overflow:hidden}
+#scene{position:fixed;inset:0}#scene canvas{display:block;touch-action:none}
+.hud{position:fixed;top:12px;left:12px;width:min(310px,calc(100vw - 170px));display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 13px;backdrop-filter:blur(8px);pointer-events:auto}
+.eyebrow{font:600 12px 'Barlow Condensed',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 25px 'Barlow Condensed',sans-serif;margin:2px 0 0}
+#selected{font-size:14px;line-height:1.45;color:var(--muted);min-height:46px;margin-top:5px}
+#selected strong{color:var(--ink);display:block;font-size:16px}
+.controls{display:flex;flex-wrap:wrap;gap:6px}
+button,a.btn{font:500 13px Rubik;border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:rgba(255,255,255,.09);color:var(--ink);cursor:pointer;text-decoration:none}
+button.active,button:hover,a.btn:hover{background:var(--accent);border-color:var(--accent)}
+#finder{display:flex;gap:6px}input{min-width:0;flex:1;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:8px;font:14px Rubik}
+#finder button{background:var(--accent)}
+.topright{position:fixed;right:12px;top:12px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.minimap{width:190px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px}
+.minimap svg{display:block;width:100%;height:auto}
+.minimap text{font:7px Rubik;fill:#f6efe6;text-anchor:middle}
+.hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 13px;color:var(--muted);font-size:12px;white-space:nowrap;pointer-events:none}
+#toast{position:fixed;left:50%;top:15px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:9px 13px;border-radius:8px;color:var(--ink);display:none}
+@media(max-width:650px){.minimap{width:118px}.hud{width:calc(100vw - 150px)}h1{font-size:20px}.hint{font-size:10px;max-width:95vw;white-space:normal;text-align:center}}
+</style></head><body>
+<div id="scene" aria-label="Interactive 3D schematic of the CBA second floor"></div>
+<div class="hud">
+ <section class="panel"><div class="eyebrow">McCombs · CBA Level 2</div><h1>Second Floor</h1><div id="selected"><strong>Explore the floor</strong>Drag to orbit · scroll to zoom · select a room or destination for details.</div></section>
+ <section class="panel"><div class="eyebrow">Find a destination</div><form id="finder"><input id="query" placeholder="Try 2.304, NYSE Booth…" aria-label="Find a room"><button>Find</button></form></section>
+ <section class="panel controls">
+  <button id="overview" class="active">Overview</button><button id="walk">Walkthrough</button><button id="reset">Reset view</button>
+  <a class="btn" href="index.html">← GSB Level 3</a>
+ </section>
+</div>
+<div class="topright"><div class="minimap"><div class="eyebrow">Floor key</div><svg viewBox="0 0 180 120"><rect x="5" y="5" width="170" height="110" fill="#d8d2c8" stroke="#aaa"/><rect x="65" y="5" width="50" height="25" fill="#a85a35"/><rect x="12" y="42" width="42" height="22" fill="#b7a28a"/><rect x="12" y="76" width="42" height="28" fill="#b7a28a"/><rect x="65" y="42" width="50" height="62" fill="#c7b9a7"/><rect x="126" y="42" width="42" height="22" fill="#b7a28a"/><rect x="126" y="76" width="42" height="28" fill="#b7a28a"/><text x="90" y="20">HALL OF HONORS</text><text x="33" y="55">WEST</text><text x="33" y="90">OFFICES</text><text x="90" y="75">CORRIDOR</text><text x="147" y="55">EAST</text><text x="147" y="90">OFFICES</text></svg></div></div>
+<div id="toast"></div><div class="hint" id="hint">Drag to orbit · Scroll to zoom · Click a room · Walkthrough: WASD / arrow keys</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+"use strict";
+const mount=document.getElementById('scene'),info=document.getElementById('selected'),toast=document.getElementById('toast');
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;mount.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xd8d2c8);scene.fog=new THREE.Fog(0xd8d2c8,35,80);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,150);
+const hemi=new THREE.HemisphereLight(0xfff5e8,0x76665b,2.0);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffe5c8,2.0);sun.position.set(-12,22,10);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
+const mat=(color,roughness=.85)=>new THREE.MeshStandardMaterial({color,roughness});
+const floorMat=mat(0x98745e,.72),wallMat=mat(0xe9e4da),innerMat=mat(0xd9d1c5),wood=mat(0x9c6940),glass=new THREE.MeshStandardMaterial({color:0x9fc5cc,transparent:true,opacity:.35,roughness:.12}),accent=mat(0xa94b2b),metal=mat(0x737b80,.45),dark=mat(0x343638);
+const root=new THREE.Group();scene.add(root);
+function block(x,z,w,d,h,y,m,collide=true){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y+h/2,z);o.castShadow=true;o.receiveShadow=true;root.add(o);if(collide)o.userData.solid=true;return o}
+function floor(x,z,w,d,m=floorMat){const o=new THREE.Mesh(new THREE.BoxGeometry(w,.18,d),m);o.position.set(x,-.09,z);o.receiveShadow=true;root.add(o);return o}
+function wall(x,z,w,d,h=2.7,m=wallMat){return block(x,z,w,d,h,.0,m)}
+function label(text,x,z,color='#40332c',size=0.55){const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.clearRect(0,0,512,128);ctx.fillStyle='rgba(250,247,240,.92)';ctx.fillRect(5,8,502,112);ctx.strokeStyle='#8c7969';ctx.lineWidth=3;ctx.strokeRect(5,8,502,112);ctx.fillStyle=color;ctx.font='bold 34px Rubik';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,66,470);const t=new THREE.CanvasTexture(c);const mesh=new THREE.Mesh(new THREE.PlaneGeometry(3.1,.78),new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide}));mesh.position.set(x,2.15,z);mesh.rotation.x=-Math.PI/2;root.add(mesh)}
+const targets=[];
+function zone(id,name,detail,x,z,w,d,color=0xd6c3ad){const m=new THREE.Mesh(new THREE.BoxGeometry(w,.05,d),new THREE.MeshStandardMaterial({color,roughness:.8,transparent:true,opacity:.9}));m.position.set(x,.025,z);m.userData={id,name,detail};root.add(m);targets.push(m);return m}
+function officeBlock(name,x,z,w,d,rooms){floor(x,z,w,d,mat(0xb9aa98));wall(x-w/2,z,w,.16);wall(x+w/2,z,w,.16);wall(x,z-d/2,.16,d);wall(x,z+d/2,.16,d);label(name,x,z+.2,'#44352b',.4);rooms.forEach((r,i)=>{const xx=x-w/2+(i+1)*w/(rooms.length+1);wall(xx,z,.09,d*.7,2.35,innerMat)})}
+floor(0,0,37,25);
+ // Broad building envelope and corridors; dimensions are schematic, not survey measurements.
+wall(0,-12.35,37,.3,3.2);wall(-18.35,0,.3,24.7,3.2);wall(18.35,0,.3,24.7,3.2);wall(0,12.35,37,.3,3.2);
+ // North Hall of Honors wing and central open volume
+floor(0,-9.0,19,6,mat(0x9d7d65));wall(-9.5,-9, .18,6);wall(9.5,-9,.18,6);wall(0,-12,19,.18);
+zone('honors','Hall of Honors','Large open hall on the north side of the CBA second-floor plan.',0,-8.8,18.5,5.5,0xd8c5af);
+label('HALL OF HONORS',0,-8.9,'#a51f2b',.65);
+ // NYSE booth: curved polygonal counter represented as a U-shaped booth
+const booth=new THREE.Group();const counterMat=mat(0x79503b);for(let i=0;i<9;i++){const a=Math.PI*.15+i*Math.PI*.7/8;const x=2.5+Math.cos(a)*2.2,z=-8.4+Math.sin(a)*1.5;const seg=block(x,z,.22,.75,1.05,.0,counterMat,false);seg.rotation.y=-a;booth.add(seg)}root.add(booth);
+zone('nyse','NYSE Booth','Curved NYSE exhibit booth within the Hall of Honors. Its shape and placement are schematic from the supplied plan.',2.5,-8.3,4.7,2.4,0xe7b99a);label('NYSE BOOTH',2.5,-8.4,'#a51f2b',.45);
+ // Escalator pair west of hall
+for(let j=0;j<2;j++){const x=-7.1+j*1.6;block(x,-8.7,1.05,5.1,.22,.0,metal,false);for(let k=0;k<16;k++)block(x,-11.0+k*.3,1.0,.12,.08,.24+k*.012,metal,false);const rail=block(x-.55,-8.7,.08,5.2,1.0,.55,dark,false);const rail2=block(x+.55,-8.7,.08,5.2,1.0,.55,dark,false)}
+zone('escalators','Escalators','Escalator bank along the west side of the Hall of Honors.',-6.3,-8.7,3.2,5.4,0xc1c5c4);label('ESCALATORS',-6.3,-8.7,'#a51f2b',.4);
+ // Hall entry at east edge
+zone('entry','Hall of Honors entry','Entry doors at the east end of the Hall of Honors.',9,-8.7,1.2,4.8,0xe4d8c9);label('ENTRY',9,-8.7,'#a51f2b',.4);
+ // Main floor central circulation spine
+floor(0,0,7.2,12,mat(0xc6b6a4));zone('corridor','Main corridor','Central second-floor circulation spine connecting offices and program spaces.',0,0,6.9,11.8,0xd9cbbb);label('MAIN CORRIDOR',0,0,'#574538',.4);
+ // West office/program wing
+officeBlock('ROOM SUITE 2.402',-12.5,-1.4,10.2,7.5,[1,2,3,4]);zone('rooms402','Rooms 2.402 A–K','Individual offices and rooms in the 2.402 suite on the west side.',-12.5,-1.4,9.7,7,0xd7c7b4);
+officeBlock('ROOMS 2.3xx',-12.5,7.0,10.2,7.4,[1,2,3]);zone('rooms3','Rooms 2.3xx','Offices and support spaces on the southwest side of the floor.',-12.5,7,9.7,7,0xd7c7b4);
+zone('success','McCombs Success Scholars · 2.304','Southwest program office shown on the supplied plan.',-14.3,9.6,5.0,2.5,0xd6b89d);label('SUCCESS SCHOLARS',-14.3,9.6);
+zone('outreach','Outreach and Scholarships · 2.312','Southwest program office adjacent to McCombs Success Scholars.',-8.5,9.6,5.0,2.5,0xd6b89d);label('OUTREACH / SCHOLARSHIPS',-8.5,9.6);
+ // West north program rooms
+zone('bbaoffice','BBA Program Office · 2.400','Near the north central entry, west of the Canfield Business Honors Program.',-4.5,-4.4,4.5,2.7,0xd6b89d);label('BBA PROGRAM OFFICE',-4.5,-4.4);
+ // East program and office wing
+officeBlock('ROOMS 2.5xx / 2.6xx',12.6,-1.0,10.1,8.0,[1,2,3,4]);zone('rooms5','Rooms 2.5xx / 2.6xx','Office and meeting-room suites on the east side of the corridor.',12.6,-1,9.6,7.5,0xd7c7b4);
+zone('canfield','Canfield Business Honors Program','Program offices north of the main east-side office suite.',11.7,-4.4,8.5,2.7,0xd6b89d);label('CANFIELD BUSINESS HONORS',11.7,-4.4);
+zone('career','BBA Career Management and MS Programs · 2.502','Program offices along the south side of the east wing.',7.1,9.5,5.3,2.6,0xd6b89d);label('BBA CAREER MANAGEMENT',7.1,9.5);
+zone('bigbend','Big Bend Conference Room · 2.564','Large conference room on the southeast/east side of the floor.',14.5,8.0,6.1,7.2,0xd6b89d);label('BIG BEND CONFERENCE',14.5,8.0);
+ // Room suite divider walls in east and west wings
+for(let i=0;i<5;i++){wall(-17.4+i*2.05,2.0,.1,6.6,2.35,innerMat);wall(8.0+i*2.05,2.1,.1,6.6,2.35,innerMat)}
+ // Entry thresholds and stairs represented as distinct architectural features
+zone('stairs-west','West stair','Stair core at the northwest/west side of the CBA floor.',-16.2,-7.4,3.0,3.5,0xb0aaa3);label('STAIR',-16.2,-7.4);
+zone('stairs-east','East stair','Stair core on the northeast/east side of the floor.',16.0,-7.4,3.0,3.5,0xb0aaa3);label('STAIR',16,-7.4);
+zone('connection','GSB / CBA connection','South-side connection between the CBA and GSB second-floor areas.',0,11.6,7.5,1.0,0xd9cbbb);label('GSB / CBA',0,11.6,'#a51f2b',.4);
+ // Exterior windows and structural piers
+for(let i=0;i<13;i++){const x=-16+i*2.65;block(x,-12.17,1.5,.06,1.2,1.15,glass,false);block(x,12.17,1.5,.06,1.2,1.15,glass,false)}
+for(let i=0;i<8;i++){const z=-10+i*2.8;block(-18.15,z,.18,.7,3.2,0,metal,false);block(18.15,z,.18,.7,3.2,0,metal,false)}
+ // Door openings are indicated by dark thresholds; all room markers remain selectable.
+const base=new THREE.Mesh(new THREE.BoxGeometry(37,.25,25),mat(0x6f6258));base.position.y=-.28;root.add(base);root.position.y=0;
+ // lighting / decorative ceiling omitted in overview; toggle ceiling for walkthrough immersion.
+const ceiling=new THREE.Mesh(new THREE.BoxGeometry(36.8,.18,24.8),mat(0xeeeae2));ceiling.position.y=3.15;root.add(ceiling);ceiling.visible=false;
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();let mode='overview',drag=false,px=0,py=0,downX=0,downY=0,theta=-.68,phi=.92,radius=37,target=new THREE.Vector3(0,.6,0),selected=null;
+function setInfo(o){selected=o;info.innerHTML='<strong>'+o.userData.name+'</strong>'+o.userData.detail;targets.forEach(t=>{t.material.color.set(t===o?0xf0a36e:(t.userData.id==='honors'?0xd8c5af:0xd6c3ad))})}
+function cameraUpdate(){if(mode==='overview'){camera.position.set(target.x+radius*Math.sin(phi)*Math.sin(theta),target.y+radius*Math.cos(phi),target.z+radius*Math.sin(phi)*Math.cos(theta));camera.lookAt(target)}}
+cameraUpdate();
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;downX=e.clientX;downY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;if(mode==='overview'){theta-=dx*.006;phi=Math.max(.18,Math.min(1.48,phi+dy*.005));cameraUpdate()}else{camera.rotation.order='YXZ';camera.rotation.y-=dx*.004;camera.rotation.x=Math.max(-.85,Math.min(.85,camera.rotation.x-dy*.003))}});
+renderer.domElement.addEventListener('pointerup',e=>{if(!drag)return;const moved=Math.hypot(e.clientX-downX,e.clientY-downY);drag=false;if(moved<5&&mode==='overview'){mouse.x=e.clientX/innerWidth*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(mouse,camera);const hits=ray.intersectObjects(targets,false);if(hits.length)setInfo(hits[0].object)}});
+renderer.domElement.addEventListener('wheel',e=>{if(mode!=='overview')return;radius=Math.max(18,Math.min(62,radius+e.deltaY*.025));cameraUpdate()},{passive:true});
+const keys={};window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+function walkthrough(){mode='walk';document.getElementById('walk').classList.add('active');document.getElementById('overview').classList.remove('active');camera.position.set(0,1.65,10.7);camera.rotation.set(0,Math.PI,0);camera.fov=76;camera.updateProjectionMatrix();ceiling.visible=true;toast.textContent='Walkthrough mode · WASD to move · drag to look';toast.style.display='block';setTimeout(()=>toast.style.display='none',2200)}
+function overview(){mode='overview';ceiling.visible=false;document.getElementById('walk').classList.remove('active');document.getElementById('overview').classList.add('active');camera.fov=58;camera.updateProjectionMatrix();cameraUpdate()}
+document.getElementById('walk').onclick=walkthrough;document.getElementById('overview').onclick=overview;document.getElementById('reset').onclick=()=>{theta=-.68;phi=.92;radius=37;target.set(0,.6,0);overview()};
+function find(q){q=q.trim().toLowerCase();if(!q)return;const found=targets.find(o=>(o.userData.name+' '+o.userData.id).toLowerCase().includes(q));if(found){setInfo(found);if(mode==='overview'){target.set(found.position.x,.5,found.position.z);radius=22;cameraUpdate()}else{camera.position.set(found.position.x,1.65,found.position.z+4);camera.lookAt(found.position.x,1.5,found.position.z)}}else{toast.textContent='No matching destination found. Try a room number or program name.';toast.style.display='block';setTimeout(()=>toast.style.display='none',2200)}}
+document.getElementById('finder').addEventListener('submit',e=>{e.preventDefault();find(document.getElementById('query').value)});
+const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);if(mode==='walk'){const forward=new THREE.Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();const right=new THREE.Vector3().crossVectors(forward,new THREE.Vector3(0,1,0)).normalize();const speed=keys.shift?7:3.6;if(keys.w||keys.arrowup)camera.position.addScaledVector(forward,speed*dt);if(keys.s||keys.arrowdown)camera.position.addScaledVector(forward,-speed*dt);if(keys.a||keys.arrowleft)camera.position.addScaledVector(right,-speed*dt);if(keys.d||keys.arrowright)camera.position.addScaledVector(right,speed*dt);camera.position.x=Math.max(-17,Math.min(17,camera.position.x));camera.position.z=Math.max(-11.5,Math.min(11.5,camera.position.z));camera.position.y=1.65}renderer.render(scene,camera)}
+animate();window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+})();
+</script></body></html>
