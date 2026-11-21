@@ -2640,8 +2640,11 @@ const FORD_ENTRANCES=[
 ];
 const FORD_AISLE_NODES=[];
 const FORD_ROOMS=[];
-const FORD_INTERIOR=[[918,817],[918,751],[884,717],[872,680],[859,675],[835,648],[808,622],[781,594],
-  [754,566],[728,540],[696,531],[696,492],[748,492],[748,467],[1107,467],[1224,585],
+// Move the diagonal interview rooms and the outside wall behind them together.
+const fordDiagonalBack=([x,z])=>[x-8,z+8];
+const FORD_INTERIOR=[[918,817],[918,751],[884,717],[872,680],
+  ...[[859,675],[835,648],[808,622],[781,594],[754,566],[728,540]].map(fordDiagonalBack),
+  [696,531],[696,492],[748,492],[748,467],[1107,467],[1224,585],
   [1169,652],[1140,680],[1140,817]];
 function seg3(p,q,h0,h1,t,mat,cam){const L=Math.hypot(q[0]-p[0],q[1]-p[1]),ang=Math.atan2(q[1]-p[1],q[0]-p[0]);const m=new THREE.Mesh(new THREE.BoxGeometry(L+.02,h1-h0,t),mat);m.position.set((p[0]+q[0])/2,(h0+h1)/2,(p[1]+q[1])/2);m.rotation.y=-ang;scene.add(m);if(cam)camBlockers.push(m);return m}
 {
@@ -2880,7 +2883,7 @@ function seg3(p,q,h0,h1,t,mat,cam){const L=Math.hypot(q[0]-p[0],q[1]-p[1]),ang=M
    ['FC',[[1150,576],[1183,544],[1224,585],[1191,616]],3,.69],
    ['FD',[[1143,619],[1161,601],[1191,625],[1170,649],[1143,625]],0,.49],
    ['FE',[[1140,630],[1168,653],[1140,680]],2,.56]
- ])roomLayouts.push({id,pts,door,t});
+ ])roomLayouts.push({id,pts:/^D[A-E]$/.test(id)?pts.map(fordDiagonalBack):pts,door,t});
 
  const boundary=(a,b,h=.06)=>{
    if(Math.hypot(b[0]-a[0],b[1]-a[1])<.007)return;
@@ -3069,7 +3072,8 @@ function seg3(p,q,h0,h1,t,mat,cam){const L=Math.hypot(q[0]-p[0],q[1]-p[1]),ang=M
  guard(exitFace.a,exitFace.b);
  for(const p of [[933,804],[1100,804],[1030,804],[1124,804],[933,651],[1015,650],[1120,651],
    [1122,585],[1135,598],[1117,559],[1117,532],[1060,528],[984,528],[906,529],[825,530],
-   [769,535],[764,519],[757,518],[751.5,514],[749,508],[738,540],[794,578],[845,600],
+   [769,535],[764,519],[757,518],[751.5,514],[749,508],[738,540],[794,578],
+   [823,555],[824,591],[833,600],[851,608],
    [923,616],[908,616],[880,616],[868,616],[864,606]]){
    FORD_AISLE_NODES.push(V(p));
  }
