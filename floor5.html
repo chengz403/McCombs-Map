@@ -1515,10 +1515,11 @@ seed=atriumSavedSeed;
 // Room footprint follows the plan; furniture positions are an approximation.
 {
 const loungeSeed=seed,loungeMeshStart=scene.children.length,loungeColliderStart=colliders.length;
-const loungeRed=std({color:0xb84429,roughness:.8}),loungeGray=std({color:0x73766b,roughness:.85}),loungeWhite=std({color:0xe4e2d8,roughness:.8});
+const loungeRed=std({color:0xb45848,roughness:.78}),loungeWhite=std({color:0xe4e2d8,roughness:.8});
 const sage=std({color:0x768e81}),sageReveal=std({color:0x91aa9b}),windowBronze=std({color:0x302b28,roughness:.48});
+const returnPaint=std({color:0x777785}),returnReveal=std({color:0x92929e});
 const loungeWood=std({color:0x54392c,roughness:.53}),loungeTeal=std({color:0x6e9291,roughness:.76});
-const deskTop=std({color:0x4a4f48,roughness:.56}),deskGlass=std({color:0xa7c8ca,transparent:true,opacity:.83,roughness:.58});
+const deskTop=std({color:0x4d5356,roughness:.44}),deskGlass=std({color:0xa3c6d3,transparent:true,opacity:.83,roughness:.58});
 const stoolFrame=std({color:0x9a9c94,metalness:.4,roughness:.47});
 // Staggered rectangular vinyl tiles; the metal threshold marks the real finish change.
 const [lc,lx]=cvs(768,768);const tileColors=['#b9b3a0','#c7c0aa','#aaa99c','#d1c9b1','#bab9ac'];
@@ -1529,14 +1530,23 @@ for(let row=0;row<12;row++)for(let col=-1;col<7;col++){
 const ltex=tex(lc,true);ltex.repeat.set(3,4);
 const lfloor=wingMesh('5322-tile-floor',new THREE.PlaneGeometry(161*S,198*S),std({map:ltex,roughness:.35}),X(229.5),.012,Z(1096));lfloor.rotation.x=-Math.PI/2;
 wingBox('5322-threshold',306.5,1075,310.1,1125,.015,.028,westHardware,false);
-// Six individually recessed windows across the sage exterior wall.
-wingBox('5322-sage-wall',149,997,238,1000,0,H,loungeGray,false);
-const windowWallX=X(149),wallDepth=.23,sill=.60,head=2.56,openingWidth=.98;
-function loungeOutlook(aperture){
+// Recessed windows along the sage wall and the gray wall behind the banquette.
+const wallDepth=.23,head=2.56;
+function loungeOutlook(aperture,onReturn){
  const [view,ink]=cvs(256,512);
  const sky=ink.createLinearGradient(0,0,0,512);
  sky.addColorStop(0,'#c9def0');sky.addColorStop(.44,'#faf4e9');sky.addColorStop(1,'#d0c5b9');
  ink.fillStyle=sky;ink.fillRect(0,0,256,512);
+ if(onReturn){
+  const edge=[-38,8,64,-82,39][aperture],top=[171,23,86,105,190][aperture];
+  ink.fillStyle='#afc3d4';ink.fillRect(edge,top,191,512-top);
+  for(let col=0;col<9;col++)for(let y=top+9;y<512;y+=19){
+   ink.fillStyle=(col+y)%3?'#829eb7':'#9ab7cc';ink.fillRect(edge+col*21+4,y,15,14);
+  }
+  ink.fillStyle='#ece9e4';ink.beginPath();ink.moveTo(0,417-aperture*15);ink.lineTo(256,393-aperture*8);
+  ink.lineTo(256,512);ink.lineTo(0,512);ink.fill();
+  return new THREE.MeshBasicMaterial({map:tex(view)});
+ }
  const tower=[-92,100,269,198,-75,82][aperture];
  ink.fillStyle='#93aaba';ink.fillRect(tower,80,64,285);
  ink.fillStyle='#a7bac6';ink.fillRect(tower+55,80,14,285);
@@ -1552,62 +1562,88 @@ function loungeOutlook(aperture){
  }
  return new THREE.MeshBasicMaterial({map:tex(view)});
 }
-const windowZs=[1016,1047,1078,1109,1140,1171].map(Z);
-const wallStart=Z(997),wallEnd=Z(1195);
-addCollider(windowWallX,wallStart,windowWallX+wallDepth,wallEnd);
-function loungeWallBand(name,start,end,bottom,top){
- wingPart('5322-window-wall-'+name,windowWallX+wallDepth/2,(bottom+top)/2,(start+end)/2,wallDepth,top-bottom,end-start,sage);
-}
-loungeWallBand('below',wallStart,wallEnd,0,sill);
-loungeWallBand('above',wallStart,wallEnd,head,H);
-let pierStart=wallStart;
-for(const z of windowZs){
- loungeWallBand('pier',pierStart,z-openingWidth/2,sill,head);
- pierStart=z+openingWidth/2;
-}
-loungeWallBand('pier',pierStart,wallEnd,sill,head);
-wingPart('5322-window-baseboard',windowWallX+wallDepth+.009,.065,(wallStart+wallEnd)/2,.018,.13,wallEnd-wallStart,westTrim);
-
-const frameCenter=(sill+head)/2,frameHeight=head-sill,frameWidth=openingWidth-.048;
-const blindDrops=[.10,.085,.92,.60,.50,.87];
-const blindRail=std({color:0x9a8d72,roughness:.58});
-for(const [i,z] of windowZs.entries()){
- wingPlane('5322-window-daylight',windowWallX+.025,frameCenter,z,frameWidth,frameHeight,Math.PI/2,loungeOutlook(i));
- for(const side of [-1,1]){
-  wingPart('5322-window-reveal',windowWallX+wallDepth/2,frameCenter,z+side*(openingWidth/2-.012),wallDepth,frameHeight,.024,sageReveal);
-  wingPart('5322-window-jamb',windowWallX+.065,frameCenter,z+side*(frameWidth/2-.021),.065,frameHeight,.042,windowBronze);
-  wingPart('5322-window-frame-rail',windowWallX+.065,frameCenter+side*(frameHeight/2-.024),z,.065,.048,frameWidth,windowBronze);
+const blindRail=std({color:0xadaa9a,roughness:.58});
+function loungeWindowWall(prefix,wall,start,end,windows,drops,sill,openingWidth,paint,reveal,onReturn){
+ const name=part=>prefix+part;
+ const part=(label,offset,y,at,w,h,d,mat)=>onReturn
+  ?wingPart(name(label),at,y,wall+offset,w,h,d,mat)
+  :wingPart(name(label),wall+offset,y,at,d,h,w,mat);
+ const pane=(label,offset,y,at,w,h,mat)=>onReturn
+  ?wingPlane(name(label),at,y,wall+offset,w,h,0,mat)
+  :wingPlane(name(label),wall+offset,y,at,w,h,Math.PI/2,mat);
+ const band=(label,a,b,low,high)=>part('window-wall-'+label,wallDepth/2,(low+high)/2,(a+b)/2,b-a,high-low,wallDepth,paint);
+ band('below',start,end,0,sill);
+ band('above',start,end,head,H);
+ let pierStart=start;
+ for(const at of windows){
+  band('pier',pierStart,at-openingWidth/2,sill,head);
+  pierStart=at+openingWidth/2;
  }
- wingPart('5322-window-sill',windowWallX+.128,sill+.013,z,.26,.026,openingWidth,sageReveal);
- wingPart('5322-window-head',windowWallX+wallDepth/2,head-.011,z,wallDepth,.022,openingWidth,sageReveal);
- wingPart('5322-window-sash',windowWallX+.069,1.86,z,.067,.025,frameWidth,windowBronze);
+ band('pier',pierStart,end,sill,head);
+ const trimStart=onReturn?start:start+wallDepth+.018;
+ part('window-baseboard',wallDepth+.009,.065,(trimStart+end)/2,end-trimStart,.13,.018,westTrim);
 
- const blindX=windowWallX+.13,blindTop=head-.065,blindWidth=frameWidth-.064;
- const drop=blindDrops[i]*(frameHeight-.14),tilt=i===0?.075:0;
- const stacked=drop<.25,slatPitch=stacked?.010:.034;
- const [blind,blindCtx]=cvs(256,(drop+tilt)*430);
- const slatHeight=(i===5?.48:.82)*slatPitch;
- for(let level=.006;level<drop;level+=slatPitch){
-  const base=level*430,offset=tilt*430;
-  const finish=blindCtx.createLinearGradient(0,base,256,base+offset+slatHeight*430);
-  finish.addColorStop(0,'#ac9c7e');finish.addColorStop(.32,'#d8c8a5');finish.addColorStop(1,'#b19e79');
-  blindCtx.fillStyle=finish;blindCtx.beginPath();blindCtx.moveTo(0,base);blindCtx.lineTo(256,base+offset);
-  blindCtx.lineTo(256,base+offset+slatHeight*430);blindCtx.lineTo(0,base+slatHeight*430);blindCtx.fill();
+ const frameCenter=(sill+head)/2,frameHeight=head-sill,frameWidth=openingWidth-.048;
+ for(const [i,at] of windows.entries()){
+  pane('window-daylight',.025,frameCenter,at,frameWidth,frameHeight,loungeOutlook(i,onReturn));
+  for(const side of [-1,1]){
+   part('window-reveal',wallDepth/2,frameCenter,at+side*(openingWidth/2-.012),.024,frameHeight,wallDepth,reveal);
+   part('window-jamb',.065,frameCenter,at+side*(frameWidth/2-.021),.042,frameHeight,.065,windowBronze);
+   part('window-frame-rail',.065,frameCenter+side*(frameHeight/2-.024),at,frameWidth-.084,.048,.065,windowBronze);
+  }
+  part('window-sill',.128,sill+.013,at,openingWidth,.026,.26,reveal);
+  part('window-head',wallDepth/2,head-.011,at,openingWidth,.022,wallDepth,reveal);
+  part('window-sash',.069,sill+frameHeight*.64,at,frameWidth-.084,.025,.067,windowBronze);
+
+  const blindTop=head-.065,blindWidth=frameWidth-.064;
+  const drop=drops[i]*(frameHeight-.14),tilt=!onReturn&&i===0?.075:0;
+  const stacked=drop<.25,pitch=stacked?.010:.028;
+  const [blind,ink]=cvs(256,512),unit=blind.height/(drop+tilt),offset=tilt*unit;
+  const slatHeight=(onReturn?.68:i===5?.48:.78)*pitch*unit;
+  for(let level=.006;level<drop;level+=pitch){
+   const base=level*unit;
+   const finish=ink.createLinearGradient(0,base,256,base+offset+slatHeight);
+   finish.addColorStop(0,'#a29e93');finish.addColorStop(.35,'#dedace');finish.addColorStop(1,'#bcb6a7');
+   ink.fillStyle=finish;ink.beginPath();ink.moveTo(0,base);ink.lineTo(256,base+offset);
+   ink.lineTo(256,base+offset+slatHeight);ink.lineTo(0,base+slatHeight);ink.fill();
+  }
+  ink.fillStyle='#d0cbbf';
+  for(const col of [43,208])ink.fillRect(col,0,2,drop*unit+offset*col/256);
+  const slats=std({map:tex(blind),transparent:true,depthWrite:false,roughness:.78});
+  pane('window-blinds',.13,blindTop-(drop+tilt)/2,at,blindWidth,drop+tilt,slats);
+  part('blind-headrail',.13,blindTop+.008,at,blindWidth+.02,.045,.073,blindRail);
+  const rail=part('blind-bottom-rail',.13,blindTop-drop-tilt/2,at,blindWidth,.026,.047,blindRail);
+  if(tilt)rail.rotation.x=-Math.atan2(tilt,blindWidth);
+  if(stacked)part('blind-wand',.144,1.91,at+blindWidth*.43,.011,1.10,.011,blindRail);
  }
- blindCtx.fillStyle='#d8cab0';
- for(const col of [43,208])blindCtx.fillRect(col,0,2,Math.min(blind.height,drop*430+tilt*430*col/256));
- const slats=std({map:tex(blind),alphaTest:.32,roughness:.78});
- wingPlane('5322-window-blinds',blindX,blindTop-(drop+tilt)/2,z,blindWidth,drop+tilt,Math.PI/2,slats);
- wingPart('5322-blind-headrail',blindX,blindTop+.008,z,.073,.045,blindWidth+.02,blindRail);
- const bottomRail=wingPart('5322-blind-bottom-rail',blindX,blindTop-drop-tilt/2,z,.047,.026,blindWidth,blindRail);
- bottomRail.rotation.x=-Math.atan2(tilt,blindWidth);
- if(stacked)wingPart('5322-blind-wand',blindX+.014,1.91,z+blindWidth*.43,.011,1.10,.011,blindRail);
 }
-// Exposed dark ceiling with white suspended acoustic rafts above study seating.
-wingBox('5322-dark-ceiling',149,997,238,1195,2.87,2.91,seatBlack,false);
-for(let yy=1016;yy<1190;yy+=35){
- wingPart('5322-acoustic-raft',X(193),2.73,Z(yy),4.9,.08,1.8,loungeWhite);
- wingPart('5322-linear-light',X(193),2.65,Z(yy),4.3,.025,.035,M.light);
+const northWallZ=Z(997);
+addCollider(X(149),northWallZ,X(149)+wallDepth,Z(1195));
+addCollider(X(149),northWallZ,X(310),northWallZ+wallDepth);
+loungeWindowWall('5322-',X(149),northWallZ,Z(1195),[1016,1047,1078,1109,1140,1171].map(Z),[.10,.085,.92,.60,.50,.87],.60,.98,sage,sageReveal,false);
+loungeWindowWall('5322-return-',northWallZ,X(149)+wallDepth,X(307),[169,199,229,259,289].map(X),[.80,.36,.91,.85,.97],.86,1.03,returnPaint,returnReveal,true);
+
+// The exposed deck and suspended ceiling islands continue across both window walls.
+const deck=std({color:0x20232b,roughness:.95}),trayEdge=std({color:0x777983,roughness:.72});
+const [raft,ink]=cvs(384,384);
+ink.fillStyle='#dedde0';ink.fillRect(0,0,384,384);
+ink.strokeStyle='#acacb4';ink.lineWidth=2;
+for(let i=0;i<=4;i++){ink.beginPath();ink.moveTo(i*96,0);ink.lineTo(i*96,384);ink.stroke();}
+for(let i=0;i<=3;i++){ink.beginPath();ink.moveTo(0,i*128);ink.lineTo(384,i*128);ink.stroke();}
+const raftFace=std({map:tex(raft),roughness:.85});
+wingBox('5322-dark-ceiling',149,997,307,1195,2.873,2.91,deck,false);
+for(const [column,mx] of [177,229,281].entries())for(const [row,my] of [1021,1071,1121,1171].entries()){
+ const x=X(mx),z=Z(my),w=3.18,d=2.91;
+ wingPart('5322-acoustic-raft',x,2.747,z,w,.112,d,trayEdge);
+ wingPlane('5322-acoustic-tiles',x,2.689,z,w-.020,d-.020,0,raftFace).rotation.x=Math.PI/2;
+ for(const side of [-1,1])wingPart('5322-raft-hanger',x+side*1.31,2.836,z+side*1.13,.015,.071,.015,westHardware);
+ if((column+row)%3!==1){
+  wingPart('5322-linear-light',x,2.642,z,w-.12,.027,.026,M.light);
+  for(const side of [-1,1])wingPart('5322-cross-light',x,2.642,z+side*(d/2-.047)/2,.026,.027,d/2-.073,M.light);
+ }else{
+  wingPart('5322-raft-vent',x+.38,2.679,z-.45,.39,.019,.43,labMetal);
+  for(let i=-3;i<=3;i++)wingPart('5322-raft-vent-slot',x+.38+i*.047,2.666,z-.45,.014,.009,.34,deck);
+ }
 }
 // Broad worktops with dark wood end panels, frosted desk screens and high chairs.
 function loungeStool(mx,my,heading){
@@ -1626,7 +1662,9 @@ function loungeStool(mx,my,heading){
   tube([side*.22,.025,.21],[side*.158,.72,.15],stoolFrame);
   tube([side*.23,.025,-.24],[side*.17,1.055,-.206],stoolFrame);
   tube([side*.20,.28,-.204],[side*.199,.28,.187],stoolFrame);
+  tube([side*.196,.749,-.192],[side*.192,.921,-.177],loungeWhite);
  }
+ tube([-.196,.749,-.192],[.196,.749,-.192],loungeWhite);
  tube([-.20,.28,.187],[.20,.28,.187],stoolFrame);
  addCollider(x-.247,z-.247,x+.247,z+.247);
 }
@@ -1635,9 +1673,9 @@ for(const yy of [1042,1142]){
  wingBox('5322-study-island-worktop',184.2,yy-9.3,233.8,yy+9.3,1.065,1.079,deskTop,false);
  for(const xx of [184.2,232.6])wingBox('5322-island-end-panel',xx,yy-8.9,xx+1.1,yy+8.9,.02,1.015,loungeWood,false);
  wingBox('5322-island-center-panel',185.3,yy-.65,232.6,yy+.65,.30,1.015,loungeWood,false);
- for(const xx of [196.3,221.6]){
-  wingPart('5322-frosted-divider',X(xx),1.31,Z(yy),1.50,.435,.017,deskGlass);
-  for(const shift of [-.57,.57]){
+ for(const xx of [192.6,209,225.4]){
+  wingPart('5322-frosted-divider',X(xx),1.31,Z(yy),1.052,.435,.017,deskGlass);
+  for(const shift of [-.405,.405]){
    wingPart('5322-divider-foot',X(xx)+shift,1.091,Z(yy),.071,.024,.13,stoolFrame);
    wingPart('5322-divider-clamp',X(xx)+shift,1.125,Z(yy),.039,.078,.041,westHardware);
   }
@@ -1651,34 +1689,82 @@ for(const yy of [1030,1062,1094,1126,1158,1186]){
  wingPart('5322-counter-bracket',X(155.9),.988,Z(yy),.48,.038,.044,stoolFrame);
 }
 for(const yy of [1035,1050,1083,1107,1141,1168])loungeStool(166,yy,-Math.PI/2);
-// Swivel chair at the far end of the window wall.
-{
- const x=X(181),z=Z(1011),chair=new THREE.Group();
- chair.name='atrium-5322-task-chair';chair.position.set(x,0,z);chair.rotation.y=-Math.PI/2;scene.add(chair);
- const cushion=upholsteryMesh(.48,.44,.065,.065,loungeWhite);
- cushion.position.y=.47;cushion.rotation.x=-Math.PI/2;chair.add(cushion);
- const shell=upholsteryMesh(.48,.33,.045,.057,stoolFrame);
- shell.position.set(0,.77,-.20);shell.rotation.x=.14;chair.add(shell);
- const meshBack=upholsteryMesh(.41,.26,.020,.040,std({color:0xb5ad96,roughness:1}));
- meshBack.position.set(0,.77,-.17);meshBack.rotation.x=.14;chair.add(meshBack);
- const stem=new THREE.Mesh(new THREE.CylinderGeometry(.03,.04,.40,12),stoolFrame);
- stem.position.y=.24;chair.add(stem);
- for(let i=0;i<5;i++){
-  const angle=i*Math.PI*2/5,sin=Math.sin(angle),cos=Math.cos(angle);
-  const spoke=new THREE.Mesh(new THREE.BoxGeometry(.04,.035,.27),stoolFrame);
-  spoke.position.set(sin*.137,.066,cos*.137);spoke.rotation.y=angle;chair.add(spoke);
-  const caster=new THREE.Mesh(new THREE.CylinderGeometry(.034,.034,.035,12),westTrim);
-  caster.position.set(sin*.266,.035,cos*.266);caster.rotation.z=Math.PI/2;chair.add(caster);
- }
- addCollider(x-.29,z-.29,x+.29,z+.29);
+// The north banquette has a coral seat, patterned upholstery and outlets in the apron.
+const [fabric,cloth]=cvs(512,256);
+cloth.fillStyle='#c6bba7';cloth.fillRect(0,0,fabric.width,fabric.height);
+const fabricColors=['#bb7169','#dcc164','#bcb57b','#e5d2b8','#838992','#c58e80','#d8c9a6'];
+for(let row=0;row<6;row++)for(let col=-1;col<12;col++){
+ const x=col*47+(row%2)*14,y=row*43;
+ cloth.fillStyle=fabricColors[Math.floor(rnd()*fabricColors.length)];
+ cloth.beginPath();
+ if(cloth.roundRect)cloth.roundRect(x+1,y+1,46,42,[12,7,10,7]);
+ else cloth.rect(x+1,y+1,46,42);
+ cloth.fill();
 }
-// Reddish upholstered banquette and smaller round tables along the south wall.
-wingBox('5322-banquette-seat',160,1180,230,1192,.38,.48,loungeRed);
-wingBox('5322-banquette-back',160,1191,230,1194,.48,1.05,loungeGray,false);
-for(const xx of [177,211]){
- const p=wingMesh('5322-round-table',new THREE.CylinderGeometry(.48,.48,.045,24),tableCream,X(xx),.73,Z(1170));
- wingPart('5322-round-table-post',X(xx),.36,Z(1170),.055,.72,.055,westHardware);
- addCollider(p.position.x-.48,p.position.z-.48,p.position.x+.48,p.position.z+.48);
+for(let i=0;i<1600;i++){
+ cloth.fillStyle=i%2?'rgba(255,250,238,.16)':'rgba(52,47,39,.12)';
+ cloth.fillRect(rnd()*fabric.width,rnd()*fabric.height,1+rnd()*2,1);
+}
+const fabricTile=tex(fabric,true);fabricTile.repeat.set(.44,.85);
+const patterned=std({map:fabricTile,roughness:.98});
+const benchLeft=X(156),benchRight=X(302),benchBack=northWallZ+.245,benchFront=northWallZ+.84;
+const seatSpan=(benchRight-benchLeft)/6;
+wingPart('5322-banquette-plinth',(benchLeft+benchRight)/2,.081,benchBack+.246,benchRight-benchLeft,.132,.492,westTrim);
+for(let i=0;i<6;i++){
+ const x=benchLeft+seatSpan*(i+.5),width=seatSpan-.018;
+ const apron=upholsteryMesh(width,.235,.535,.025,patterned);
+ apron.name='atrium-5322-banquette-apron';apron.position.set(x,.264,benchBack+.277);scene.add(apron);
+ const seat=upholsteryMesh(width,.569,.104,.038,loungeRed);
+ seat.name='atrium-5322-banquette-seat';seat.position.set(x,.435,(benchBack+benchFront)/2);seat.rotation.x=-Math.PI/2;scene.add(seat);
+ const back=upholsteryMesh(width,.423,.108,.031,patterned);
+ back.name='atrium-5322-banquette-back';back.position.set(x,.662,benchBack+.084);back.rotation.x=-.080;scene.add(back);
+ if(i%2===1){
+  wingPart('5322-banquette-outlet',x,.24,benchBack+.555,.16,.057,.018,westTrim);
+  for(const side of [-1,1])wingPart('5322-banquette-socket',x+side*.038,.24,benchBack+.566,.026,.029,.004,westHardware);
+ }
+}
+addCollider(benchLeft,benchBack,benchRight,benchFront);
+
+const cafeTop=std({color:0xc1cdd0,roughness:.52}),swivelFabric=std({color:0xc4bcb1,roughness:.98});
+const [meshCanvas,meshInk]=cvs(128,128);
+meshInk.fillStyle='#a6a5a2';meshInk.fillRect(0,0,128,128);
+meshInk.fillStyle='#bbb9b5';
+for(let i=0;i<128;i+=4){meshInk.fillRect(0,i,128,1);meshInk.fillRect(i,0,1,128);}
+const swivelMesh=std({map:tex(meshCanvas,true),roughness:.95});
+const swivel=new THREE.Group();swivel.name='atrium-5322-task-chair';
+const cushion=upholsteryMesh(.463,.441,.063,.061,swivelFabric);
+cushion.position.y=.466;cushion.rotation.x=-Math.PI/2;swivel.add(cushion);
+const shell=upholsteryMesh(.466,.314,.040,.054,stoolFrame);
+shell.position.set(0,.742,-.195);shell.rotation.x=-.15;swivel.add(shell);
+for(const side of [-1,1]){
+ const back=upholsteryMesh(.404,.250,.009,.041,swivelMesh);
+ back.position.set(0,.742,-.195+side*.025);back.rotation.x=-.15;swivel.add(back);
+ const arm=new THREE.CatmullRomCurve3([[.195,.46,-.15],[.234,.58,-.10],[.254,.627,.052],[.223,.62,.162]]
+  .map(([x,y,z])=>new THREE.Vector3(x*side,y,z)));
+ swivel.add(new THREE.Mesh(new THREE.TubeGeometry(arm,12,.016,8,false),stoolFrame));
+}
+const stem=new THREE.Mesh(new THREE.CylinderGeometry(.025,.044,.37,12),stoolFrame);
+stem.position.y=.247;swivel.add(stem);
+for(let i=0;i<5;i++){
+ const angle=i*Math.PI*2/5,sin=Math.sin(angle),cos=Math.cos(angle);
+ const spoke=new THREE.Mesh(new THREE.BoxGeometry(.041,.039,.259),stoolFrame);
+ spoke.position.set(sin*.131,.070,cos*.131);spoke.rotation.y=angle;swivel.add(spoke);
+ const caster=new THREE.Mesh(new THREE.CylinderGeometry(.034,.034,.039,12),westTrim);
+ caster.position.set(sin*.263,.034,cos*.263);caster.rotation.z=Math.PI/2;swivel.add(caster);
+}
+function placeSwivel(x,z,rotation){
+ const chair=swivel.clone();chair.position.set(x,.013,z);chair.rotation.y=rotation;scene.add(chair);
+ addCollider(x-.287,z-.287,x+.287,z+.287);
+}
+const cafeZ=northWallZ+1.15;
+for(const mx of [175,215,255,292]){
+ const x=X(mx),top=upholsteryMesh(1.09,.67,.044,.082,cafeTop);
+ top.name='atrium-5322-banquette-table';top.position.set(x,.726,cafeZ);top.rotation.x=-Math.PI/2;scene.add(top);
+ wingMesh('5322-banquette-table-stem',new THREE.CylinderGeometry(.036,.048,.66,16),stoolFrame,x,.362,cafeZ);
+ wingMesh('5322-banquette-table-base',new THREE.CylinderGeometry(.233,.25,.030,24),westTrim,x,.03,cafeZ);
+ addCollider(x-.545,cafeZ-.335,x+.545,cafeZ+.335);
+ placeSwivel(x+.20,cafeZ+.64,Math.PI-.17);
+ if(mx!==175)placeSwivel(x-.85,cafeZ+.19,Math.PI/2+.20);
 }
 const loungeShift=Z(1019)-Z(1100);
 for(const mesh of scene.children.slice(loungeMeshStart))mesh.position.z+=loungeShift;
