@@ -1264,7 +1264,7 @@ classroomWall('classrooms-west-partitions',310,271,310,1114,1498,westCream);
 wingBox('5322-north-wall',145,913,310,916,0,H,westCream);
 wingBox('5322-west-wall',145,916,149,1114,0,H,westCream);
 wingBox('5322-east-wall-north',307,916,310,994,0,H,westCream);
-classroomWall('5322-east-wall-south',310,307,310,1044,1114,westCream);
+classroomWall('5322-east-wall-south',310,307,310,1045,1114,westCream);
 wingBox('classrooms-east-block',393,1045,545.25,1428,0,H,westCream);
 classroomWall('classrooms-east-partitions',354,354,393,1045,1428,westCream);
 wingBox('classrooms-south-block',354,1478,1000,1540,0,H,westCream);
@@ -1481,7 +1481,7 @@ const atriumFloor=wingMesh('lower-atrium-floor',new THREE.PlaneGeometry((893-546
 const roof=wingMesh('atrium-skylight',new THREE.PlaneGeometry((893-546)*S,Z(1428)-Z(1045)),std({color:0xb6d7d9,roughness:.35,side:THREE.DoubleSide}),X((546+893)/2),6.8,(Z(1428)+Z(1045))/2);roof.rotation.x=Math.PI/2;
 for(let i=0;i<=12;i++)wingPart('skylight-joist',X(546)+(893-546)*S*i/12,6.75,(Z(1428)+Z(1045))/2,.06,.12,Z(1428)-Z(1045),labMetal);
 // Ceiling fittings, restroom blade signs, clock and stair/exit details.
-for(let mx=340;mx<=850;mx+=48){const p=wingMesh('ceiling-panel',new THREE.PlaneGeometry(1.2,.55),M.light,X(mx),H-.018,Z(1019));p.rotation.x=Math.PI/2;}
+for(let mx=388;mx<=850;mx+=48){const p=wingMesh('ceiling-panel',new THREE.PlaneGeometry(1.2,.55),M.light,X(mx),H-.018,Z(1019));p.rotation.x=Math.PI/2;}
 for(let my=1080;my<1490;my+=55){const p=wingMesh('classroom-ceiling-panel',new THREE.PlaneGeometry(1.1,.55),M.light,X(332),H-.018,Z(my));p.rotation.x=Math.PI/2;}
 for(const mx of [370,470,570,670,770,860]){const l=new THREE.PointLight(0xfff6e6,.60,13,1.5);l.name='atrium-corridor-light';l.position.set(X(mx),H-.36,Z(1019));scene.add(l);}
 function blade(mx,female){
@@ -1529,7 +1529,6 @@ for(let row=0;row<12;row++)for(let col=-1;col<7;col++){
 }
 const ltex=tex(lc,true);ltex.repeat.set(3,4);
 const lfloor=wingMesh('5322-tile-floor',new THREE.PlaneGeometry(161*S,198*S),std({map:ltex,roughness:.35}),X(229.5),.012,Z(1096));lfloor.rotation.x=-Math.PI/2;
-wingBox('5322-threshold',306.5,1075,310.1,1125,.015,.028,westHardware,false);
 // Recessed windows along the sage wall and the gray wall behind the banquette.
 const wallDepth=.23,head=2.56;
 function loungeOutlook(aperture,onReturn){
@@ -1790,12 +1789,82 @@ for(const yy of [1045,1090])wingBox('photo-red-tunnel-header',309,yy-.6,355,yy+.
 const wood=std({color:0xae8150,roughness:.65});
 for(let yy=1046;yy<1090;yy+=.8)wingPart('photo-red-soffit-slat',X(332),2.42,Z(yy),3.08,.055,.032,wood);
 wingBox('photo-red-soffit-dark',310,1045,354,1090,2.46,2.50,westTrim,false);
-// Tiger cladding on the corner seen from the lounge looking east.
-const [c,x]=cvs(512,512);x.fillStyle='#9b713f';x.fillRect(0,0,512,512);
-for(let i=0;i<190;i++){x.fillStyle=i%3?'#d2b17b':'#634626';x.fillRect(rnd()*512,rnd()*512,60+rnd()*260,1+rnd()*6);}
-const tiger=std({map:tex(c),roughness:.65});
-wingBox('photo-tiger-corner',306.7,986,309.9,994,0,H,tiger,false);
-wingBox('photo-tiger-return',307,992.4,326,994.1,0,H,tiger,false);
+// The wood-clad column and the red return reduce the lounge mouth to half
+// the width of the atrium corridor beyond them.
+{
+ const [,hallNorth,,hallSouth]=ATRIUM_WING.corridor;
+ const inset=(hallSouth-hallNorth)/4,openingNorth=hallNorth+inset,openingSouth=hallSouth-inset;
+ const front=302,back=315,baseHeight=.105;
+ const portalSeed=seed;
+ const [woodCanvas,grain]=cvs(1024,1024);
+ grain.fillStyle='#a17447';grain.fillRect(0,0,1024,1024);
+ const grainColors=['#684229','#805533','#c49e69','#ddbc87','#95623c','#aa7c4d'];
+ for(let i=0;i<380;i++){
+  const x0=-120+rnd()*1030,y0=rnd()*1024,length=70+rnd()*580,width=1+rnd()*12;
+  const frequency=.005+rnd()*.013,phase=rnd()*6.28;
+  const wave=x=>y0+Math.sin(x*frequency+phase)*6+Math.sin(x*.026+phase)*2;
+  grain.fillStyle=grainColors[i%grainColors.length];grain.beginPath();grain.moveTo(x0,wave(x0));
+  for(let x=x0+18;x<x0+length;x+=18)grain.lineTo(x,wave(x)-width*Math.sin((x-x0)/length*Math.PI));
+  grain.lineTo(x0+length,wave(x0+length));
+  for(let x=x0+length-18;x>x0;x-=18)grain.lineTo(x,wave(x)+width*Math.sin((x-x0)/length*Math.PI));
+  grain.fill();
+ }
+ for(let row=0;row<10;row++){
+  const y=row*103,split=[275,690,465,812][row%4];
+  grain.fillStyle='rgba(70,40,26,.55)';grain.fillRect(0,y,1024,2);grain.fillRect(split,y,1.5,103);
+  grain.fillStyle='rgba(255,222,161,.34)';grain.fillRect(0,y+2,1024,1);
+ }
+ const tiger=std({map:tex(woodCanvas),roughness:.44});
+ const [plaster,stucco]=cvs(512,512);
+ stucco.fillStyle='#b75c4b';stucco.fillRect(0,0,512,512);
+ for(let i=0;i<650;i++){
+  const x=rnd()*550-20,y=rnd()*550-20;
+  stucco.strokeStyle=i%2?'rgba(249,168,135,.075)':'rgba(129,56,41,.085)';stucco.lineWidth=1+rnd()*12;
+  stucco.beginPath();stucco.moveTo(x,y);stucco.quadraticCurveTo(x+41,y-35,x+66,y+18);stucco.stroke();
+ }
+ const redReturn=std({map:tex(plaster),roughness:.35});
+ wingBox('5322-entry-wood-column',front,hallNorth,back,openingNorth,baseHeight,H,tiger);
+ wingBox('5322-entry-red-return',front,openingSouth,back,hallSouth,baseHeight,H,redReturn);
+ for(const [name,a,b] of [['column',hallNorth,openingNorth],['return',openingSouth,hallSouth]]){
+  wingBox('5322-entry-'+name+'-base',front,a,back,b,0,baseHeight,westTrim,false);
+ }
+ wingBox('5322-threshold',309.05,openingNorth,310.95,openingSouth,.013,.026,labMetal,false);
+ wingBox('5322-threshold-seam',309.56,openingNorth,309.69,openingSouth,.026,.028,westTrim,false);
+ for(const [z,side] of [[hallNorth+4.7,'wood'],[openingSouth+5.9,'red']]){
+  wingPart('5322-'+side+'-wall-switch',X(front)-.009,1.05,Z(z),.018,.111,.073,westCream);
+  wingPart('5322-'+side+'-switch-toggle',X(front)-.021,1.05,Z(z),.015,.032,.019,labSatin);
+ }
+
+ const binX=X(front)-.265,binZ=Z(hallNorth+4.8),binW=.73,binD=.48;
+ wingPart('5322-recycling-cabinet',binX,.301,binZ,binD,.575,binW,seatBlack);
+ wingPart('5322-recycling-lid',binX,.603,binZ,binD+.028,.039,binW+.024,westTrim);
+ const [lid,holes]=cvs(256,384);
+ holes.fillStyle='#343a3f';holes.fillRect(0,0,lid.width,lid.height);
+ holes.fillStyle='#151a20';holes.beginPath();holes.ellipse(126,99,36,44,0,0,Math.PI*2);holes.fill();
+ holes.beginPath();holes.ellipse(126,295,25,63,0,0,Math.PI*2);holes.fill();
+ holes.font='500 16px Arial';holes.textAlign='center';holes.fillStyle='#d1d2cc';
+ holes.fillText('CANS',126,31);holes.fillText('PAPER',126,205);
+ wingPlane('5322-recycling-labels',binX,.624,binZ,binD,binW,0,std({map:tex(lid)})).rotation.x=-Math.PI/2;
+ addCollider(binX-binD/2,binZ-binW/2,binX+binD/2,binZ+binW/2);
+
+ const [exitCanvas,exitInk]=cvs(384,160);
+ exitInk.fillStyle='#dedbd8';exitInk.fillRect(0,0,384,160);exitInk.fillStyle='#e02b22';
+ exitInk.font='700 105px Rubik';exitInk.textAlign='center';exitInk.fillText('‹ EXIT',192,116);
+ wingPart('5322-entry-exit-housing',X(310.8),2.681,Z(1018),.092,.181,.446,labSatin);
+ wingPlane('5322-entry-exit-face',X(310.8)-.048,2.681,Z(1018),.418,.158,-Math.PI/2,
+           new THREE.MeshBasicMaterial({map:tex(exitCanvas)}));
+ const [arrow,arrowInk]=cvs(192,192);
+ arrowInk.fillStyle='#f0ede4';arrowInk.fillRect(0,0,192,192);arrowInk.strokeStyle='#292c29';
+ arrowInk.lineWidth=9;arrowInk.strokeRect(5,5,182,182);arrowInk.fillStyle='#292c29';
+ arrowInk.font='700 99px Arial';arrowInk.textAlign='center';arrowInk.fillText('→',96,127);
+ wingPlane('5322-entry-wayfinding',X(318),2.53,Z(openingNorth+1),.30,.30,-Math.PI/2,new THREE.MeshBasicMaterial({map:tex(arrow)}));
+ for(const mx of [320,334,350,366]){
+  const light=wingMesh('5322-entry-downlight',new THREE.CircleGeometry(.096,24),M.light,X(mx),H-.019,Z(1018.25));
+  light.rotation.x=Math.PI/2;
+ }
+ // Keep the concrete portals' texture sequence after replacing the wood decal.
+ seed=(portalSeed+Math.imul(760,0x6D2B79F5))|0;
+}
 // The concrete headers reach the ceiling and are part of the surrounding wall.
 const [concreteCanvas,concreteInk]=cvs(256,256);
 concreteInk.fillStyle='#a6a198';concreteInk.fillRect(0,0,256,256);
@@ -3698,7 +3767,7 @@ player.g.scale.setScalar(AVATAR_DIMENSIONS.scale);
 
 // ---------- player state & input ----------
 const P={x:X(955),z:Z(758),y:0,vy:0,grounded:true,face:Math.PI/2,amp:0,phase:0};
-let yaw=-Math.PI/2,pitch=.3,dist=5.2,camDist=5.2;
+let yaw=-Math.PI/2,pitch=.3,dist=5.2,camDist=5.2,photoEyeHeight=0;
 const keys={};
 addEventListener('keydown',e=>{if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'))return;keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault()});
 addEventListener('keyup',e=>{keys[e.code]=false});
@@ -3709,7 +3778,10 @@ el.addEventListener('pointermove',e=>{if(!look||look.id!==e.pointerId)return;con
 const endLook=e=>{if(look&&look.id===e.pointerId)look=null};
 el.addEventListener('pointerup',endLook);el.addEventListener('pointercancel',endLook);
 el.addEventListener('contextmenu',e=>e.preventDefault());
-el.addEventListener('wheel',e=>{e.preventDefault();dist=Math.max(1.8,Math.min(9,dist*(1+e.deltaY*.0012)))},{passive:false});
+el.addEventListener('wheel',e=>{
+ e.preventDefault();photoEyeHeight=0;
+ dist=Math.max(1.8,Math.min(9,dist*(1+e.deltaY*.0012)));
+},{passive:false});
 const coarse=matchMedia('(pointer: coarse)').matches;
 const stick=document.getElementById('stick'),knob=document.getElementById('knob'),jumpBtn=document.getElementById('jump');
 const joy={id:null,x:0,y:0};
@@ -4605,7 +4677,7 @@ const ENTRANCES=[
  {id:'south-gallery',name:'Ph.D. office hallway · toward existing glass doors',pos:[420,1453],look:[1000,1453]},
  {id:'south-glass',name:'Glass-door connection · looking back toward classrooms',pos:[1030,1453],look:[600,1453]},
  {id:'red-north',name:'Photo view 1 · red portal toward stair exit',pos:[332,1110],look:[332,994]},
- {id:'lounge-out',name:'Photo view 2 · 5.322 looking into atrium corridor',pos:[278,1019],look:[580,1019]},
+ {id:'lounge-out',name:'Photo view 2 · 5.322 looking into atrium corridor',pos:[278,1020],look:[322,1016.5],eyeHeight:1.64},
  {id:'red-south',name:'Photo view 3 · red portal toward classrooms',pos:[332,1020],look:[332,1300]},
  {id:'yellow-south',name:'Photo view 4 · yellow corridor toward testing center',pos:[332,1160],look:[332,1498]},
  {id:'lounge5322',name:'5.322 · study lounge beside the red portal',pos:[290,1019],look:[180,1019]},
@@ -4643,7 +4715,8 @@ entSel.value='esc';
 function teleport(id){
   const E=ENTRANCES.find(e=>e.id===id);if(!E)return;
   P.x=X(E.pos[0]);P.z=Z(E.pos[1]);P.y=0;P.vy=0;P.grounded=true;
-  const fx=X(E.look[0])-P.x,fz=Z(E.look[1])-P.z;P.face=Math.atan2(fx,fz);yaw=Math.atan2(-fx,-fz);pitch=.3;camDist=dist;camY=1.45;
+  const fx=X(E.look[0])-P.x,fz=Z(E.look[1])-P.z;P.face=Math.atan2(fx,fz);yaw=Math.atan2(-fx,-fz);
+  photoEyeHeight=E.eyeHeight||0;pitch=photoEyeHeight?.035:.3;camDist=dist;camY=photoEyeHeight||1.45;
   nav.lastCalc=-1;if(nav.arrived){nav.arrived=false;startNav(nav.room)}
   const f=$('flash');f.style.transition='none';f.style.opacity='.85';requestAnimationFrame(()=>{f.style.transition='';f.style.opacity='0'});
 }
@@ -4713,17 +4786,23 @@ function tick(){
   player.sh.position.set(P.x,.015,P.z);player.sh.scale.setScalar(1-Math.min(P.y,1.5)*.3);
   animLimbs(player,P.phase,P.amp,!P.grounded);
 
-  camY+=((P.y+1.45)-camY)*Math.min(1,dt*10);
+  camY+=((P.y+(photoEyeHeight||1.45))-camY)*Math.min(1,dt*10);
   tgt.set(P.x,camY,P.z);
   dirV.set(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch)).normalize();
-  ray.set(tgt,dirV);ray.far=dist+.3;
-  const hits=ray.intersectObjects(camBlockers,false);
-  const want=hits.length?Math.max(.45,Math.min(dist,hits[0].distance-.3)):dist;
-  camDist=want<camDist?want:camDist+(want-camDist)*Math.min(1,dt*4);
-  camera.position.copy(tgt).addScaledVector(dirV,camDist);
-  camera.position.y=Math.min(H-.12,Math.max(.25,camera.position.y));
-  camera.lookAt(tgt);
-  player.g.visible=camDist>.75;
+  if(photoEyeHeight){
+   camera.position.copy(tgt);camera.position.y=Math.min(camera.position.y,H-.12);
+   camera.lookAt(camera.position.x-dirV.x,camera.position.y-dirV.y,camera.position.z-dirV.z);
+   player.g.visible=false;
+  }else{
+   ray.set(tgt,dirV);ray.far=dist+.3;
+   const hits=ray.intersectObjects(camBlockers,false);
+   const want=hits.length?Math.max(.45,Math.min(dist,hits[0].distance-.3)):dist;
+   camDist=want<camDist?want:camDist+(want-camDist)*Math.min(1,dt*4);
+   camera.position.copy(tgt).addScaledVector(dirV,camDist);
+   camera.position.y=Math.min(H-.12,Math.max(.25,camera.position.y));
+   camera.lookAt(tgt);
+   player.g.visible=camDist>.75;
+  }
   const zn=zoneAt();if(zn!==lastZone){lastZone=zn;zoneEl.textContent=zn}
   updateNav();drawMini();
   renderer.render(scene,camera);
