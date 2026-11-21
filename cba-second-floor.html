@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBA Second Floor · McCombs Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#1a1411;--panel:#2a211c;--ink:#f6efe6;--muted:#cdbba8;--accent:#e8702a;--line:rgba(255,255,255,.16)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px Rubik,system-ui,sans-serif}
+header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+a{color:var(--ink);text-decoration:none}.back{color:var(--accent);font-weight:700}.eyebrow{font:600 12px 'Barlow Condensed',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 30px 'Barlow Condensed',sans-serif;margin:2px 0}
+main{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:14px;padding:14px;max-width:1500px;margin:auto}
+.panel{background:rgba(42,33,28,.88);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button{border:1px solid var(--line);background:#45352b;color:var(--ink);border-radius:8px;padding:9px 12px;font:500 14px Rubik;cursor:pointer}
+button[aria-pressed=true],button:hover{background:var(--accent);border-color:var(--accent)}
+svg{width:100%;height:auto;display:block;background:#e9e6df;border-radius:8px}
+.room{fill:#faf9f5;stroke:#77736e;stroke-width:2;cursor:pointer;transition:fill .15s}
+.room:hover,.room:focus{fill:#f4c49e;outline:none}.room.active{fill:#f0a36e;stroke:#9d451e;stroke-width:4}
+.hall{fill:#eee9df;stroke:#aaa39a;stroke-width:2}.label{font:600 14px Rubik;fill:#24211e;text-anchor:middle;pointer-events:none}
+.small{font:12px Rubik;fill:#4d4944;text-anchor:middle;pointer-events:none}.red{font:700 14px Rubik;fill:#a51f2b;text-anchor:middle;pointer-events:none}
+.detail h2{font:700 22px 'Barlow Condensed';margin:4px 0 8px}.detail p{color:var(--muted);line-height:1.5}.detail .roomno{color:var(--accent);font-weight:700}
+.note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px}
+@media(max-width:850px){main{grid-template-columns:1fr}.detail{order:-1}}
+</style></head>
+<body>
+<header><a class="back" href="index.html">← GSB Third Floor</a><div><div class="eyebrow">McCombs · CBA Level 2</div><h1>Second Floor Directory</h1></div></header>
+<main><section class="panel">
+<div class="toolbar"><button id="overview" aria-pressed="true">CBA Second Floor</button><button id="honors" aria-pressed="false">Hall of Honors</button></div>
+<div id="mapArea">
+<svg id="floorMap" viewBox="0 0 1000 620" role="img" aria-label="Schematic CBA second floor directory. Select a labeled space for details.">
+<rect x="25" y="25" width="950" height="570" rx="5" fill="#e9e6df" stroke="#77736e" stroke-width="3"/>
+<rect class="hall" x="380" y="25" width="240" height="70"/><text class="red" x="500" y="65">ENTRY</text>
+<rect class="room" data-id="bba-office" x="300" y="110" width="155" height="90"/><text class="label" x="377" y="145">BBA PROGRAM</text><text class="label" x="377" y="165">OFFICE</text>
+<rect class="room" data-id="canfield" x="630" y="110" width="260" height="90"/><text class="label" x="760" y="145">CANFIELD BUSINESS</text><text class="label" x="760" y="165">HONORS PROGRAM</text>
+<rect class="hall" x="455" y="100" width="90" height="455"/><text class="small" transform="translate(510 340) rotate(90)">MAIN CORRIDOR</text>
+<g><rect class="room" data-id="success" x="65" y="390" width="170" height="115"/><text class="label" x="150" y="435">MCCOMBS</text><text class="label" x="150" y="455">SUCCESS SCHOLARS</text><text class="small" x="150" y="480">2.304</text></g>
+<g><rect class="room" data-id="outreach" x="245" y="390" width="180" height="115"/><text class="label" x="335" y="435">OUTREACH AND</text><text class="label" x="335" y="455">SCHOLARSHIPS</text><text class="small" x="335" y="480">2.312</text></g>
+<g><rect class="room" data-id="career" x="575" y="390" width="190" height="115"/><text class="label" x="670" y="430">BBA CAREER MANAGEMENT</text><text class="label" x="670" y="450">AND MS PROGRAMS</text><text class="small" x="670" y="480">2.502</text></g>
+<g><rect class="room" data-id="bigbend" x="790" y="300" width="150" height="205"/><text class="label" x="865" y="390">BIG BEND</text><text class="label" x="865" y="410">CONFERENCE</text><text class="label" x="865" y="430">ROOM</text><text class="small" x="865" y="460">2.564</text></g>
+<g><rect class="room" data-id="tech" x="65" y="110" width="190" height="130"/><text class="label" x="160" y="165">ROOMS 2.402</text><text class="small" x="160" y="190">Office / classroom suite</text></g>
+<g><rect class="room" data-id="rooms-east" x="630" y="225" width="260" height="135"/><text class="label" x="760" y="285">ROOMS 2.5xx / 2.6xx</text><text class="small" x="760" y="310">Offices and meeting rooms</text></g>
+<g><rect class="room" data-id="rooms-west" x="65" y="265" width="330" height="100"/><text class="label" x="230" y="310">ROOMS 2.3xx / 2.4xx</text><text class="small" x="230" y="335">Offices and support spaces</text></g>
+<rect class="hall" x="380" y="530" width="240" height="45"/><text class="red" x="500" y="558">GSB / CBA CONNECTION</text>
+<text class="small" x="500" y="15">NORTH ↑</text>
+</svg></div>
+<div id="honorsMap" hidden>
+<svg viewBox="0 0 1000 560" role="img" aria-label="Schematic Hall of Honors area with NYSE Booth and escalators">
+<rect x="25" y="25" width="950" height="510" fill="#e9e6df" stroke="#77736e" stroke-width="3"/>
+<rect class="hall" x="90" y="75" width="820" height="410"/><text class="red" x="520" y="170">HALL OF HONORS</text>
+<rect class="room" data-id="escalators" x="120" y="180" width="115" height="230"/><text class="label" transform="translate(180 295) rotate(-90)">ESCALATORS</text>
+<rect class="room" data-id="nyse" x="570" y="245" width="190" height="125" rx="58"/><text class="label" x="665" y="300">NYSE BOOTH</text>
+<rect class="hall" x="810" y="180" width="90" height="230"/><text class="red" transform="translate(860 295) rotate(-90)">ENTRY</text>
+<text class="red" x="250" y="55">CBA NORTH</text><text class="red" x="70" y="510">← GSB</text>
+</svg></div>
+</section>
+<aside class="panel detail" aria-live="polite"><div class="eyebrow">Selected destination</div><h2 id="name">CBA Second Floor</h2><div class="roomno" id="roomno">Floor overview</div><p id="description">Select a labeled area on the schematic to see its name and location context.</p><p class="note">This is an initial schematic directory based on the supplied architectural drawings, not a dimensionally surveyed or walkable 3D model. Room groups are generalized where individual room boundaries are too dense to reproduce reliably at this stage.</p></aside>
+</main>
+<script>
+const data={
+'bba-office':['BBA Program Office','Near the main second-floor entry, west of the Canfield Business Honors Program.'],
+'canfield':['Canfield Business Honors Program','North/east side of the second-floor entry area.'],
+'success':['McCombs Success Scholars · 2.304','Southwest side of the CBA second floor, near the GSB/CBA connection.'],
+'outreach':['Outreach and Scholarships · 2.312','Southwest side of the CBA second floor, adjacent to McCombs Success Scholars.'],
+'career':['BBA Career Management and MS Programs · 2.502','South side of the central corridor, toward the east side of the floor.'],
+'bigbend':['Big Bend Conference Room · 2.564','Southeast/east side of the floor.'],
+'tech':['Room suite · 2.402','West side of the floor. The supplied plan labels several individual rooms within this suite.'],
+'rooms-east':['Office suite · 2.5xx / 2.6xx','East side of the second-floor corridor.'],
+'rooms-west':['Office suite · 2.3xx / 2.4xx','West side of the second-floor corridor.'],
+'escalators':['Escalators','West side of the Hall of Honors area.'],
+'nyse':['NYSE Booth','Within the Hall of Honors open area, east of the escalators.']
+};
+function select(id){document.querySelectorAll('.room').forEach(n=>n.classList.toggle('active',n.dataset.id===id));const d=data[id];if(d){name.textContent=d[0];roomno.textContent='Destination';description.textContent=d[1]}}
+document.querySelectorAll('.room').forEach(n=>{n.addEventListener('click',()=>select(n.dataset.id));n.setAttribute('tabindex','0');n.setAttribute('role','button');n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(n.dataset.id)}})});
+const name=document.getElementById('name'),roomno=document.getElementById('roomno'),description=document.getElementById('description');
+function mode(h){document.getElementById('floorMap').parentElement.hidden=h;document.getElementById('honorsMap').hidden=!h;document.getElementById('overview').setAttribute('aria-pressed',String(!h));document.getElementById('honors').setAttribute('aria-pressed',String(h));name.textContent=h?'Hall of Honors':'CBA Second Floor';roomno.textContent=h?'Featured area':'Floor overview';description.textContent=h?'Select the NYSE Booth or escalators to view their location context.':'Select a labeled area on the schematic to see its name and location context.';document.querySelectorAll('.room').forEach(n=>n.classList.remove('active'))}
+document.getElementById('overview').onclick=()=>mode(false);document.getElementById('honors').onclick=()=>mode(true);
+</script></body></html>
