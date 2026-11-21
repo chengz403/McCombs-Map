@@ -1321,7 +1321,8 @@ for(let a=581;a<893;a+=46){
  if(b<893)wingBox('orange-pier',b,1044.3,Math.min(b+9,893),1048,0,H,orangePier,false);
 }
 // Locker I stands against a solid cream pier before the lab glass.
-wingBox('locker-pier',546,1045,581,1049,0,H,westCream,false);
+wingBox('locker-pier',545.25,1045,581,1049,0,H,westCream,false);
+wingBox('atrium-east-end-cap',893,1045,893.75,1049,0,H,westCream,false);
 const lockerMat=std({color:0x858578,roughness:.68}),lockerDark=std({color:0x333b36,roughness:.65});
 for(let col=0;col<7;col++)for(let row=0;row<4;row++){
  const xx=X(548)+.15+col*.30,yy=.13+.24+row*.47,zz=Z(1045)-.16;
@@ -1351,14 +1352,14 @@ function labMullion(name,x,width){
  wingPart(name+'-base',x,.065,labZ-.075,width+.012,.13,.21,westTrim);
 }
 function frostedLabRun(name,left,right){
- const midpoint=(left+right)/2;
+ const midpoint=(left+right)/2,stileWidth=.044;
  for(const [start,end] of [[left,midpoint],[midpoint,right]]){
   const x=(start+end)/2,width=end-start;
   wingPlane(name+'-glass',x,.85,labZ,width,1.70,Math.PI,frost);
   wingPlane(name+'-upper-glass',x,2.08,labZ,width,.76,Math.PI,labGlass);
   labPrivacyBands(name,x,labZ-.011,width-.04);
-  for(const y of [.06,.52,1.11,1.70,2.43])wingPart(name+'-rail',x,y,labZ-.022,width,.052,.060,labSatin);
-  for(const edge of [start+.022,end-.022])wingPart(name+'-stile',edge,1.23,labZ-.022,.044,2.46,.060,labSatin);
+  for(const y of [.06,.52,1.11,1.70,2.43])wingPart(name+'-rail',x,y,labZ-.022,width-2*stileWidth,.052,.060,labSatin);
+  for(const edge of [start+stileWidth/2,end-stileWidth/2])wingPart(name+'-stile',edge,1.23,labZ-.022,stileWidth,2.46,.060,labSatin);
  }
  labMullion(name,midpoint,.19);
 }
@@ -1379,7 +1380,7 @@ function slidingLabDoor(label,planX,left,right,slideSide){
  wingPlane(label+'-door-upper-glass',center,2.032,leafZ,leafWidth,.604,Math.PI,labGlass);
  labPrivacyBands(label+'-door',center,leafZ-.011,leafWidth-.06);
  for(const side of [-1,1])wingPart(label+'-door-stile',center+side*(leafWidth/2-.025),1.19,leafZ,.05,leafTop,.058,labSatin);
- for(const y of [.055,leafTop-.025])wingPart(label+'-door-rail',center,y,leafZ,leafWidth,.058,.058,labSatin);
+ for(const y of [.055,leafTop-.025])wingPart(label+'-door-rail',center,y,leafZ,leafWidth-.10,.058,.058,labSatin);
 
  const handleX=center-slideSide*(halfWidth-.17),handleZ=leafZ-.115;
  wingMesh(label+'-pull-bar',new THREE.CylinderGeometry(.021,.021,.76,14),labSatin,handleX,1.10,handleZ);
@@ -1418,7 +1419,8 @@ for(let i=0;i<8;i++){
 }
 {
  const [c,x]=cvs(640,400);x.clearRect(0,0,640,400);x.fillStyle='#eef2e6';x.textAlign='center';x.font='500 54px Rubik';['McCombs','Projects','Labs'].forEach((t,i)=>x.fillText(t,320,105+i*90));
- wingPlane('projects-lab-lettering',X(515),1.14,labZ-.06,.68,.46,Math.PI,new THREE.MeshBasicMaterial({map:tex(c),transparent:true}));
+ wingPlane('projects-lab-lettering',X(515),1.14,labZ-.06,.68,.46,Math.PI,
+           new THREE.MeshBasicMaterial({map:tex(c),transparent:true,depthWrite:false}));
 }
 // Window-side study seating: rounded cream tables and blue wheeled chairs.
 const seatBlue=std({color:0x157f9e,roughness:.8}),seatBlack=std({color:0x23292b,roughness:.6}),tableCream=std({color:0xe7e6d5,roughness:.45});
@@ -1449,8 +1451,12 @@ for(let r=0;r<28;r++)for(let c=-1;c<12;c++){
 }
 const brickTex=tex(brc,true);brickTex.repeat.set(4,3);const brick=std({map:brickTex,roughness:.92}),acrossGlass=std({color:0x516b71,roughness:.25,metalness:.18});
 wingBox('opposite-brick-facade',546,1427,893,1428,-10.4,.14,brick,false);
-wingBox('atrium-west-brick-return',542,1045,546,1428,-10.4,2.2,brick,false);
-wingBox('atrium-east-brick-return',893,1045,897,1428,-10.4,2.2,brick,false);
+// The lower returns reach the opening. At corridor level the brick starts
+// behind the end piers so it cannot share their corridor-facing wall plane.
+for(const [side,left,right] of [['west',542,546],['east',893,897]]){
+ wingBox('atrium-'+side+'-lower-brick-return',left,1045,right,1428,-10.4,0,brick,false);
+ wingBox('atrium-'+side+'-brick-return',left,1049,right,1428,0,2.2,brick,false);
+}
 for(let row=0;row<4;row++)for(let i=0;i<11;i++){
  const xx=X(558+i*30),yy=-8.6+row*3.35;
  wingPlane('opposite-tall-window',xx,yy,Z(1428)-.025,.85,2.28,Math.PI,acrossGlass);
@@ -1458,14 +1464,16 @@ for(let row=0;row<4;row++)for(let i=0;i<11;i++){
 }
 const upperGlass=std({color:0x8bbfc5,roughness:.2,metalness:.12,side:THREE.DoubleSide});
 // Both return walls are visible in the photographed opposite corridor views.
+const returnStart=Z(1049),returnEnd=Z(1428);
 for(const [wall,dir,off]of [[546,Math.PI/2,.035],[893,-Math.PI/2,-.035]]){
  for(let row=0;row<4;row++)for(let i=0;i<12;i++){
   const zz=Z(1060+i*30),yy=-8.6+row*3.35;
   wingPlane('return-tall-window',X(wall)+off,yy,zz,.85,2.28,dir,acrossGlass);
   for(const yy2 of [yy-.38,yy+.36])wingPart('return-window-transom',X(wall)+off*1.3,yy2,zz,.035,.035,.85,labMetal);
  }
- wingPlane('upper-return-glazing',X(wall)+off*1.3,4.40,(Z(1045)+Z(1428))/2,Z(1428)-Z(1045),4.4,dir,upperGlass);
- for(let i=0;i<=16;i++)wingPart('upper-return-mullion',X(wall)+off*1.4,4.4,Z(1045)+(Z(1428)-Z(1045))*i/16,.055,4.4,.055,labMetal);
+ wingPlane('upper-return-glazing',X(wall)+off*1.3,4.40,(returnStart+returnEnd)/2,returnEnd-returnStart,4.4,dir,upperGlass);
+ for(let i=0;i<=16;i++)wingPart('upper-return-mullion',X(wall)+off*1.4,4.4,
+                                returnStart+(returnEnd-returnStart)*i/16,.055,4.4,.055,labMetal);
 }
 wingPlane('upper-atrium-glazing',X((546+893)/2),4.40,Z(1428)-.03,(893-546)*S,4.4,Math.PI,upperGlass);
 for(let i=0;i<=14;i++)wingPart('upper-atrium-mullion',X(546)+(893-546)*S*i/14,4.4,Z(1428)-.05,.055,4.4,.055,labMetal);
@@ -1989,7 +1997,7 @@ function lettering(n,x,y,z,w,h,r,lines,font='Arial',bg=null,ink='#202222'){
  const [c,k]=cvs(1536,Math.round(1536*h/w));if(bg){k.fillStyle=bg;k.fillRect(0,0,c.width,c.height);}
  k.fillStyle=ink;k.textAlign='center';k.textBaseline='middle';const size=Math.floor(c.height/(lines.length+1));k.font=`500 ${size}px ${font}`;
  lines.forEach((t,i)=>k.fillText(t,768,c.height*(i+1)/(lines.length+1),1450));
- return panel(n,x,y,z,w,h,r,new THREE.MeshBasicMaterial({map:tex(c),transparent:!bg,side:THREE.DoubleSide}));
+ return panel(n,x,y,z,w,h,r,new THREE.MeshBasicMaterial({map:tex(c),transparent:!bg,depthWrite:!!bg,side:THREE.DoubleSide}));
 }
 function nativeSign(n,mx,my,dir,cols,w=3.6,h=.70){
  const [c,k]=cvs(1800,350);k.fillStyle='#f2f0e7';k.fillRect(0,0,1800,350);k.strokeStyle='#303435';k.lineWidth=12;k.strokeRect(6,6,1788,338);
@@ -2026,27 +2034,44 @@ for(const [ox,oy,color] of [[0,0,'#53565a'],[256,0,'#585c60'],[0,256,'#55595d'],
  ck.restore();
 }
 const ct=tex(cc,true);ct.repeat.set(11,7);const floor=panel('carpet',X(1435),.012,(lo+hi)/2,14.7,hi-lo,0,std({map:ct,roughness:1}));floor.rotation.x=-Math.PI/2;
-for(const [a,b]of [[lo,z-doorW/2],[z+doorW/2,hi]]){
- panel('front-glass',x,1.14,(a+b)/2,b-a,2.28,-Math.PI/2,glass);
- addCollider(x-.06,a,x+.06,b);
- part('glass-crossbar',x,.61,(a+b)/2,.075,.05,b-a,black);
- const steps=Math.ceil((b-a)/1.1);for(let i=0;i<=steps;i++)part('glass-mullion',x,1.14,a+(b-a)*i/steps,.075,2.28,.055,black);
+const baseTop=.09,headBottom=2.24,postWidth=.055;
+const northJamb=z-doorW/2,southJamb=z+doorW/2;
+for(const [a,b] of [[lo,northJamb],[southJamb,hi]]){
+ const beforeDoor=b===northJamb;
+ const start=beforeDoor?a+postWidth/2:a,end=beforeDoor?b:b-postWidth/2;
+ const steps=Math.ceil((end-start)/1.1),bayWidth=(end-start)/steps;
+ for(let i=0;i<=steps;i++){
+  const at=i===steps?end:start+bayWidth*i;
+  const doorJamb=i===(beforeDoor?steps:0),bottom=doorJamb?0:baseTop;
+  part(doorJamb?'door-jamb':'glass-mullion',x,(bottom+headBottom)/2,at,
+       doorJamb?.10:.075,headBottom-bottom,postWidth,black);
+ }
+ for(let i=0;i<steps;i++){
+  const at=start+bayWidth*(i+.5),width=bayWidth-postWidth;
+  panel('front-glass',x,(baseTop+headBottom)/2,at,width,headBottom-baseTop,-Math.PI/2,glass);
+  part('glass-crossbar',x,.61,at,.075,.05,width,black);
+ }
+ addCollider(x-.06,beforeDoor?a:a-postWidth/2,x+.06,beforeDoor?b+postWidth/2:b);
+ const baseStart=beforeDoor?a:a+postWidth/2,baseEnd=beforeDoor?b-postWidth/2:b;
+ part('front-base',x,baseTop/2,(baseStart+baseEnd)/2,.09,baseTop,baseEnd-baseStart,black);
 }
 part('front-head',x,2.29,(lo+hi)/2,.10,.10,hi-lo,black);
-for(const [a,b]of [[lo,z-doorW/2],[z+doorW/2,hi]])part('front-base',x,.045,(a+b)/2,.09,.09,b-a,black);
-// Remove the threshold's visual strip across the open doorway.
-part('carpet-threshold',x,.06,z,.13,.03,doorW,seatBlack);
+part('carpet-threshold',x,.015,z,.13,.018,doorW-postWidth,seatBlack);
 wingBox('peggy-front-header',1329.5,686,1330.5,814,2.34,H,cream,false);
 for(const s of [-1,1]){
  // Two oak-framed glazed leaves opened inward, keeping the entrance clear.
- const hinge=z+s*doorW/2,cx=x+.48;
- for(const edge of [-1,1])part('open-oak-door-stile',cx+edge*.43,1.07,hinge,.10,2.14,.055,oak);
- part('open-oak-door-top',cx,2.08,hinge,.96,.12,.055,oak);
- part('open-oak-door-bottom',cx,.17,hinge,.96,.34,.055,oak);
- panel('open-door-glass',cx,1.17,hinge,.76,1.69,0,glass);
- part('open-door-kickplate',cx,.15,hinge+s*.037,.88,.24,.018,black);
- part('open-door-pull',x+.82,1.03,hinge-s*.08,.035,.31,.035,black);
- part('door-jamb',x,1.10,hinge,.10,2.20,.055,black);
+ const hinge=z+s*doorW/2,cx=x+.54,leafBottom=.016,leafTop=2.14;
+ const leafDepth=.055,glassWidth=.76,stileWidth=.10,glassBottom=.34,glassTop=2.02;
+ const stileCenter=(glassWidth+stileWidth)/2;
+ for(const edge of [-1,1])part('open-oak-door-stile',cx+edge*stileCenter,(leafBottom+leafTop)/2,
+                               hinge,stileWidth,leafTop-leafBottom,leafDepth,oak);
+ part('open-oak-door-top',cx,(glassTop+leafTop)/2,hinge,glassWidth,leafTop-glassTop,leafDepth,oak);
+ part('open-oak-door-bottom',cx,(leafBottom+glassBottom)/2,hinge,glassWidth,glassBottom-leafBottom,leafDepth,oak);
+ panel('open-door-glass',cx,(glassBottom+glassTop)/2,hinge,glassWidth,glassTop-glassBottom,0,glass);
+ part('open-door-kickplate',cx,.15,hinge+s*.039,.74,.24,.018,black);
+ const pullX=cx+stileCenter;
+ part('open-door-pull',pullX,1.03,hinge-s*.08,.035,.31,.035,black);
+ for(const y of [.91,1.15])part('open-door-pull-mount',pullX,y,hinge-s*.052,.025,.024,.056,black);
 }
 lettering('wall-title',x-.045,2.58,z,3.65,.43,-Math.PI/2,['PEGGY DRAKE HOLLAND','STUDENT LOUNGE'],'Georgia');
 wingPlaque('peggy-5130-plaque',1329,planY(z+1.14),'w',['Student','Lounge','5.130'],.21,.43);
