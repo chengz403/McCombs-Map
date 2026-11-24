@@ -35,6 +35,13 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hi
 .finder input{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:7px;color:var(--ink);font:500 15px var(--font-ui);padding:8px 10px}
 .finder input::placeholder{color:rgba(205,187,168,.7)}
 .finder input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#finder{position:relative;z-index:1}
+#finder .finder-row{position:relative}
+.room-suggestions{position:absolute;inset-inline:0;top:calc(100% + 4px);max-height:min(9rem,40vh);overflow-y:auto;
+  overscroll-behavior:contain;background:#2a211c;border:1px solid var(--line);border-radius:7px;padding:3px;
+  box-shadow:0 5px 16px rgba(0,0,0,.28);z-index:1}
+.room-suggestions [role=option]{padding:6px 8px;border-radius:4px;font-size:13px;line-height:1.3;cursor:pointer}
+.room-suggestions [role=option]:hover,.room-suggestions [aria-selected=true]{background:rgba(232,112,42,.25)}
 .finder select{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:7px;color:var(--ink);font:500 14px var(--font-ui);padding:8px 8px}
 .finder select option{background:#2a211c;color:var(--ink)}
 .finder select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
@@ -85,7 +92,12 @@ kbd{font-family:var(--font-ui);font-size:11px;font-weight:700;color:var(--ink);b
   <header class="hud-zone"><span class="eyebrow">McCombs · GSB Level 4</span><strong id="zone">Hallway · by the escalators</strong><a class="floorlink" href="index.html">Go to the 3rd floor</a></header>
   <form class="finder" id="finder" autocomplete="off">
     <label for="room">Find a room</label>
-    <div class="finder-row"><input id="room" name="room" placeholder="4.100H, MPA, Ford, balcony" enterkeyhint="go"><button class="btn" type="submit">Go</button></div>
+    <div class="finder-row">
+      <input id="room" name="room" placeholder="4.100H, MPA, Ford" enterkeyhint="go" role="combobox"
+        aria-autocomplete="list" aria-expanded="false" aria-controls="room-suggestions">
+      <button class="btn" type="submit">Go</button>
+      <div class="room-suggestions" id="room-suggestions" role="listbox" aria-label="Matching rooms" hidden></div>
+    </div>
     <div class="msg" id="msg" role="status" hidden></div>
     <div class="route" id="route" hidden>
       <div class="route-head"><div><div class="route-dest" id="rdest">MPA Program Office</div><div class="route-sub" id="rsub">GSB 4.112CA</div></div><span class="route-dist" id="rdist">0 m</span></div>
@@ -281,10 +293,10 @@ const M={
 const stoolMat=std({color:0x121c2a,roughness:.6});
 
 // ---------- floor plan (plan px) ----------
-const PIT=[1080,1004,1194,1047];   // well under both escalator lanes
+const PIT=[1060,1004,1194,1047];   // west end extends toward the men's-room bulletin board
 const INTERIOR=[[780,850],[1430,850],[1600,1020],[1600,1270],[1547,1270],[1547,1610],[530,1610],[530,1140],[780,1140]];
 const ATR=[712,1232,980,1528];   // the atrium: open to the floors below, not part of this floor   // NE edge = the balcony glass line (x - y = 580)
-const SHAFT=[1060,1004,1200,1047];   // ceiling opening where the escalators to/from the 5th floor pass through
+const SHAFT=[PIT[0]-20,PIT[1],1200,PIT[3]];   // ceiling opening for the runs to and from the 5th floor
 const PIT2=[1336,1353,1500,1396];   // both lower runs in the CBA escalator well
 const SHAFT2=PIT2;                // the two upper runs cross the same footprint
 function shapeOf(pts,flip){const s=new THREE.Shape();pts.forEach((p,i)=>{const x=X(p[0]),z=flip?Z(p[1]):-Z(p[1]);i?s.lineTo(x,z):s.moveTo(x,z)});return s}
@@ -371,8 +383,9 @@ const SOUTH=[CONNECTOR_EAST[0],
   [CBA_ELEVATOR.left,CBA_ELEVATOR.back],[CBA_ELEVATOR.left,CBA_ELEVATOR.front],
   [970,1193],[970,1150],[928,1150],[928,1193],CONNECTOR_EAST[2],CONNECTOR_EAST[1]];
 const fordEastPlan=([x,z])=>[x+FORD_EAST_EXTENSION,z];
-const AIM_WALL_START=fordEastPlan([1123,924]),FORD_AIM_CORNER=westWingPlan(AIM_WALL_START),AIM_WALL_END=fordEastPlan([1158,959]);
-const WAIM=wall(AIM_WALL_START,AIM_WALL_END,fordEastPlan([1132,962])),AIM_PORTAL=.54,AIM_OPENING=.93,AIM_SETBACK=.56;
+const FORD_AIM_CORNER=westWingPlan(fordEastPlan([1123,924]));
+const AIM_WALL_START=fordEastPlan([1115,916]),AIM_WALL_END=fordEastPlan([1158,959]);
+const WAIM=wall(AIM_WALL_START,AIM_WALL_END,fordEastPlan([1132,962])),AIM_PORTAL=.35,AIM_OPENING=.93,AIM_SETBACK=.56;
 const aimT=offset=>AIM_PORTAL+offset/WAIM.L;
 const aimPlan=(offset,depth=0)=>planPoint(WAIM.at(aimT(offset),-depth));
 const AIM_VIEW=[aimPlan(AIM_OPENING),aimPlan(AIM_OPENING,.45+AIM_SETBACK),aimPlan(1.27,.95+AIM_SETBACK),
@@ -405,14 +418,16 @@ box(DESK_ALCOVE.right,DESK_ALCOVE.front,1550,DESK_ALCOVE.back,0,H,M.wall,{collid
 box(DESK_ALCOVE.right-.08,DESK_ALCOVE.front,1550,DESK_ALCOVE.back,0,.09,M.base);
 
 // ---------- lower level seen down the escalator well ----------
-{const lf=plane(X(1300)-X(1040),Z(1080)-Z(985),std({map:(()=>{const t=floorTex.clone();t.needsUpdate=true;t.repeat.set(5,2.5);return t})(),color:0xa09088,roughness:.5}));
- lf.rotation.x=-Math.PI/2;lf.position.set((X(1040)+X(1300))/2,-4.6,(Z(985)+Z(1080))/2);scene.add(lf);}
+{const lowerWest=PIT[0]-40;
+ const lf=plane(X(1300)-X(lowerWest),Z(1080)-Z(985),std({map:(()=>{const t=floorTex.clone();t.needsUpdate=true;t.repeat.set(5,2.5);return t})(),color:0xa09088,roughness:.5}));
+ lf.rotation.x=-Math.PI/2;lf.position.set((X(lowerWest)+X(1300))/2,-4.6,(Z(985)+Z(1080))/2);scene.add(lf);}
 box(PIT[0],PIT[1]-2,PIT[2],PIT[1],-4.6,-.02,M.pit);
 box(PIT[2],PIT[1],PIT[2]+3,PIT[3],-.35,-.02,M.pit);box(PIT[0]-3,PIT[1],PIT[0],PIT[3],-.35,-.02,M.pit);   // slab edges only: escalators pass under both ends
 box(PIT[0],PIT[3],PIT[2],PIT[3]+2,-4.6,-.02,M.pit);
 
-// ---------- escalators (top landing at the east end, running down to the 3rd floor) ----------
+// ---------- escalators ----------
 const stepTexes=[],lightPanelLater=[];
+const ESC_LANDING_LENGTH=1.2,ESC_LANDING_RAIL=.62;
 function stepTex(){
   const [c,x]=cvs(64,256);x.fillStyle='#3b3d40';x.fillRect(0,0,64,256);
   for(let i=0;i<256;i+=6){x.fillStyle='#55585c';x.fillRect(0,i,64,2)}
@@ -434,37 +449,41 @@ function escalator(mz,xA,yA,xB,yB,dirSign,bodyMat){
   }
   scene.add(g);
   for(const [x,y,o] of [[xA,yA,Math.sign(xA-xB)],[xB,yB,Math.sign(xB-xA)]]){
-    const lg=grp();lg.position.set(x+o*.6,y,zc);
-    const plate=new THREE.Mesh(new THREE.BoxGeometry(1.2,.06,1.0),M.steel);plate.position.y=-.02;lg.add(plate);
-    const comb=new THREE.Mesh(new THREE.BoxGeometry(.05,.012,1.0),std({color:0xd8b32a}));comb.position.set(-o*.58,.015,0);lg.add(comb);
+    const halfLanding=ESC_LANDING_LENGTH/2;
+    const lg=grp();lg.position.set(x+o*halfLanding,y,zc);
+    const plate=new THREE.Mesh(new THREE.BoxGeometry(ESC_LANDING_LENGTH,.06,1.0),M.steel);plate.position.y=-.02;lg.add(plate);
+    const comb=new THREE.Mesh(new THREE.BoxGeometry(.05,.012,1.0),std({color:0xd8b32a}));comb.position.set(-o*(halfLanding-.02),.015,0);lg.add(comb);
     for(const s of [-1,1]){
-      const gl=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.95),M.glass);gl.position.set(0,.5,s*.6);lg.add(gl);
-      const rail=new THREE.Mesh(new THREE.BoxGeometry(1.2,.09,.11),M.black);rail.position.set(0,1.0,s*.62);lg.add(rail);
-      const nose=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.11,16,1,false,0,Math.PI),M.black);nose.rotation.z=Math.PI/2;nose.rotation.y=o>0?Math.PI/2:-Math.PI/2;nose.position.set(o*.6,.5,s*.62);lg.add(nose);
-      const newel=new THREE.Mesh(new THREE.BoxGeometry(1.2,.95,.08),M.brushed);newel.position.set(0,.47,s*.6);lg.add(newel);
+      const gl=new THREE.Mesh(new THREE.PlaneGeometry(ESC_LANDING_LENGTH,.95),M.glass);gl.position.set(0,.5,s*.6);lg.add(gl);
+      const rail=new THREE.Mesh(new THREE.BoxGeometry(ESC_LANDING_LENGTH,.09,.11),M.black);rail.position.set(0,1.0,s*ESC_LANDING_RAIL);lg.add(rail);
+      const nose=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.11,16,1,false,0,Math.PI),M.black);nose.rotation.z=Math.PI/2;nose.rotation.y=o>0?Math.PI/2:-Math.PI/2;nose.position.set(o*halfLanding,.5,s*ESC_LANDING_RAIL);lg.add(nose);
+      const newel=new THREE.Mesh(new THREE.BoxGeometry(ESC_LANDING_LENGTH,.95,.08),M.brushed);newel.position.set(0,.47,s*.6);lg.add(newel);
     }
     scene.add(lg);
   }
 }
-// down to (and up from) the 3rd floor: top landings at the east end, running down into the well
 // Two lanes side by side with a sliver of space between them, the wood-wall lane against the wall.
 //   West end: 4->3 boards (AIM side), 5->4 lets you off (wood side).
 //   East end: 3->4 lets you off (wood side), 4->5 boards (AIM side).
-const LANE_AIM=1016,LANE_WOOD=1037;   // the wood-wall lane sits right against the wall
-escalator(LANE_AIM,X(1080),0,X(1194),-4.6,1);            // 4th -> 3rd (down)
-escalator(LANE_WOOD,X(1080),-4.6,X(1194),0,1);           // 3rd -> 4th (up, arrives at the east end)
-// up to the 5th floor: board at the west end beside the others, rise east through the ceiling.
-// Its underside is boxed in white, the bulkhead you see over the escalators in the photos.
-// 4<->5: up to the 5th boards at the east end right beside where 3->4 lets you off; down from the 5th lets you
-// off at the west end right beside where 4->3 boards. Treads on both run west.
-escalator(LANE_WOOD,X(1080),0,X(1194),4.6,-1,M.dark);   // 5th -> 4th (down, arrives at the west end)
-escalator(LANE_AIM,X(1080),4.6,X(1194),0,-1,M.brushed); // 4th -> 5th (up, boards at the east end)
+const LANE_AIM=1016,LANE_WOOD=1037;
+const escWest=X(PIT[0]),escEast=X(PIT[2]);
+const ESC_WEST_BOARDING=planPoint([escWest-ESC_LANDING_LENGTH,Z(LANE_AIM)]);
+escalator(LANE_AIM,escWest,0,escEast,-4.6,1);
+escalator(LANE_WOOD,escWest,-4.6,escEast,0,1);
+escalator(LANE_WOOD,escWest,0,escEast,4.6,-1,M.dark);
+escalator(LANE_AIM,escWest,4.6,escEast,0,-1,M.brushed);
+for(const lane of [LANE_AIM,LANE_WOOD]){
+  for(const side of [-1,1]){
+    const z=Z(lane)+side*ESC_LANDING_RAIL;
+    segs.push({ax:escWest-ESC_LANDING_LENGTH,az:z,bx:escWest,bz:z,h:.055});
+  }
+}
 // the shaft above the ceiling opening, and a slice of the 5th floor at the top
 box(SHAFT[0],SHAFT[1]-2,SHAFT[2],SHAFT[1],H,4.6+H,M.wall);
 box(SHAFT[0],SHAFT[3],SHAFT[2],SHAFT[3]+2,H,4.6+H,M.wall);
 box(SHAFT[0]-4,SHAFT[1],SHAFT[0],SHAFT[3],2.35,H,M.wall);   // the white bulkhead you see over the boarding end
 box(SHAFT[0]-2,SHAFT[1],SHAFT[0],SHAFT[3],H,4.6+H,M.wall);
-{const f=plane(X(1080)-X(SHAFT[0]),Z(SHAFT[3])-Z(SHAFT[1]),M.floor);f.rotation.x=-Math.PI/2;f.position.set((X(SHAFT[0])+X(1080))/2,4.6,(Z(SHAFT[1])+Z(SHAFT[3]))/2);scene.add(f);}   // Level 5 floor at the top of 5->4
+{const f=plane(escWest-X(SHAFT[0]),Z(SHAFT[3])-Z(SHAFT[1]),M.floor);f.rotation.x=-Math.PI/2;f.position.set((X(SHAFT[0])+escWest)/2,4.6,(Z(SHAFT[1])+Z(SHAFT[3]))/2);scene.add(f);}   // Level 5 floor at the west end
 // Level 5 landing slice, east of the shaft
 box(1290,980,1293,1054,4.6,4.6+H,M.wall);box(SHAFT[2],978,1293,980,4.6,4.6+H,M.wall);box(SHAFT[2],1054,1293,1056,4.6,4.6+H,M.wall);
 {const f5=plane(X(1290)-X(1200),Z(1054)-Z(980),std({map:(()=>{const t=floorTex.clone();t.needsUpdate=true;t.repeat.set(1.6,1);return t})(),roughness:.3}));f5.rotation.x=-Math.PI/2;f5.position.set((X(1200)+X(1290))/2,4.6,(Z(980)+Z(1054))/2);scene.add(f5);
@@ -3585,7 +3604,7 @@ const ROOM_DB={
   'stair':RM('Stair 2','Exit stairs',[1540,1030],'EXIT','Stair 2 is'),
   'balcony':RM('Balcony doors','Look out only · no outside access in the model',[1484,942],'BALCONY','The balcony doors are'),
   'elevators':RM('Elevators','',[919,1030],'ELEV','The elevators are'),
-  'escalators':RM('Escalators','Down to the 3rd floor · board at the west end',[1064,1016],'ESC','The escalators are'),
+  'escalators':RM('Escalators','Down to the 3rd floor · board at the west end',ESC_WEST_BOARDING,'ESC','The escalators are'),
   'stair1':RM('Stair 1','Exit stairs · in the hall beside the elevators',[GSB_STAIR1.stairX,GSB_STAIR1.mensZ],'STAIR 1','Stair 1 is',[GSB_STAIR1.stairX,GSB_STAIR1.face-6]),
   'cba':RM('CBA north corridor','By the atrium windows',[845,1212],'CBA','The atrium windows are',[845,1224]),
   '4308':RM('Vending','CBA 4.308',[949,1172],'4.308','The vending room is'),
@@ -3657,7 +3676,7 @@ beacon.visible=false;scene.add(beacon);
 
 // walkable waypoints (plan px) for routing around the escalator well, the Ford counter and the room blocks
 const NODES=[[1190,962],[1260,966],[1330,966],[1400,964],[1460,966],[1515,968],[1515,1000],[1540,1030],[1460,940],
-  [1250,1000],[1064,1016],[1316,1010],[1316,1090],[1316,1120],
+  [1250,1000],ESC_WEST_BOARDING,[1316,1010],[1316,1090],[1316,1120],
   [1070,978],[1000,990],[1218,1016],[1240,985],[971,1040],[971,1062.5],[991,1062.5],[1021,1062.5],[1150,970],
   [1316,1060],[1316,1100],[1316,1150],[1316,1212],[1316,1250],[1250,1212],[1190,1212],[1160,1212],[1105,1212],[1142,1212],[551,1212],[551,1250],[551,1300],[551,1380],[551,1460],[551,1552],[620,1551],[700,1551],[800,1551],[925,1551],[1040,1551],[1146,1551],[868,1060],[868,1100],[868,1130],[856,1165],[856,1212],[949,1212],[949,1172],[780,1212],[700,1212],[620,1212],[1000,1212],[1060,1212],[1142,1262],[1142,1318],[1146,1385],[1146,1446],[1146,1488],[1146,1520],[1310,1290],[1312,1340],[1312,1366],[1380,1316],[1450,1316],[1526,1316],[1526,1350],[1526,1374],[1330,1067],[1372,1067],[1430,1067],[1485,1067],[1330,1193],[1380,1193],[1450,1193],[1530,1193],[1125,966],[935,966],
   [905,1010],[917,1026],[1040,1000],
@@ -3681,8 +3700,43 @@ function findPath(start,goal){
 }
 
 const $=id=>document.getElementById(id);
-const form=$('finder'),input=$('room'),msg=$('msg'),route=$('route');
+const form=$('finder'),input=$('room'),msg=$('msg'),route=$('route'),suggestions=$('room-suggestions');
 const norm=v=>v.toLowerCase().replace(/[^0-9a-z]/g,'').replace(/^(gsb|room|rm)/,'');
+const roomNumber=id=>id.replace(/^(\d)(\d{3})/,'$1.$2').toUpperCase();
+const namedRooms=new Set(['4112a','4112b','4112ca','4114','4128','4352']);
+const roomOptions=Object.keys(ROOM_DB).filter(id=>/^4\d{3}[a-z]{0,2}$/.test(id)&&id!=='4118'&&id!=='4120').sort().map(id=>{
+  const number=roomNumber(id);
+  if(!namedRooms.has(id))return {id,label:number,aliases:[]};
+  const name=ROOM_DB[id].name;
+  const aliases=[norm(name),...Object.keys(ALIAS).filter(alias=>ALIAS[alias]===id)];
+  return {id,label:`${name} (${number})`,aliases};
+});
+let matches=[],activeSuggestion=-1;
+function closeRoomSuggestions(){
+  suggestions.hidden=true;
+  input.setAttribute('aria-expanded','false');
+  input.removeAttribute('aria-activedescendant');
+  activeSuggestion=-1;
+}
+function updateRoomSuggestions(){
+  closeRoomSuggestions();
+  const query=norm(input.value);
+  const prefix=query.length===4&&/^4\d*x+$/.test(query)?query.replace(/x+$/,''):query;
+  matches=!query||query==='4'?[]:roomOptions.filter(option=>option.id.startsWith(prefix)||option.aliases.some(alias=>alias.startsWith(query)));
+  suggestions.replaceChildren(...matches.map(({id,label})=>{
+    const option=document.createElement('div');
+    option.id='room-option-'+id;
+    option.dataset.room=id;
+    option.setAttribute('role','option');
+    option.setAttribute('aria-selected','false');
+    option.textContent=label;
+    return option;
+  }));
+  if(!matches.length)return;
+  suggestions.scrollTop=0;
+  suggestions.hidden=false;
+  input.setAttribute('aria-expanded','true');
+}
 function say(t){msg.textContent=t;msg.hidden=false}
 function stopNav(){nav.active=false;nav.arrived=false;route.hidden=true;beacon.visible=false;for(const c of chevs)c.visible=false}
 function startNav(R,note){
@@ -3693,22 +3747,62 @@ function startNav(R,note){
   $('rdest').textContent=R.name;$('rsub').textContent=R.full;$('rcancel').textContent='End directions';$('rpath').setAttribute('d',ARROW);
   drawTag(R.tag);beacon.position.set(X(R.beacon[0]),0,Z(R.beacon[1]));beacon.visible=true;
 }
+function navigateToRoom(room,note){
+  startNav(room,note);
+  closeRoomSuggestions();
+  input.blur();
+  el.focus();
+}
+function chooseRoom(id){
+  input.value=roomNumber(id);
+  navigateToRoom(ROOM_DB[id]);
+}
+input.addEventListener('focus',updateRoomSuggestions);
+input.addEventListener('input',updateRoomSuggestions);
+input.addEventListener('blur',closeRoomSuggestions);
+suggestions.addEventListener('mousedown',e=>{
+  if(e.target.closest('[data-room]'))e.preventDefault();
+});
+suggestions.addEventListener('click',e=>{
+  const option=e.target.closest('[data-room]');
+  if(option)chooseRoom(option.dataset.room);
+});
+input.addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  if(e.key==='Escape'&&!suggestions.hidden){e.preventDefault();closeRoomSuggestions();return}
+  if(e.key==='Enter'&&activeSuggestion>=0){e.preventDefault();chooseRoom(matches[activeSuggestion].id);return}
+  if(e.key!=='ArrowDown'&&e.key!=='ArrowUp')return;
+  if(suggestions.hidden)updateRoomSuggestions();
+  if(!matches.length)return;
+  e.preventDefault();
+  const step=e.key==='ArrowDown'?1:-1;
+  if(activeSuggestion<0)activeSuggestion=step>0?0:matches.length-1;
+  else{
+    suggestions.children[activeSuggestion].setAttribute('aria-selected','false');
+    activeSuggestion=(activeSuggestion+step+matches.length)%matches.length;
+  }
+  const option=suggestions.children[activeSuggestion];
+  option.setAttribute('aria-selected','true');
+  input.setAttribute('aria-activedescendant',option.id);
+  option.scrollIntoView({block:'nearest'});
+});
 form.addEventListener('submit',e=>{
-  e.preventDefault();const raw=input.value.trim();let v=norm(raw);
-  if(!v){say('Type a room like 4.100H, or MPA, Ford, NRG, balcony.');return}
-  v=ALIAS[v]||v;
-  if(ROOM_DB[v]){startNav(ROOM_DB[v]);input.blur();el.focus();return}
-  const pretty=/^\d{4}/.test(v)?v.replace(/^(\d)(\d{3})/,'$1.$2').toUpperCase():raw;
-  if(/^43\d\d[a-z]?$/.test(v)){startNav(ROOM_DB.cba,`${pretty} isn't on the CBA directory. Taking you to the CBA north corridor.`);input.blur();el.focus();return}
+  e.preventDefault();const raw=input.value.trim(),query=norm(raw);
+  if(!query){say('Type a room like 4.100H, or MPA, Ford, NRG, or AIM.');return}
+  const v=Object.hasOwn(ALIAS,query)?ALIAS[query]:query;
+  if(Object.hasOwn(ROOM_DB,v)){navigateToRoom(ROOM_DB[v]);return}
+  if(!suggestions.hidden){say('Choose a room from the suggestions.');return}
+  const pretty=/^\d{4}/.test(v)?roomNumber(v):raw;
+  if(/^43\d\d[a-z]?$/.test(v)){navigateToRoom(ROOM_DB.cba,`${pretty} isn't on the CBA directory. Taking you to the CBA north corridor.`);return}
   stopNav();
-  if(/^4\d{3}[a-z]{0,2}$/.test(v))say(`${pretty} isn't mapped yet. Try 4.100H, MPA, Ford, NRG, AIM, 4.128 or balcony.`);
-  else say(`"${raw}" doesn't look like a 4th-floor room. Try 4.100H, MPA, Ford, NRG, AIM, 4.128 or balcony.`);
+  if(/^4\d{3}[a-z]{0,2}$/.test(v))say(`${pretty} isn't mapped yet. Try 4.100H, MPA, Ford, NRG, AIM, or 4.128.`);
+  else say(`"${raw}" doesn't look like a 4th-floor room. Try 4.100H, MPA, Ford, NRG, AIM, or 4.128.`);
 });
 $('rcancel').addEventListener('click',()=>{stopNav();el.focus()});
 
 const ENTRANCES=[
   {id:'mpa',name:'MPA Program Office · toward the escalators',pos:[1340,966],look:[1100,985]},
-  {id:'esc',name:'Escalator down to the 3rd floor',pos:[1054,1016],look:[1250,1016]},
+  {id:'esc',name:'Escalator down to the 3rd floor',pos:[ESC_WEST_BOARDING[0]-9,LANE_AIM],look:[1250,LANE_AIM]},
   {id:'escE',name:'Escalators · east end',pos:[1236,1026],look:[1060,1026]},
   {id:'balcony',name:'Balcony doors',pos:[1466,952],look:[1512,906]},
   {id:'hall100',name:'4.100 rooms · by the lactation room',pos:[1494,966],look:[1300,966]},
