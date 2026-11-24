@@ -29,7 +29,7 @@ Then go to http://localhost:8000.
 
 ## Features
 
-- **Find a room:** type `3.128`, `3.118`, `3.126` or `exit` to get arrows projected on the floor, a beacon at the destination, live turn-by-turn steps and the route on the minimap.
+- **Find a room:** type the start of a room number or a name like `Salem Center` and choose a suggestion. Floor arrows stay in place along the walking route, and the direction prompt gives the next general heading. The finder also accepts `exit`.
 - **Start at an entrance:** teleport to the north entrance or the escalator hallway.
 
 ## Extending the map
@@ -39,5 +39,7 @@ Coordinates in `index.html` use the pixel grid of the floor-plan directory photo
 - **Rooms for the finder:** add an entry to `ROOM_DB` with a `dest` point in front of the door.
 - **Entrances:** add an entry to `ENTRANCES` with a spawn `pos` and a `look` target.
 - **Routing:** if new walls block a route, add walkable waypoints to `NODES`.
+
+Edit `wayfinding.js` to change the shared room suggestions or route guidance. Run `python3 sync-wayfinding.py` to update the floor pages that use it. Each HTML page includes the shared code so that its raw download can still run on its own.
 
 The ticker prices are simulated, not live quotes.

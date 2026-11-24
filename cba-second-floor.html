@@ -17,6 +17,14 @@ h1{font:700 25px 'Barlow Condensed',sans-serif;margin:2px 0 0}
 button,a.btn{font:500 13px Rubik;border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:rgba(255,255,255,.09);color:var(--ink);cursor:pointer;text-decoration:none}
 button.active,button:hover,a.btn:hover{background:var(--accent);border-color:var(--accent)}
 #finder{display:flex;gap:6px}input{min-width:0;flex:1;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:7px;color:var(--ink);padding:8px;font:14px Rubik}
+#finder{position:relative}
+.destination-panel{z-index:1}
+.room-suggestions[hidden]{display:none}
+.room-suggestions{position:absolute;inset-inline:0;top:calc(100% + 4px);max-height:min(9rem,40vh);overflow-y:auto;
+  overscroll-behavior:contain;background:#2a211c;border:1px solid var(--line);border-radius:7px;padding:3px;
+  box-shadow:0 5px 16px rgba(0,0,0,.28);z-index:1}
+.room-suggestions [role=option]{padding:6px 8px;border-radius:4px;font-size:13px;line-height:1.3;cursor:pointer}
+.room-suggestions [role=option]:hover,.room-suggestions [aria-selected=true]{background:rgba(232,112,42,.25)}
 #finder button{background:var(--accent)}
 .topright{position:fixed;right:12px;top:12px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 .minimap{width:190px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px}
@@ -29,7 +37,9 @@ button.active,button:hover,a.btn:hover{background:var(--accent);border-color:var
 <div id="scene" aria-label="Interactive 3D schematic of the CBA second floor"></div>
 <div class="hud">
  <section class="panel"><div class="eyebrow">McCombs · CBA Level 2</div><h1>Second Floor</h1><div id="selected"><strong>Explore the floor</strong>Drag to orbit · scroll to zoom · select a room or destination for details.</div></section>
- <section class="panel"><div class="eyebrow">Find a destination</div><form id="finder"><input id="query" placeholder="Try 2.304, NYSE Booth…" aria-label="Find a room"><button>Find</button></form></section>
+ <section class="panel destination-panel"><div class="eyebrow">Find a destination</div><form id="finder"><input id="query" placeholder="Try 2.304, NYSE Booth…" aria-label="Find a room" autocomplete="off"
+   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="room-suggestions"><button>Find</button>
+  <div class="room-suggestions" id="room-suggestions" role="listbox" aria-label="Matching rooms" hidden></div></form></section>
  <section class="panel controls">
   <button id="overview" class="active">Overview</button><button id="walk">Walkthrough</button><button id="reset">Reset view</button>
   <a class="btn" href="index.html">← GSB Level 3</a>
@@ -37,6 +47,146 @@ button.active,button:hover,a.btn:hover{background:var(--accent);border-color:var
 </div>
 <div class="topright"><div class="minimap"><div class="eyebrow">Floor key</div><svg viewBox="0 0 180 120"><rect x="5" y="5" width="170" height="110" fill="#d8d2c8" stroke="#aaa"/><rect x="65" y="5" width="50" height="25" fill="#a85a35"/><rect x="12" y="42" width="42" height="22" fill="#b7a28a"/><rect x="12" y="76" width="42" height="28" fill="#b7a28a"/><rect x="65" y="42" width="50" height="62" fill="#c7b9a7"/><rect x="126" y="42" width="42" height="22" fill="#b7a28a"/><rect x="126" y="76" width="42" height="28" fill="#b7a28a"/><text x="90" y="20">HALL OF HONORS</text><text x="33" y="55">WEST</text><text x="33" y="90">OFFICES</text><text x="90" y="75">CORRIDOR</text><text x="147" y="55">EAST</text><text x="147" y="90">OFFICES</text></svg></div></div>
 <div id="toast"></div><div class="hint" id="hint">Drag to orbit · Scroll to zoom · Click a room · Walkthrough: WASD / arrow keys</div>
+<script>
+// BEGIN SHARED WAYFINDING
+// This code is inlined in the floor pages by sync-wayfinding.py so each HTML file can run on its own.
+function addRoomSuggestions(input, list, options, normalize, choose) {
+  let matches = [], active = -1;
+  function close() {
+    list.hidden = true;
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+    active = -1;
+  }
+  function update() {
+    close();
+    const query = normalize(input.value);
+    const prefix = /^\d[\dx]{3}$/.test(query) ? query.replace(/x+$/, '') : query;
+    matches = !query || /^\d$/.test(query) ? [] : options.filter(option =>
+      option.id.startsWith(prefix) || option.aliases.some(alias => alias.startsWith(query)));
+    list.replaceChildren(...matches.map(({id, label}) => {
+      const option = document.createElement('div');
+      option.id = `${list.id}-${id}`;
+      option.dataset.room = id;
+      option.setAttribute('role', 'option');
+      option.setAttribute('aria-selected', 'false');
+      option.textContent = label;
+      return option;
+    }));
+    if (!matches.length) return false;
+    list.hidden = false;
+    list.scrollTop = 0;
+    input.setAttribute('aria-expanded', 'true');
+    return true;
+  }
+  function select(id) {
+    close();
+    choose(id);
+  }
+  input.addEventListener('focus', update);
+  input.addEventListener('input', update);
+  input.addEventListener('blur', close);
+  list.addEventListener('mousedown', event => {
+    if (event.target.closest('[data-room]')) event.preventDefault();
+  });
+  list.addEventListener('click', event => {
+    const option = event.target.closest('[data-room]');
+    if (option) select(option.dataset.room);
+  });
+  input.addEventListener('keydown', event => {
+    if (event.isComposing) return;
+    if (event.key === 'Escape' && !list.hidden) {
+      event.preventDefault();
+      close();
+    } else if (event.key === 'Enter' && active >= 0) {
+      event.preventDefault();
+      select(matches[active].id);
+    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (list.hidden && !update()) return;
+      event.preventDefault();
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      if (active < 0) active = step > 0 ? 0 : matches.length - 1;
+      else {
+        list.children[active].setAttribute('aria-selected', 'false');
+        active = (active + step + matches.length) % matches.length;
+      }
+      const option = list.children[active];
+      option.setAttribute('aria-selected', 'true');
+      input.setAttribute('aria-activedescendant', option.id);
+      option.scrollIntoView({block: 'nearest'});
+    }
+  });
+  return {update};
+}
+
+function createRouteGuide(findPath, canWalk) {
+  let legs = [], markers = [], current = 0, length = 0, lastPlan = -Infinity;
+  const pointAt = (leg, meters) => [leg.from[0] + leg.x * meters, leg.from[1] + leg.z * meters];
+  function project(position, leg) {
+    const x = position[0] - leg.from[0], z = position[1] - leg.from[1];
+    const along = Math.max(0, Math.min(leg.length, x * leg.x + z * leg.z));
+    return {along, distance: Math.hypot(x - leg.x * along, z - leg.z * along)};
+  }
+  function plan(position, goal, time) {
+    const path = findPath(position, goal);
+    legs = [];
+    markers = [];
+    current = 0;
+    length = 0;
+    lastPlan = time;
+    for (let i = 1; i < path.length; i++) {
+      const from = path[i - 1], to = path[i];
+      const dx = to[0] - from[0], dz = to[1] - from[1], distance = Math.hypot(dx, dz);
+      if (distance < .001) continue;
+      const leg = {from, to, x: dx / distance, z: dz / distance, length: distance, offset: length};
+      legs.push(leg);
+      for (let s = .48; s < distance - .25; s += .95) {
+        markers.push({point: pointAt(leg, s), angle: Math.atan2(-dz, dx), at: length + s});
+      }
+      length += distance;
+    }
+  }
+  function update(position, goal, time) {
+    if (!legs.length && time - lastPlan >= .45) plan(position, goal, time);
+    if (!legs.length) return null;
+    let leg = legs[current], here = project(position, leg);
+    while (current < legs.length - 1 && leg.length - here.along < .95) {
+      const next = legs[current + 1], there = project(position, next);
+      const pastTurn = there.along > .35 && there.distance < here.distance;
+      if (!pastTurn && here.distance > .8) break;
+      const preview = pointAt(next, Math.min(next.length, there.along + 1));
+      if (!canWalk(position, preview)) break;
+      current++;
+      leg = next;
+      here = there;
+    }
+    // Keep the same corridor through small changes in position, even near a turn.
+    if (time - lastPlan >= .45 && (here.distance > 1.45 ||
+        (here.distance > .55 && !canWalk(position, pointAt(leg, here.along))))) {
+      plan(position, goal, time);
+      if (!legs.length) return null;
+      leg = legs[0];
+      here = project(position, leg);
+    }
+    const progress = leg.offset + here.along;
+    return {
+      path: [pointAt(leg, here.along), ...legs.slice(current).map(item => item.to)],
+      aim: pointAt(leg, Math.min(leg.length, here.along + 2.6)),
+      distance: length - progress,
+      markers: markers.filter(marker => marker.at > progress + .5),
+    };
+  }
+  return {update, reset() { legs = []; lastPlan = -Infinity; }};
+}
+
+function routeHeading(angle, previous) {
+  const magnitude = Math.abs(angle);
+  if (magnitude > 2.6 || (previous === 2 && magnitude > 2.25)) return 2;
+  if (magnitude < (previous === 0 || previous === null ? .58 : .37)) return 0;
+  return Math.sign(angle);
+}
+// END SHARED WAYFINDING
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (()=>{
@@ -107,12 +257,48 @@ renderer.domElement.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py
 renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;if(mode==='overview'){theta-=dx*.006;phi=Math.max(.18,Math.min(1.48,phi+dy*.005));cameraUpdate()}else{camera.rotation.order='YXZ';camera.rotation.y-=dx*.004;camera.rotation.x=Math.max(-.85,Math.min(.85,camera.rotation.x-dy*.003))}});
 renderer.domElement.addEventListener('pointerup',e=>{if(!drag)return;const moved=Math.hypot(e.clientX-downX,e.clientY-downY);drag=false;if(moved<5&&mode==='overview'){mouse.x=e.clientX/innerWidth*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(mouse,camera);const hits=ray.intersectObjects(targets,false);if(hits.length)setInfo(hits[0].object)}});
 renderer.domElement.addEventListener('wheel',e=>{if(mode!=='overview')return;radius=Math.max(18,Math.min(62,radius+e.deltaY*.025));cameraUpdate()},{passive:true});
-const keys={};window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+const keys={};window.addEventListener('keydown',e=>{if(e.target===query)return;keys[e.key.toLowerCase()]=true});window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 function walkthrough(){mode='walk';document.getElementById('walk').classList.add('active');document.getElementById('overview').classList.remove('active');camera.position.set(0,1.65,10.7);camera.rotation.set(0,Math.PI,0);camera.fov=76;camera.updateProjectionMatrix();ceiling.visible=true;toast.textContent='Walkthrough mode · WASD to move · drag to look';toast.style.display='block';setTimeout(()=>toast.style.display='none',2200)}
 function overview(){mode='overview';ceiling.visible=false;document.getElementById('walk').classList.remove('active');document.getElementById('overview').classList.add('active');camera.fov=58;camera.updateProjectionMatrix();cameraUpdate()}
 document.getElementById('walk').onclick=walkthrough;document.getElementById('overview').onclick=overview;document.getElementById('reset').onclick=()=>{theta=-.68;phi=.92;radius=37;target.set(0,.6,0);overview()};
-function find(q){q=q.trim().toLowerCase();if(!q)return;const found=targets.find(o=>(o.userData.name+' '+o.userData.id).toLowerCase().includes(q));if(found){setInfo(found);if(mode==='overview'){target.set(found.position.x,.5,found.position.z);radius=22;cameraUpdate()}else{camera.position.set(found.position.x,1.65,found.position.z+4);camera.lookAt(found.position.x,1.5,found.position.z)}}else{toast.textContent='No matching destination found. Try a room number or program name.';toast.style.display='block';setTimeout(()=>toast.style.display='none',2200)}}
-document.getElementById('finder').addEventListener('submit',e=>{e.preventDefault();find(document.getElementById('query').value)});
+function visit(found){
+  setInfo(found);
+  if(mode==='overview'){
+    target.set(found.position.x,.5,found.position.z);radius=22;cameraUpdate();
+  }else{
+    camera.position.set(found.position.x,1.65,found.position.z+4);
+    camera.lookAt(found.position.x,1.5,found.position.z);
+  }
+}
+const query=document.getElementById('query');
+const normalize=value=>value.toLowerCase().replace(/[^a-z0-9]/g,'');
+const destinationOptions=targets.flatMap(destination=>{
+  const {name,id}=destination.userData;
+  const [title,number]=name.split(' · ');
+  if(number&&/^2\.\d{3}$/.test(number)){
+    return [{id:normalize(number),label:`${title} (${number})`,aliases:[normalize(title)],destination}];
+  }
+  return id==='nyse'?[{id,label:title,aliases:[normalize(title)],destination}]:[];
+}).sort((a,b)=>a.id.localeCompare(b.id));
+addRoomSuggestions(query,document.getElementById('room-suggestions'),destinationOptions,normalize,id=>{
+  const option=destinationOptions.find(entry=>entry.id===id);
+  query.value=option.label;
+  query.blur();
+  visit(option.destination);
+});
+function find(value){
+  const q=value.trim().toLowerCase();
+  if(!q)return;
+  const option=destinationOptions.find(entry=>entry.label.toLowerCase()===q);
+  const found=option?.destination||targets.find(o=>(o.userData.name+' '+o.userData.id).toLowerCase().includes(q));
+  if(found)visit(found);
+  else{
+    toast.textContent='No matching destination';
+    toast.style.display='block';
+    setTimeout(()=>toast.style.display='none',2200);
+  }
+}
+document.getElementById('finder').addEventListener('submit',event=>{event.preventDefault();find(query.value)});
 const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);if(mode==='walk'){const forward=new THREE.Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();const right=new THREE.Vector3().crossVectors(forward,new THREE.Vector3(0,1,0)).normalize();const speed=keys.shift?7:3.6;if(keys.w||keys.arrowup)camera.position.addScaledVector(forward,speed*dt);if(keys.s||keys.arrowdown)camera.position.addScaledVector(forward,-speed*dt);if(keys.a||keys.arrowleft)camera.position.addScaledVector(right,-speed*dt);if(keys.d||keys.arrowright)camera.position.addScaledVector(right,speed*dt);camera.position.x=Math.max(-17,Math.min(17,camera.position.x));camera.position.z=Math.max(-11.5,Math.min(11.5,camera.position.z));camera.position.y=1.65}renderer.render(scene,camera)}
 animate();window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 })();
