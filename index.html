@@ -362,45 +362,119 @@ const WALK=[[wu(165),wv(220)],[wu(1460),wv(220)],[wu(1460),wv(140)],[wu(1660),wv
 addCollider(X(ATR[0]),Z(ATR[1]),X(ATR[2]),Z(ATR[3]));
 addCollider(X(PIT[0]),Z(PIT[1]),X(PIT[2]),Z(PIT[3]));
 
-// ---------- atrium: open from the lower floors up to a skylight ----------
+const cafeTables=[];
+// ---------- atrium (photo): brick walls with white-framed windows, glass skylight, café on the ground floor ----------
 {
-  const [c,x]=cvs(256,384); // one bay: 3 m wide × 4.4 m floor-to-floor
-  x.fillStyle='#e6dfd1';x.fillRect(0,0,256,384);
-  x.fillStyle='#cdbfa9';x.fillRect(0,0,256,128);x.fillStyle='#b3a690';x.fillRect(0,120,256,8);x.fillRect(0,0,256,4);
-  x.fillStyle='#3a4650';x.fillRect(22,170,212,128);
-  const g=x.createLinearGradient(0,170,0,298);g.addColorStop(0,'rgba(190,215,230,.55)');g.addColorStop(1,'rgba(40,52,60,.1)');x.fillStyle=g;x.fillRect(22,170,212,128);
-  x.fillStyle='#d8d2c4';x.fillRect(126,170,4,128);x.fillStyle='#2a2f33';x.fillRect(22,296,212,6);
-  const ft=tex(c,true);
-  const y0=-22,y1=13.2,hh=y1-y0;
-  const face=(ax,az,bx,bz,ylo,yhi)=>{
-    const len=Math.hypot(bx-ax,bz-az),t=ft.clone();t.needsUpdate=true;t.repeat.set(len/3,(yhi-ylo)/4.4);t.offset.y=((ylo%4.4)+4.4)%4.4/4.4;
-    const p=new THREE.Mesh(new THREE.PlaneGeometry(len,yhi-ylo),std({map:t,roughness:.85}));
-    p.position.set((ax+bx)/2,(ylo+yhi)/2,(az+bz)/2);p.rotation.y=Math.atan2(-(bz-az),bx-ax);scene.add(p);return p;
+  const FL=4.4; // floor-to-floor
+  // one brick bay: 3 m wide × 4.4 m tall, window from 0.8 to 2.7 m
+  const brickBay=(withWindow)=>{
+    const [c,x]=cvs(256,384);x.fillStyle='#a9502f';x.fillRect(0,0,256,384);
+    for(let row=0;row<384;row+=7){const off=(row/7)%2?0:12;for(let col=-24;col<256;col+=24){const v=rnd();x.fillStyle=v<.33?'#b55a35':v<.66?'#9c4629':'#ab5534';x.fillRect(col+off+1,row+1,22,5)}}
+    x.fillStyle='rgba(214,196,176,.55)';for(let row=0;row<384;row+=7)x.fillRect(0,row,256,1);
+    x.fillStyle='#d9c9b2';x.fillRect(0,384-14,256,8); // stone band at each floor line
+    if(withWindow){
+      const wx0=46,wx1=210,wyTop=384-Math.round(2.75/FL*384),wyBot=384-Math.round(.8/FL*384);
+      x.fillStyle='#d9c9b2';x.fillRect(wx0-8,wyTop-12,wx1-wx0+16,12);x.fillRect(wx0-6,wyBot,wx1-wx0+12,8); // lintel + sill
+      x.fillStyle='#f1eee7';x.fillRect(wx0,wyTop,wx1-wx0,wyBot-wyTop);
+      const g=x.createLinearGradient(0,wyTop,0,wyBot);g.addColorStop(0,'#5d6d78');g.addColorStop(1,'#2c363d');x.fillStyle=g;
+      const pw=(wx1-wx0-18)/2,ph=(wyBot-wyTop-18)/2;
+      for(let i=0;i<2;i++)for(let j=0;j<2;j++)x.fillRect(wx0+6+i*(pw+6),wyTop+6+j*(ph+6),pw,ph);
+      x.fillStyle='rgba(255,255,255,.18)';x.beginPath();x.moveTo(wx0+8,wyTop+8);x.lineTo(wx0+50,wyTop+8);x.lineTo(wx0+8,wyTop+70);x.fill();
+      if(rnd()<.5){x.fillStyle='rgba(255,244,214,.35)';x.fillRect(wx0+6,wyTop+6,pw,ph)}
+    }
+    return tex(c,true);
+  };
+  const bayTex=brickBay(true);
+  const y0=-22,y1=13.2;
+  const face=(ax,az,bx,bz,ylo,yhi,t0=bayTex,rot)=>{
+    const len=Math.hypot(bx-ax,bz-az),t=t0.clone();t.needsUpdate=true;t.repeat.set(len/3,(yhi-ylo)/FL);t.offset.y=((ylo%FL)+FL)%FL/FL;
+    const p=new THREE.Mesh(new THREE.PlaneGeometry(len,yhi-ylo),std({map:t,roughness:.92}));
+    p.position.set((ax+bx)/2,(ylo+yhi)/2,(az+bz)/2);p.rotation.y=rot;scene.add(p);return p;
   };
   const a=X(ATR[0]),b=X(ATR[2]),n=Z(ATR[1]),s=Z(ATR[3]);
-  face(a,n+.01,b,n+.01,y0,y1);           // east side (rooms 6.482–6.460)
-  face(b-.01,n,b-.01,s,y0,y1).rotation.y=-Math.PI/2; // south side (suite)
-  face(a+.01,s,a+.01,n,y0,y1).rotation.y=Math.PI/2;  // north side (6.495–6.402)
-  face(b,s-.01,a,s-.01,y0,-.5).rotation.y=Math.PI;     // under our floor
-  face(b,s-.01,a,s-.01,H+.4,y1).rotation.y=Math.PI;    // floors above
+  const g1=y0+FL; // top of the ground floor
+  face(a,n+.01,b,n+.01,g1,y1,bayTex,0);
+  face(b-.01,n,b-.01,s,g1,y1,bayTex,-Math.PI/2);
+  face(a+.01,s,a+.01,n,g1,y1,bayTex,Math.PI/2);
+  face(b,s-.01,a,s-.01,g1,-.5,bayTex,Math.PI);
+  face(b,s-.01,a,s-.01,H+.4,y1,bayTex,Math.PI);
+  // ground floor: brick piers with glass shopfronts; the café counter on the east side
+  const [sc_,sx_]=cvs(512,384);
+  sx_.fillStyle='#a9502f';sx_.fillRect(0,0,512,384);sx_.fillStyle='#d9c9b2';sx_.fillRect(0,0,512,24);
+  sx_.fillStyle='#2f3a3f';sx_.fillRect(40,60,432,324);
+  const sg=sx_.createLinearGradient(0,60,0,384);sg.addColorStop(0,'#b9c9cf');sg.addColorStop(1,'#e8e2d6');sx_.fillStyle=sg;sx_.fillRect(48,68,416,316);
+  sx_.fillStyle='#2f3a3f';for(const xx of [152,256,360])sx_.fillRect(xx-3,68,6,316);sx_.fillRect(48,150,416,6);
+  sx_.fillStyle='rgba(255,255,255,.25)';sx_.fillRect(60,170,80,200);
+  const shopTex=tex(sc_,true);
+  const [cc_,cx_]=cvs(1024,384);
+  cx_.fillStyle='#a9502f';cx_.fillRect(0,0,1024,384);cx_.fillStyle='#d9c9b2';cx_.fillRect(0,0,1024,24);
+  cx_.fillStyle='#1e3a2e';cx_.fillRect(60,50,904,70);cx_.fillStyle='#f4efe2';cx_.font=`700 54px ${SIGNF}`;cx_.textAlign='center';cx_.fillText('CAFÉ · COFFEE · GRAB & GO',512,103);
+  cx_.fillStyle='#efe9dc';cx_.fillRect(60,120,904,264);
+  cx_.fillStyle='#3b2a20';cx_.fillRect(60,280,904,104);cx_.fillStyle='#6a4a34';cx_.fillRect(60,272,904,10);
+  for(let i=0;i<14;i++){cx_.fillStyle=['#2f6f7e','#bf5700','#d8b32a','#7a3b6e','#3a7a3e'][i%5];cx_.fillRect(90+i*62,190,40,60)}
+  cx_.fillStyle='#ffffff';for(let i=0;i<6;i++)cx_.fillRect(120+i*140,140,90,30);
+  const cafeTex=tex(cc_);
+  const gface=(ax,az,bx,bz,rot,t0)=>face(ax,az,bx,bz,y0,g1,t0,rot);
+  {const p=gface(a,n+.01,b,n+.01,0,shopTex);p.material.map.repeat.set((b-a)/5,1);p.material.map.offset.y=0}
+  {const L=s-n,p=new THREE.Mesh(new THREE.PlaneGeometry(L*.6,FL),std({map:cafeTex,roughness:.8}));p.position.set(b-.02,y0+FL/2,(n+s)/2);p.rotation.y=-Math.PI/2;scene.add(p);
+   for(const [z0,z1] of [[n,n+L*.2],[s-L*.2,s]]){const q=gface(b-.01,z0,b-.01,z1,-Math.PI/2,shopTex);q.material.map.repeat.set((z1-z0)/5,1);q.material.map.offset.y=0}}
+  {const p=gface(a+.01,s,a+.01,n,Math.PI/2,shopTex);p.material.map.repeat.set((s-n)/5,1);p.material.map.offset.y=0}
+  {const p=gface(b,s-.01,a,s-.01,Math.PI,shopTex);p.material.map.repeat.set((b-a)/5,1);p.material.map.offset.y=0}
   // slab edge we stand on
-  boxM(a,s-.02,b,s+.02,-.5,0,std({color:0xd7cfc0}),{collide:false,cam:false});
-  boxM(a,s-.02,b,s+.02,H,H+.4,std({color:0xd7cfc0}),{collide:false,cam:false});
-  // ground floor of the atrium with planters and benches
-  const gf=new THREE.Mesh(new THREE.PlaneGeometry(b-a,s-n),std({map:(()=>{const t=terrTex.clone();t.needsUpdate=true;t.repeat.set((b-a)/2.4,(s-n)/2.4);return t})(),roughness:.3}));
+  boxM(a,s-.02,b,s+.02,-.5,0,std({color:0xd9c9b2}),{collide:false,cam:false});
+  boxM(a,s-.02,b,s+.02,H,H+.4,std({color:0xd9c9b2}),{collide:false,cam:false});
+  // ground floor: large grey stone tiles
+  const [fc_,fx_]=cvs(256,256);
+  for(let i=0;i<2;i++)for(let j=0;j<2;j++){const v=118+rnd()*22|0;fx_.fillStyle=`rgb(${v+14},${v},${v-8})`;fx_.fillRect(i*128,j*128,128,128)}
+  for(let i=0;i<3000;i++){fx_.fillStyle=`rgba(80,70,64,${rnd()*.25})`;fx_.fillRect(rnd()*256,rnd()*256,1.5,1.5)}
+  fx_.fillStyle='#7b726b';for(const p of [0,128]){fx_.fillRect(p,0,2,256);fx_.fillRect(0,p,256,2)}
+  const ftx=tex(fc_,true);ftx.repeat.set((b-a)/1.6,(s-n)/1.6);
+  const gf=new THREE.Mesh(new THREE.PlaneGeometry(b-a,s-n),std({map:ftx,roughness:.35}));
   gf.rotation.x=-Math.PI/2;gf.position.set((a+b)/2,y0,(n+s)/2);scene.add(gf);
-  const leaf=std({color:0x4f7a3e,roughness:.8}),pot=std({color:0x5a4a3e,roughness:.7});
-  for(const [px,pz] of [[.25,.3],[.75,.3],[.25,.7],[.75,.7],[.5,.5]]){
-    const cx_=a+(b-a)*px,cz=n+(s-n)*pz;
-    const p=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.0,.8,20),pot);p.position.set(cx_,y0+.4,cz);scene.add(p);
-    for(let i=0;i<5;i++){const t=new THREE.Mesh(new THREE.IcosahedronGeometry(.6+rnd()*.5,0),leaf);t.position.set(cx_+(rnd()-.5)*1.2,y0+1.3+rnd()*1.2,cz+(rnd()-.5)*1.2);scene.add(t)}
+  // café tables with dark bistro chairs
+  const top=std({color:0x8a5a35,roughness:.5}),blk=std({color:0x1e1e1e,roughness:.5});top.color.convertSRGBToLinear();blk.color.convertSRGBToLinear();
+  const tGeo=new THREE.CylinderGeometry(.45,.45,.04,20),pGeo=new THREE.CylinderGeometry(.04,.04,.72,8),fGeo=new THREE.CylinderGeometry(.25,.25,.03,14);
+  const seatG=new THREE.BoxGeometry(.42,.04,.42),backG=new THREE.BoxGeometry(.42,.42,.03),legG=new THREE.BoxGeometry(.03,.45,.03);
+  const tables=[];
+  for(let i=0;i<5;i++)for(let j=0;j<4;j++){
+    const tx_=a+(b-a)*(.14+i*.15)+(rnd()-.5)*.8,tz=n+(s-n)*(.18+j*.17)+(rnd()-.5)*.8;tables.push([tx_,tz]);cafeTables.push([tx_,tz]);
+    const g=new THREE.Group();g.position.set(tx_,y0,tz);
+    const tp=new THREE.Mesh(tGeo,top);tp.position.y=.74;g.add(tp);const pl=new THREE.Mesh(pGeo,blk);pl.position.y=.37;g.add(pl);const ft=new THREE.Mesh(fGeo,blk);ft.position.y=.015;g.add(ft);
+    for(let k=0;k<4;k++){const ang=k*Math.PI/2+(rnd()-.5)*.4,ch=new THREE.Group();ch.position.set(Math.sin(ang)*.75,0,Math.cos(ang)*.75);ch.rotation.y=ang+Math.PI;
+      const st=new THREE.Mesh(seatG,blk);st.position.y=.46;ch.add(st);const bk=new THREE.Mesh(backG,blk);bk.position.set(0,.7,-.2);ch.add(bk);
+      for(const [lx_,lz] of [[-.18,-.18],[.18,-.18],[-.18,.18],[.18,.18]]){const l=new THREE.Mesh(legG,blk);l.position.set(lx_,.225,lz);ch.add(l)}
+      g.add(ch)}
+    scene.add(g);
   }
-  for(const pz of [.15,.85]){const bb=new THREE.Mesh(new THREE.BoxGeometry(4,.45,.7),M.wood);bb.position.set((a+b)/2,y0+.23,n+(s-n)*pz);scene.add(bb)}
-  // skylight
-  const [sc,sx]=cvs(512,512);sx.fillStyle='#f4fbff';sx.fillRect(0,0,512,512);sx.fillStyle='#9aa7b0';for(let i=0;i<=512;i+=64){sx.fillRect(i-3,0,6,512);sx.fillRect(0,i-3,512,6)}
-  const sky=new THREE.Mesh(new THREE.PlaneGeometry(b-a,s-n),new THREE.MeshBasicMaterial({map:tex(sc),toneMapped:false}));
-  sky.material.map.wrapS=sky.material.map.wrapT=THREE.RepeatWrapping;sky.material.map.repeat.set((b-a)/6,(s-n)/6);
-  sky.rotation.x=Math.PI/2;sky.position.set((a+b)/2,y1,(n+s)/2);scene.add(sky);
+  // a few people at the tables
+  const people=[{shirt:0x2b4a7a,skin:0xd2a07e,skinHex:'#d2a07e',hair:0x3a2a1a,pants:0x30343a,shoes:0x222222},{shirt:0xbf5700,skin:0x8a5a3c,skinHex:'#8a5a3c',hair:0x111111,pants:0x4a4440,shoes:0xeeeeee},
+    {shirt:0xe8e4dc,skin:0xf0c8a8,skinHex:'#f0c8a8',hair:0xc9a25a,pants:0x2b2b2b,shoes:0x3a2a20},{shirt:0x3a6b4a,skin:0xa8714c,skinHex:'#a8714c',hair:0x231812,curly:true,pants:0x6c7178,shoes:0xf2f0ea},{shirt:0x161616,skin:0xe0b090,skinHex:'#e0b090',hair:0x7a3b1c,pants:0xb7b9bc,shoes:0xf0f0f0}];
+  people.forEach((c,i)=>{const t=tables[[1,6,9,13,17][i]];const av=avatar(c);av.g.scale.setScalar(.9);const ang=i*1.3;
+    av.g.position.set(t[0]+Math.sin(ang)*.75,y0-.3,t[1]+Math.cos(ang)*.75);av.g.rotation.y=ang+Math.PI;
+    av.legL.rotation.x=av.legR.rotation.x=-Math.PI/2;av.armL.rotation.x=av.armR.rotation.x=-1.1;av.sh.position.set(av.g.position.x,y0+.02,av.g.position.z)});
+  // burnt-orange and blue banners along the second floor
+  const banner=(txt,col,w)=>{const [c,x]=cvs(1024,128);x.fillStyle=col;x.fillRect(0,0,1024,128);x.fillStyle='#fff';x.font=`700 70px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText(txt,512,68);
+    return new THREE.Mesh(new THREE.PlaneGeometry(w,w/8),new THREE.MeshBasicMaterial({map:tex(c),side:THREE.DoubleSide}))};
+  {const m=banner('McCOMBS SCHOOL OF BUSINESS','#bf5700',9);m.position.set(a+.08,g1+1.2,(n+s)/2-3);m.rotation.y=Math.PI/2;scene.add(m)}
+  {const m=banner('TEXAS McCOMBS','#1f4e8c',8);m.position.set(b-.08,g1+1.2,n+4.8);m.rotation.y=-Math.PI/2;scene.add(m)}
+  // globe lamps on brackets
+  const glb=new THREE.MeshBasicMaterial({color:0xfff6e4}),brk=std({color:0x2a2a2a,roughness:.5});
+  const lamp=(x_,z_,nx,nz)=>{const s_=new THREE.Mesh(new THREE.SphereGeometry(.28,16,12),glb);s_.position.set(x_+nx*.6,g1-.6,z_+nz*.6);scene.add(s_);
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(nx)*.6+.04,.04,Math.abs(nz)*.6+.04),brk);arm.position.set(x_+nx*.3,g1-.3,z_+nz*.3);scene.add(arm)};
+  for(let t=.12;t<1;t+=.19){lamp(a+(b-a)*t,n,0,1);lamp(a+(b-a)*t,s,0,-1)}
+  for(let t=.15;t<1;t+=.23){lamp(a,n+(s-n)*t,1,0);lamp(b,n+(s-n)*t,-1,0)}
+  const warm=new THREE.PointLight(0xffe7c4,1.0,30,1.4);warm.position.set((a+b)/2,y0+3.2,(n+s)/2);scene.add(warm);
+  // glass skylight on a steel frame
+  const [kc_,kx_]=cvs(256,256);const kg=kx_.createLinearGradient(0,0,256,256);kg.addColorStop(0,'#eef7fd');kg.addColorStop(1,'#cfe3ef');kx_.fillStyle=kg;kx_.fillRect(0,0,256,256);
+  kx_.fillStyle='#6f7a82';kx_.fillRect(0,0,256,5);kx_.fillRect(0,0,5,256);kx_.fillRect(126,0,3,256);
+  const ktx=tex(kc_,true);ktx.repeat.set((b-a)/2.4,(s-n)/2.4);
+  const sky=new THREE.Mesh(new THREE.PlaneGeometry(b-a,s-n),new THREE.MeshBasicMaterial({map:ktx,toneMapped:false}));
+  sky.rotation.x=Math.PI/2;sky.position.set((a+b)/2,y1+.6,(n+s)/2);scene.add(sky);
+  const steel=std({color:0x8a949b,roughness:.4,metalness:.5});
+  for(let t=0;t<=1.001;t+=1/6){const bm=new THREE.Mesh(new THREE.BoxGeometry(b-a,.3,.18),steel);bm.position.set((a+b)/2,y1+.4,n+(s-n)*t);scene.add(bm)}
+  for(let t=0;t<=1.001;t+=1/8){const bm=new THREE.Mesh(new THREE.BoxGeometry(.18,.3,s-n),steel);bm.position.set(a+(b-a)*t,y1+.4,(n+s)/2);scene.add(bm)}
+  const rim=std({color:0xd9c9b2});boxM(a,n,b,n+.3,y1,y1+.6,rim,{collide:false,cam:false});boxM(a,s-.3,b,s,y1,y1+.6,rim,{collide:false,cam:false});
+  boxM(a,n,a+.3,s,y1,y1+.6,rim,{collide:false,cam:false});boxM(b-.3,n,b,s,y1,y1+.6,rim,{collide:false,cam:false});
   const sl=new THREE.PointLight(0xf2f7ff,.9,60,1.2);sl.position.set((a+b)/2,y1-3,(n+s)/2);scene.add(sl);
 }
 function railing(ax,az,bx,bz,hgt=1.07){
@@ -664,7 +738,7 @@ function updateWalkers(dt){for(const W of walkers){const ax=X(W.a[0]),az=Z(W.a[1
   const x=ax+dx*W.t,z=az+dz*W.t;W.phase+=dt*7;W.av.g.position.set(x,0,z);W.av.g.rotation.y=angLerp(W.av.g.rotation.y,Math.atan2(dx*W.dir,dz*W.dir),Math.min(1,dt*6));W.av.sh.position.set(x,.015,z);animLimbs(W.av,W.phase,1,false)}}
 
 // ---------- player state & input ----------
-const P={x:0,z:0,y:0,vy:0,grounded:true,face:0,amp:0,phase:0};
+const P={x:0,z:0,y:0,vy:0,grounded:true,face:0,amp:0,phase:0,base:0,cafe:false};
 let yaw=0,pitch=.3,dist=4.4,camDist=4.4;
 const keys={};
 addEventListener('keydown',e=>{if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'))return;keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault()});
@@ -690,6 +764,10 @@ let jumpQueued=false;jumpBtn.addEventListener('pointerdown',e=>{e.preventDefault
 
 function hit(x,z){return boxHit(x,z,R_)}
 function moveP(dx,dz){
+  if(P.cafe){ // atrium ground floor: stay inside the atrium, walk around the café tables
+    const ox=P.x,oz=P.z;P.x=Math.max(X(ATR[0])+.5,Math.min(X(ATR[2])-.5,P.x+dx));P.z=Math.max(Z(ATR[1])+.5,Math.min(Z(ATR[3])-.5,P.z+dz));
+    for(const [tx_,tz] of cafeTables){const ex=P.x-tx_,ez=P.z-tz,d=Math.hypot(ex,ez);if(d<1.15&&d>1e-6){P.x=tx_+ex/d*1.15;P.z=tz+ez/d*1.15}}
+    if(!isFinite(P.x)){P.x=ox;P.z=oz}return}
   const ox=P.x,oz=P.z;
   let nx=P.x+dx,c=hit(nx,P.z);if(c)nx=dx>0?c.minX-R_-1e-4:dx<0?c.maxX+R_+1e-4:P.x;if(hit(nx,P.z))nx=P.x;P.x=nx;
   let nz=P.z+dz;c=hit(P.x,nz);if(c)nz=dz>0?c.minZ-R_-1e-4:dz<0?c.maxZ+R_+1e-4:P.z;if(hit(P.x,nz))nz=P.z;P.z=nz;
@@ -714,7 +792,7 @@ const ZONES=[
 ];
 const zoneEl=document.getElementById('zone');let lastZone='';
 const mxOf=x=>x/S+770, myOf=z=>z/S+480;
-function zoneAt(){const mx=mxOf(P.x),my=myOf(P.z);let name='CBA Level 6';for(const [r,n] of ZONES)if(inR(r,mx,my)){name=n;break}
+function zoneAt(){if(P.cafe)return 'Atrium · ground floor café';const mx=mxOf(P.x),my=myOf(P.z);let name='CBA Level 6';for(const [r,n] of ZONES)if(inR(r,mx,my)){name=n;break}
   let best=null,bd=46;for(const d of DOORS){if(!d.label||d.label==='SHAFT')continue;const dd=Math.hypot(d.dest[0]-mx,d.dest[1]-my);if(dd<bd){bd=dd;best=d}}
   if(best){const L=NAMES[best.label]?NAMES[best.label][0]:best.label;return `${name} · by ${L}`}
   return name}
@@ -829,6 +907,7 @@ function resolve(R){
   return Object.assign({},best,{name:'Nearest stairs',full:'Exit stairwell'});
 }
 function startNav(R0){
+  if(P.cafe)teleport('atrium',true);
   const R=resolve(R0);
   nav.active=true;nav.arrived=false;nav.room=R;nav.goal=[X(R.dest[0]),Z(R.dest[1])];nav.lastCalc=-1;nav.path=[];
   msg.hidden=true;route.hidden=false;
@@ -850,6 +929,7 @@ $('rcancel').addEventListener('click',()=>{stopNav();el.focus()});
 const ENTRANCES=[
   {id:'escalator',name:'Top of the escalator · arriving on 6',pos:[wu(1300),wv(400)],look:[wu(1660),wv(375)]},
   {id:'atrium',name:'Atrium overlook',pos:[772,805],look:[772,500]},
+  {id:'cafe',name:'Atrium · ground floor café',pos:[772,740],look:[772,300],cafe:true},
   {id:'elev',name:'Elevator · west corridor',pos:[442,825],look:[900,825]},
   {id:'north',name:'North hallway · photo spot',pos:[121,478],look:[121,20]},
   {id:'inner',name:'Hallway by 6.492',pos:[312,445],look:[312,180]},
@@ -862,8 +942,8 @@ const entSel=$('entrance');ENTRANCES.forEach(e=>{const o=document.createElement(
 let camY=1.45;
 function teleport(id,quiet){
   const E=ENTRANCES.find(e=>e.id===id);if(!E)return;
-  P.x=X(E.pos[0]);P.z=Z(E.pos[1]);P.y=0;P.vy=0;P.grounded=true;
-  const fx=X(E.look[0])-P.x,fz=Z(E.look[1])-P.z;P.face=Math.atan2(fx,fz);yaw=Math.atan2(-fx,-fz);pitch=.28;camDist=dist;camY=1.45;
+  P.cafe=!!E.cafe;P.base=E.cafe?-22:0;P.x=X(E.pos[0]);P.z=Z(E.pos[1]);P.y=P.base;P.vy=0;P.grounded=true;
+  const fx=X(E.look[0])-P.x,fz=Z(E.look[1])-P.z;P.face=Math.atan2(fx,fz);yaw=Math.atan2(-fx,-fz);pitch=.28;camDist=dist;camY=P.base+1.45;
   nav.lastCalc=-1;if(nav.arrived){nav.arrived=false;startNav(nav.room)}
   if(quiet)return;
   const f=$('flash');f.style.transition='none';f.style.opacity='.85';requestAnimationFrame(()=>{f.style.transition='';f.style.opacity='0'});
@@ -926,12 +1006,12 @@ function tick(){
     moveP(vx*sp*dt,vz*sp*dt);
     P.face=angLerp(P.face,Math.atan2(vx,vz),Math.min(1,dt*12));
   }
-  if((keys.Space||jumpQueued)&&P.grounded){P.vy=6.2;P.grounded=false}
+  if((keys.Space||jumpQueued)&&P.grounded&&!document.activeElement.matches?.('input,select')){P.vy=6.2;P.grounded=false}
   jumpQueued=false;
-  P.vy-=20*dt;P.y+=P.vy*dt;if(P.y<=0){P.y=0;P.vy=0;P.grounded=true}
+  P.vy-=20*dt;P.y+=P.vy*dt;if(P.y<=P.base){P.y=P.base;P.vy=0;P.grounded=true}
   P.amp+=((mag>.05?1:0)-P.amp)*Math.min(1,dt*10);P.phase+=dt*(run?13:9)*Math.max(mag,.2);
   player.g.position.set(P.x,P.y,P.z);player.g.rotation.y=P.face;
-  player.sh.position.set(P.x,.015,P.z);player.sh.scale.setScalar(1-Math.min(P.y,1.5)*.3);
+  player.sh.position.set(P.x,P.base+.015,P.z);player.sh.scale.setScalar(1-Math.min(P.y-P.base,1.5)*.3);
   animLimbs(player,P.phase,P.amp,!P.grounded);
   updateWalkers(dt);
   for(const s of stepTexes)s.t.offset.y=(s.t.offset.y+s.dir*dt*.6)%1;
@@ -943,8 +1023,9 @@ function tick(){
   const want=hits.length?Math.max(.4,Math.min(dist,hits[0].distance-.25)):dist;
   camDist=want<camDist?want:camDist+(want-camDist)*Math.min(1,dt*4);
   camera.position.copy(tgt).addScaledVector(dirV,camDist);
-  const ceilY=P.x<X(8)?H+.35:H;
-  camera.position.y=Math.min(ceilY-.12,Math.max(.25,camera.position.y));
+  const ceilY=P.cafe?12:P.x<X(8)?H+.35:H;
+  camera.position.y=Math.min(ceilY-.12,Math.max(P.base+.25,camera.position.y));
+  if(P.cafe){camera.position.x=Math.max(X(ATR[0])+.2,Math.min(X(ATR[2])-.2,camera.position.x));camera.position.z=Math.max(Z(ATR[1])+.2,Math.min(Z(ATR[3])-.2,camera.position.z))}
   camera.lookAt(tgt);
   player.g.visible=camDist>.7;
   const zn=zoneAt();if(zn!==lastZone){lastZone=zn;zoneEl.textContent=zn}
