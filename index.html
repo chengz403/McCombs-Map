@@ -247,7 +247,7 @@ function signTex(top,sub,col='#bf5700'){
 // ---------- materials ----------
 const M={
   cream:std({map:wallTex('#e6dcc0','#141414',true),roughness:.45}),
-  grey:std({map:wallTex('#c9c8cf','#3a2c26',true),roughness:.95}),
+  grey:std({map:wallTex('#b6b3c0','#3a2c26',true),roughness:.95}),
   plain:std({color:0xe8e3d6,roughness:.6}),
   vct:std({map:vctTex,roughness:.16,metalness:.02}),
   carpet:std({map:carpetTex,roughness:1}),
@@ -268,6 +268,7 @@ const M={
   wood:std({color:0x9a6a3e,roughness:.6}),
   red:std({color:0xb3221c,roughness:.5}),
 };
+const basketM=std({color:0x161616,roughness:.55});basketM.color.convertSRGBToLinear();
 M.copper.color.convertSRGBToLinear();M.green.color.convertSRGBToLinear();
 const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan','yellow','yellowwin'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
 
@@ -312,8 +313,14 @@ const ROOMS=[
 const NAMES={'6.420':['Republic Capital Group','Wealth Management Conference Room · 6.420'],'6.402':['Behavioral Lab','6.402 · rooms A–D inside'],'6.499':['6.499','Behavioral Lab booths'],
   'WOMEN':['Women\'s restroom','Restroom'],'MEN':['Men\'s restroom','Restroom'],'ELEVATOR':['Elevator','South-west elevator'],'STAIR':['Stairs','Stairwell']};
 
+const SUITE2=[wu(1475),wv(-130),wu(1650),wv(310)];
+// suite behind the glass doors at the CBA end of the walkway (photo): offices on the left of a long hall, waiting area on the right
+for(const [v1,v2] of [[-130,-40],[-40,50],[50,140],[140,230]])ROOMS.push(['',wu(1300),wv(v1),wu(1475),wv(v2),'e.5',{walk:true}]);
+ROOMS.push(['',wu(1300),wv(230),wu(1475),wv(310),'',{walk:true}]);
+ROOMS.push(['',wu(1530),wv(-130),wu(1648),wv(40),'w.5',{walk:true}],['',wu(1530),wv(40),wu(1648),wv(210),'w.45',{walk:true}]);
+ROOMS.push(['',wu(1300),wv(-150),wu(1648),wv(-130),'',{walk:true}]);
 const ATR=[540,252,1005,772];
-function faceMat(mx,my){return mx<8?M.white:inR(SUITE,mx,my)?M.grey:(mx<545&&my<860&&!(my>772&&mx>210))?M.bright:M.cream}
+function faceMat(mx,my){return inR(SUITE2,mx,my)?M.grey:mx<8?M.white:inR(SUITE,mx,my)?M.grey:(mx<545&&my<860&&!(my>772&&mx>210))?M.bright:M.cream}
 const DOORS=[];
 const roomBoxes=[];
 for(const R of ROOMS){
@@ -328,7 +335,7 @@ for(const R of ROOMS){
   let dx,dy;
   if(side==='n'){dx=x1+(x2-x1)*t;dy=y1}else if(side==='s'){dx=x1+(x2-x1)*t;dy=y2}else if(side==='e'){dx=x2;dy=y1+(y2-y1)*t}else{dx=x1;dy=y1+(y2-y1)*t}
   const n=DIR[side].n;
-  const suite=inR(SUITE,dx+n[0]*3,dy+n[1]*3);
+  const suite=inR(SUITE,dx+n[0]*3,dy+n[1]*3)||inR(SUITE2,dx+n[0]*3,dy+n[1]*3);
   const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':label==='6.499'?'yellow':(label==='6.494'||label==='6.498')?'yellowwin':opt&&opt.walk?'tan':'oak';
   const dw=label==='ELEVATOR'?1.25:.98;
   decal(dx,dy,side,dw,2.24,1.12,doorMats[kind],.014);
@@ -344,13 +351,14 @@ box(0,0,1545,15,0,H,M.cream);box(0,945,1545,960,0,H,M.cream);box(1530,0,1545,960
 box(0,0,15,488,0,H+.35,M.cream);box(0,545,15,960,0,H+.35,M.cream);
 // end door of the north hallway (photo: dead end with a door under the EXIT sign)
 decal(121,15,'s',.98,2.24,1.12,doorMats.plain,.014);
+decal(wu(1502),wv(-130),'s',.98,2.24,1.12,doorMats.suite,.014);
 
 // ---------- floors & ceilings ----------
 function rectPath(p,a,b,c,d){p.moveTo(X(a),-Z(b));p.lineTo(X(c),-Z(b));p.lineTo(X(c),-Z(d));p.lineTo(X(a),-Z(d));p.lineTo(X(a),-Z(b))}
 function polyPath(p,pts){pts.forEach(([a,b],i)=>i?p.lineTo(X(a),-Z(b)):p.moveTo(X(a),-Z(b)));p.lineTo(X(pts[0][0]),-Z(pts[0][1]))}
 function flat(shape,mat,y){const g=new THREE.ShapeGeometry(shape);g.rotateX(-Math.PI/2);const m=new THREE.Mesh(g,mat);m.position.y=y;scene.add(m);return m}
 const PIT=[wu(540),wv(300),wu(1170),wv(515)];
-const WALK=[[wu(165),wv(220)],[wu(1460),wv(220)],[wu(1460),wv(140)],[wu(1660),wv(140)],[wu(1660),wv(455)],[wu(1495),wv(455)],[wu(1495),wv(905)],[wu(165),wv(905)]];
+const WALK=[[wu(165),wv(220)],[wu(1300),wv(220)],[wu(1300),wv(-150)],[wu(1660),wv(-150)],[wu(1660),wv(455)],[wu(1495),wv(455)],[wu(1495),wv(905)],[wu(165),wv(905)]];
 {
   const main=new THREE.Shape();rectPath(main,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);main.holes.push(h)}
   flat(main,M.dterr,0);
@@ -501,32 +509,33 @@ function railing(ax,az,bx,bz,hgt=1.07){
 railing(X(ATR[0]),Z(ATR[3])+.05,X(ATR[2]),Z(ATR[3])+.05);
 for(const mx of [598,714,830,946])box(mx-7,773,mx+7,787,0,H,M.cream);
 
-// ---------- 6.426 suite entrance: frameless glass, one leaf swung open (photo) ----------
-{
-  const gz=Z(722),xa=X(1235),xb=X(1290),w=xb-xa,leaf=w/2-.03,hgt=2.3;
-  boxM(xa,gz-.06,xb,gz+.06,hgt,H,M.bronze,{collide:false});
-  boxM(xa,gz-.04,xb,gz+.04,0,.05,M.bronze,{collide:false,cam:false});
-  const pullTex=(()=>{const [c,x]=cvs(128,48);x.fillStyle='#111';x.fillRect(0,0,128,48);x.fillStyle='#e9d9a8';x.font=`700 30px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('PULL',64,26);return tex(c)})();
+// ---------- frameless glass double doors with bronze rails, the right leaf swung out (photo) ----------
+const pullTex=(()=>{const [c,x]=cvs(128,48);x.fillStyle='#111';x.fillRect(0,0,128,48);x.fillStyle='#e9d9a8';x.font=`700 30px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('PULL',64,26);return tex(c)})();
+function glassDoors(xa,xb,gz,hgt=2.3){
+  const leaf=(xb-xa)/2-.03;
   const mkLeaf=()=>{const g=new THREE.Group();
     const p=new THREE.Mesh(new THREE.PlaneGeometry(leaf,hgt-.06),M.glass);p.position.set(leaf/2,hgt/2,0);g.add(p);
     const rail=new THREE.Mesh(new THREE.BoxGeometry(leaf,.12,.05),M.bronze);rail.position.set(leaf/2,.06,0);g.add(rail);
+    const top=new THREE.Mesh(new THREE.BoxGeometry(leaf,.08,.05),M.bronze);top.position.set(leaf/2,hgt-.04,0);g.add(top);
     const bar=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.75,10),M.bronze);bar.position.set(leaf-.12,1.05,.06);g.add(bar);
     const plate=new THREE.Mesh(new THREE.BoxGeometry(.09,.85,.012),std({color:0x2c3a33,roughness:.3,transparent:true,opacity:.8}));plate.position.set(leaf-.12,1.05,.03);g.add(plate);
     const sg=new THREE.Mesh(new THREE.PlaneGeometry(.2,.075),new THREE.MeshBasicMaterial({map:pullTex}));sg.position.set(leaf-.12,1.6,.03);g.add(sg);
     scene.add(g);return g};
-  const l1=mkLeaf();l1.position.set(xa+.02,0,gz);
-  addCollider(xa,gz-.05,xa+leaf+.02,gz+.05);
-  const l2=mkLeaf();l2.position.set(xb-.02,0,gz);l2.rotation.y=Math.PI+1.1; // hinged on the right, swung out toward the corridor
-  const ex=xb-.02+Math.cos(Math.PI+1.1)*leaf,ez=gz-Math.sin(Math.PI+1.1)*leaf;
-  segs.push({ax:xb-.02,az:gz,bx:ex,bz:ez,h:.04});
-  decal(1262,722,'s',1.6,.4,H-.2,new THREE.MeshBasicMaterial({map:signTex('6.426 · 6.432','Suite · offices & lounge','#6c5b8f')}),.07);
+  const l1=mkLeaf();l1.position.set(xa+.02,0,gz);addCollider(xa,gz-.05,xa+leaf+.02,gz+.05);
+  const l2=mkLeaf();l2.position.set(xb-.02,0,gz);l2.rotation.y=Math.PI+1.1;
+  const ex=xb-.02+Math.cos(Math.PI+1.1)*leaf,ez=gz-Math.sin(Math.PI+1.1)*leaf;segs.push({ax:xb-.02,az:gz,bx:ex,bz:ez,h:.04});
+  boxM(xa-.02,gz-.04,xb+.02,gz+.04,0,.015,std({color:0xa8874a,roughness:.4,metalness:.5}),{collide:false,cam:false}); // brass threshold
 }
+// 6.426 suite: plain opening between 6.420 and 6.426A
+boxM(X(1235),Z(722)-.06,X(1290),Z(722)+.06,2.3,H,M.grey,{collide:false});
+decal(1262,722,'s',1.6,.4,2.52,new THREE.MeshBasicMaterial({map:signTex('6.426 · 6.432','Suite · offices','#6c5b8f')}),.07);
 // waiting chairs inside the suite lounge (photo): black, teal fabric, orange leather
+const stdS=(hex,o={})=>{const m=std(Object.assign({color:hex},o));m.color.convertSRGBToLinear();return m};
 function chair(mx,my,rot,kind){
   const g=new THREE.Group();g.position.set(X(mx),0,Z(my));g.rotation.y=rot;
   const B=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);g.add(o);return o};
-  if(kind==='orange'){const m=std({color:0xc85a35,roughness:.45});B(.78,.42,.74,m,0,.25,0);B(.78,.5,.16,m,0,.68,-.3);B(.13,.3,.74,m,-.33,.56,0);B(.13,.3,.74,m,.33,.56,0);B(.7,.06,.66,M.black,0,.03,0)}
-  else{const seat=kind==='teal'?std({color:0x8fbcb8,roughness:.95}):std({color:0x1b1b1d,roughness:.5});const fr=kind==='teal'?std({color:0x4a2418,roughness:.45}):M.black;
+  if(kind==='orange'){const m=stdS(0xd2552f,{roughness:.45});B(.78,.42,.74,m,0,.25,0);B(.78,.5,.16,m,0,.68,-.3);B(.13,.3,.74,m,-.33,.56,0);B(.13,.3,.74,m,.33,.56,0);B(.7,.06,.66,M.black,0,.03,0)}
+  else{const seat=kind==='teal'?stdS(0x86b8b8,{roughness:.95}):stdS(0x1e1f22,{roughness:.5});const fr=kind==='teal'?stdS(0x4a1f14,{roughness:.45}):stdS(0x141414,{roughness:.45});
     B(.58,.1,.56,seat,0,.46,0);B(.58,.48,.08,seat,0,.8,-.26);
     for(const sx of [-1,1]){B(.05,.46,.05,fr,sx*.27,.23,.24);B(.05,.46,.05,fr,sx*.27,.23,-.24);B(.06,.05,.56,fr,sx*.3,.68,0);B(.05,.22,.05,fr,sx*.3,.57,.24)}}
   scene.add(g);addCollider(X(mx)-.38,Z(my)-.38,X(mx)+.38,Z(my)+.38);
@@ -539,27 +548,27 @@ function clubChair(mx,my,rot){
   scene.add(g);addCollider(X(mx)-.43,Z(my)-.43,X(mx)+.43,Z(my)+.43);
 }
 for(const [u,v,r] of [[250,532,.5],[585,538,0],[628,540,.15],[900,538,0],[945,540,-.15],[1215,538,0],[1258,540,.2]])clubChair(wu(u),wv(v),r);
-chair(1205,500,0,'black');chair(1228,500,0,'teal');chair(1258,502,0,'orange');chair(1288,505,-.3,'black');chair(1312,520,-.9,'teal');chair(1150,560,Math.PI/2,'teal');
 
 // ---------- walkway between CBA and CBA North ----------
 const wb=(u1,v1,u2,v2,y0,y1,mat,o)=>box(wu(u1),wv(v1),wu(u2),wv(v2),y0,y1,mat,o);
-wb(165,205,1460,220,0,H+.35,M.white);wb(1300,220,1475,310,0,H+.35,M.white);wb(1460,135,1475,310,0,H+.35,M.white);wb(1460,135,1660,150,0,H+.35,M.white);
+wb(165,205,1460,220,0,H+.35,M.white);
 wb(1495,440,1660,455,0,H+.35,M.white);
 // ---- top of the escalator, CBA end (video): glass waiting room on the left, bench right, Rosenbaum Center ahead ----
 {
-  const gz=Z(wv(310)),xa=X(wu(1475)),xb=X(wu(1660));
-  {const cs=new THREE.Shape();rectPath(cs,wu(1475),wv(150),wu(1660),wv(310));flat(cs,std({map:(()=>{const t=carpetTex.clone();t.needsUpdate=true;return t})(),color:0xb8b8bc,roughness:1}),.004)}
-  const gp=new THREE.Mesh(new THREE.PlaneGeometry(xb-xa,H+.25),M.glass);gp.position.set((xa+xb)/2,(H+.25)/2,gz);scene.add(gp);
-  boxM(xa,gz-.05,xb,gz+.05,0,.1,M.black,{collide:false,cam:false});
-  boxM(xa,gz-.05,xb,gz+.05,H+.25,H+.35,M.black,{collide:false,cam:false});
-  addCollider(xa,gz-.05,xb,gz+.05);
-  const dx=X(wu(1535));
-  for(const s_ of [-1,1]){boxM(dx+s_*.92-.025,gz-.03,dx+s_*.92+.025,gz+.03,0,2.3,M.black,{collide:false,cam:false})}
-  boxM(dx-.95,gz-.03,dx+.95,gz+.03,2.27,2.33,M.black,{collide:false,cam:false});
-  for(const s_ of [-1,1]){const bar=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.85,10),M.black);bar.position.set(dx+s_*.12,1.1,gz+.07);scene.add(bar);
-    for(const y of [.72,1.48]){const st=new THREE.Mesh(new THREE.BoxGeometry(.025,.025,.07),M.black);st.position.set(dx+s_*.12,y,gz+.035);scene.add(st)}}
-  // waiting chairs inside
-  chair(wu(1500),wv(175),0,'black');chair(wu(1540),wv(175),0,'teal');chair(wu(1580),wv(175),0,'teal');chair(wu(1625),wv(215),-Math.PI/2,'black');chair(wu(1495),wv(250),Math.PI/2,'teal');
+  const gz=Z(wv(310)),xa=X(wu(1475)),xb=X(wu(1650));
+  {const cs=new THREE.Shape();rectPath(cs,wu(1475),wv(-130),wu(1650),wv(310));flat(cs,std({map:(()=>{const t=carpetTex.clone();t.needsUpdate=true;return t})(),roughness:1}),.004)}
+  // fixed glass either side of the doors, black head and base rails
+  const da=X(wu(1512)),db=X(wu(1572));
+  for(const [a,b] of [[xa,da],[db,xb]]){const gp=new THREE.Mesh(new THREE.PlaneGeometry(b-a,H+.25),M.glass);gp.position.set((a+b)/2,(H+.25)/2,gz);scene.add(gp);addCollider(a,gz-.05,b,gz+.05);
+    boxM(a,gz-.05,b,gz+.05,0,.12,M.bronze,{collide:false,cam:false})}
+  boxM(xa,gz-.07,xb,gz+.07,H+.15,H+.35,M.bronze,{collide:false,cam:false});
+  boxM(da-.03,gz-.05,da+.03,gz+.05,0,H+.2,M.bronze,{collide:false,cam:false});boxM(db-.03,gz-.05,db+.03,gz+.05,0,H+.2,M.bronze,{collide:false,cam:false});
+  glassDoors(da,db,gz,H+.15);
+  // waiting area: partition behind the chairs, black · teal · orange · black · teal (photo)
+  wb(1530,205,1648,222,0,H+.35,M.grey);
+  chair(wu(1548),wv(238),0,'black');chair(wu(1574),wv(238),0,'teal');chair(wu(1602),wv(240),0,'orange');chair(wu(1626),wv(248),-.35,'black');chair(wu(1636),wv(284),-1.25,'teal');
+  basket(wu(1490),wv(195));basket(wu(1490),wv(-95));
+  exitSign(wu(1502),wv(-120),'s',H+.35-.15);
   // header over the opening into CBA with the center's name, EXIT sign above
   box(-4,488,15,545,2.3,H+.35,M.white,{collide:false});
   const [lc,lx]=cvs(1024,200);lx.fillStyle='rgba(0,0,0,0)';lx.clearRect(0,0,1024,200);lx.fillStyle='#3a3530';lx.textAlign='center';
@@ -717,7 +726,7 @@ function blocked(x,z,r){return !!(boxHit(x,z,r)||segHit(x,z,r))}
 
 // troffers on a grid wherever there is open floor below
 {const panel=new THREE.PlaneGeometry(.6,1.2);
- const inside=(mx,my)=>(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&mx>wu(165)&&my>wv(140)&&my<wv(905));
+ const inside=(mx,my)=>(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&mx>wu(165)&&my>wv(-150)&&my<wv(905));
  for(let mx=-940;mx<1540;mx+=58)for(let my=30;my<950;my+=58){
    if(!inside(mx,my)||blocked(X(mx),Z(my),.55))continue;
    const alongX=!blocked(X(mx)+1.2,Z(my),.3)&&!blocked(X(mx)-1.2,Z(my),.3);
@@ -731,7 +740,6 @@ function bin(mx,my,blue){
   const rim=new THREE.Mesh(new THREE.CylinderGeometry(.215,.215,.05,16),M.black);rim.position.y=.6;g.add(rim);
   scene.add(g);addCollider(X(mx)-.22,Z(my)-.22,X(mx)+.22,Z(my)+.22);
 }
-const basketM=std({color:0x161616,roughness:.55});basketM.color.convertSRGBToLinear();
 function basket(mx,my){const b=new THREE.Mesh(new THREE.BoxGeometry(.3,.42,.26),basketM);b.position.set(X(mx),.21,Z(my));scene.add(b);
   const lin=new THREE.Mesh(new THREE.BoxGeometry(.32,.05,.28),std({color:0x0c0c0c,roughness:.3}));lin.position.set(X(mx),.43,Z(my));scene.add(lin);addCollider(X(mx)-.17,Z(my)-.15,X(mx)+.17,Z(my)+.15)}
 for(const [mx,my] of [[298,270],[298,452],[298,360],[110,140],[110,345],[133,250],[133,370],[405,345],[425,470],[96,700],[118,790],[218,600]])basket(mx,my);
@@ -824,9 +832,10 @@ function moveP(dx,dz){
 
 // ---------- where am I ----------
 const ZONES=[
+  [[wu(1475),wv(-150),wu(1660),wv(310)],'Suite off the walkway · waiting room'],
   [[-2000,0,8,960],'CBA Sixth Floor Walkway'],
   [[1095,205,1400,722],'6.432 / 6.426 suite'],
-  [[1235,722,1290,790],'6.426 suite · glass doors'],
+  [[1235,722,1290,790],'6.426 suite · entrance'],
   [[540,772,1005,800],'Atrium overlook'],
   [[8,485,290,565],'Hallway to the CBA North walkway'],
   [[15,565,210,945],'6.304 suite'],
@@ -918,7 +927,7 @@ beacon.visible=false;scene.add(beacon);
 const CS=10,CW=GW/CS|0,CHh=GH/CS|0;
 const walk=new Uint8Array(CW*CHh);
 for(let j=0;j<CHh;j++)for(let i=0;i<CW;i++){const mx=GX0+(i+.5)*CS,my=GY0+(j+.5)*CS;
-  const inside=(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&my>wv(140)&&my<wv(905)&&mx>wu(165));
+  const inside=(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&my>wv(-150)&&my<wv(905)&&mx>wu(165));
   walk[j*CW+i]=inside&&!blocked(X(mx),Z(my),.27)?1:0}
 const cellOf=(x,z)=>{const i=Math.floor((mxOf(x)-GX0)/CS),j=Math.floor((myOf(z)-GY0)/CS);return [i,j]};
 const cellPos=(i,j)=>[X(GX0+(i+.5)*CS),Z(GY0+(j+.5)*CS)];
@@ -980,7 +989,8 @@ const ENTRANCES=[
   {id:'elev',name:'Elevator · west corridor',pos:[442,825],look:[900,825]},
   {id:'north',name:'North hallway · photo spot',pos:[121,478],look:[121,20]},
   {id:'inner',name:'Hallway by 6.492',pos:[312,445],look:[312,180]},
-  {id:'suite',name:'6.426 suite · glass doors',pos:[1262,770],look:[1262,500]},
+  {id:'glass',name:'Walkway · glass doors to the suite',pos:[wu(1545),wv(395)],look:[wu(1545),wv(150)]},
+  {id:'suite',name:'6.426 suite · entrance',pos:[1262,770],look:[1262,500]},
   {id:'video',name:'Walkway · toward the Finance Office',pos:[wu(760),wv(678)],look:[wu(165),wv(630)]},
   {id:'walkway',name:'Walkway · top of the escalators',pos:[wu(470),wv(350)],look:[wu(1400),wv(380)]},
   {id:'cbanorth',name:'Walkway · CBA North doors',pos:[wu(240),wv(665)],look:[wu(1400),wv(620)]},
