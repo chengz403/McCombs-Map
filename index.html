@@ -215,6 +215,25 @@ function doorTex(kind){
     if(kind==='oak'){x.lineWidth=1.6;for(let k=0;k<3;k++){const cxk=lx+40+k*76;for(let j=0;j<9;j++){x.strokeStyle=`rgba(140,85,40,${.25+rnd()*.2})`;x.beginPath();const y0=60+j*52+rnd()*10;x.moveTo(cxk-22,y0+50);x.quadraticCurveTo(cxk,y0-30,cxk+22,y0+50);x.stroke()}}}
     else{const g=x.createLinearGradient(lx,0,lx+lw,0);g.addColorStop(0,'rgba(255,255,255,.06)');g.addColorStop(.5,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.08)');x.fillStyle=g;x.fillRect(lx,ly,lw,lh)}
   }
+  if(kind==='conf'){ // left leaf oak, right leaf open onto the conference room
+    x.fillStyle='#17181a';x.fillRect(0,0,256,512);x.fillStyle='rgb(214,190,150)';x.fillRect(10,10,118,502);
+    for(let i=0;i<90;i++){x.fillStyle=`rgba(140,100,60,${.05+rnd()*.1})`;x.fillRect(10+rnd()*118,10,1+rnd(),502)}
+    const g=x.createLinearGradient(0,10,0,512);g.addColorStop(0,'#e9eef0');g.addColorStop(.45,'#cfd6d8');g.addColorStop(.46,'#5b6066');g.addColorStop(1,'#4a4440');x.fillStyle=g;x.fillRect(128,10,118,502);
+    x.fillStyle='#e8f2f6';x.fillRect(150,150,70,70);x.fillStyle='#1b1d20';x.fillRect(140,190,90,48);x.fillStyle='#24384a';x.fillRect(146,195,78,38);
+    x.fillStyle='#b88a55';x.fillRect(132,300,114,26);x.fillStyle='#6b4a2a';for(const cx2 of [150,190,228])x.fillRect(cx2-10,326,20,60);
+    x.fillStyle='#d8c39a';x.fillRect(236,10,10,502);
+    x.fillStyle='#6f5a3c';x.beginPath();x.arc(110,272,8,0,7);x.fill();x.fillRect(88,266,26,10);return tex(c)}
+  if(kind==='double'){ // pair of oak fire doors with push bars and small windows
+    x.fillStyle='#17181a';x.fillRect(0,0,256,512);
+    for(const ox of [12,132]){x.fillStyle='rgb(206,176,130)';x.fillRect(ox,12,112,500);
+      for(let i=0;i<80;i++){x.fillStyle=`rgba(140,100,60,${.05+rnd()*.1})`;x.fillRect(ox+rnd()*112,12,1+rnd(),500)}
+      x.fillStyle='#202224';x.fillRect(ox+38,70,38,38);x.fillStyle='#e8ecee';x.fillRect(ox+42,74,30,30);
+      x.fillStyle='#2a2a2a';x.fillRect(ox+8,262,96,10);x.fillRect(ox+8,256,6,22);x.fillRect(ox+90,256,6,22)}
+    return tex(c)}
+  if(kind==='glassoak'){ // oak-framed glass door with a dark transom (Herb Kelleher Center)
+    x.fillStyle='#1d1f21';x.fillRect(0,0,256,512);x.fillStyle='rgb(206,166,108)';x.fillRect(10,10,236,502);
+    const g=x.createLinearGradient(0,40,0,480);g.addColorStop(0,'#eef3f5');g.addColorStop(1,'#a8b4ba');x.fillStyle=g;x.fillRect(44,44,168,430);
+    x.fillStyle='rgba(255,255,255,.3)';x.fillRect(54,54,26,200);x.fillStyle='#2a2a2a';x.fillRect(188,250,10,60);return tex(c)}
   if(kind==='yellowwin'){x.fillStyle='#2a2e33';x.fillRect(146,56,50,184);x.fillStyle='#8fa1a9';x.fillRect(152,62,38,172);x.fillStyle='rgba(255,255,255,.25)';x.fillRect(154,64,10,80)}
   if(kind!=='elev'){
     const hw=kind==='suite'?'#c9a45a':'#6f5a3c';
@@ -246,7 +265,7 @@ function signTex(top,sub,col='#bf5700'){
 
 // ---------- materials ----------
 const M={
-  cream:std({map:wallTex('#e6dcc0','#141414',true),roughness:.45}),
+  cream:std({map:wallTex('#ece7da','#141414',true),roughness:.42}),
   grey:std({map:wallTex('#b6b3c0','#3a2c26',true),roughness:.95}),
   plain:std({color:0xe8e3d6,roughness:.6}),
   vct:std({map:vctTex,roughness:.16,metalness:.02}),
@@ -270,7 +289,7 @@ const M={
 };
 const basketM=std({color:0x161616,roughness:.55});basketM.color.convertSRGBToLinear();
 M.copper.color.convertSRGBToLinear();M.green.color.convertSRGBToLinear();
-const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan','yellow','yellowwin'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
+const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan','yellow','yellowwin','conf','double','glassoak'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
 
 // ---------- the plan: rooms as solid blocks, corridors are what's left ----------
 // [label, x1,y1,x2,y2, door] door: side n/s/e/w + optional position along that side (0..1), '' = none
@@ -295,10 +314,10 @@ const ROOMS=[
   ['6.432D',1005,240,1095,320,'e'],['6.432C',1005,320,1095,400,'e'],['6.432B',1005,400,1095,480,'e'],['6.426C',1005,480,1095,560,'e'],['6.426B',1005,560,1095,640,'e'],
   ['6.432K',1150,330,1255,400,'n'],['6.432J',1255,330,1345,400,'n'],['6.432L',1137,400,1220,485,'s'],['6.432M',1220,400,1305,485,'s'],['6.432N',1305,400,1388,485,'s'],
   ['',1388,400,1400,485,''],['',1395,290,1400,400,''],['',1395,485,1400,640,''],
-  ['6.420',1005,640,1235,775,'s.3'],['6.426A',1290,640,1400,720,'w.4'],
+  ['6.420',1005,640,1235,775,'e.85'],['6.426A',1330,640,1400,720,'w.4'],['',1235,640,1290,722,''],['',1320,790,1395,815,''],
   // south side (right on the plan)
   ['6.442',1430,195,1530,250,'w'],['6.440',1430,250,1530,330,'w'],['6.438',1430,330,1530,415,'w'],['6.436',1430,415,1530,480,'w'],['6.434',1430,480,1530,535,'w'],['6.428',1430,535,1530,680,'w'],['6.424',1430,680,1530,790,'w'],
-  ['6.422',1320,815,1395,945,'n'],['6.422A',1395,850,1430,945,'n'],['6.424A',1430,790,1530,945,'w.12'],
+  ['6.422',1320,815,1395,945,'w.15'],['6.422A',1395,850,1430,945,'n'],['6.424A',1430,790,1530,945,'w.12'],
   // west side (bottom of the plan): stairs, elevator, restrooms
   ['STAIR',1135,855,1320,945,'n'],['6.418',1060,855,1135,945,'n'],['MEN',940,855,1060,945,'n.3'],['6.414',905,855,940,945,'n'],['WOMEN',795,855,905,945,'n.7'],
   ['6.410',750,855,795,945,'n'],['6.408',720,855,750,945,'n'],['6.406',690,855,720,945,'n'],['6.404A',595,855,690,945,'n'],['6.404',485,855,595,945,'n'],
@@ -310,7 +329,7 @@ const ROOMS=[
 ];
 // walkway offices 6.220 → 6.202 (u,v on the walkway plan)
 {const us=[175,310,440,570,705,830,965,1095,1225,1355,1495];for(let i=0;i<10;i++)ROOMS.push([`6.${220-i*2}`,wu(us[i]),wv(720),wu(us[i+1]),wv(905),'n.55',{walk:true}])}
-const NAMES={'6.420':['Republic Capital Group','Wealth Management Conference Room · 6.420'],'6.402':['Behavioral Lab','6.402 · rooms A–D inside'],'6.499':['6.499','Behavioral Lab booths'],
+const NAMES={'6.426':['Herb Kelleher Center for Entrepreneurship','Growth and Renewal · 6.426'],'6.420':['Republic Capital Group','Wealth Management Conference Room · 6.420'],'6.402':['Behavioral Lab','6.402 · rooms A–D inside'],'6.499':['6.499','Behavioral Lab booths'],
   'WOMEN':['Women\'s restroom','Restroom'],'MEN':['Men\'s restroom','Restroom'],'ELEVATOR':['Elevator','South-west elevator'],'STAIR':['Stairs','Stairwell']};
 
 const SUITE2=[wu(1475),wv(-130),wu(1650),wv(310)];
@@ -336,8 +355,8 @@ for(const R of ROOMS){
   if(side==='n'){dx=x1+(x2-x1)*t;dy=y1}else if(side==='s'){dx=x1+(x2-x1)*t;dy=y2}else if(side==='e'){dx=x2;dy=y1+(y2-y1)*t}else{dx=x1;dy=y1+(y2-y1)*t}
   const n=DIR[side].n;
   const suite=inR(SUITE,dx+n[0]*3,dy+n[1]*3)||inR(SUITE2,dx+n[0]*3,dy+n[1]*3);
-  const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':label==='6.499'?'yellow':(label==='6.494'||label==='6.498')?'yellowwin':opt&&opt.walk?'tan':'oak';
-  const dw=label==='ELEVATOR'?1.25:.98;
+  const kind=label==='6.420'?'conf':(label==='STAIR'&&x1===1135)?'double':label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':label==='6.499'?'yellow':(label==='6.494'||label==='6.498')?'yellowwin':opt&&opt.walk?'tan':'oak';
+  const dw=label==='ELEVATOR'?1.25:(kind==='conf'||kind==='double')?1.9:.98;
   decal(dx,dy,side,dw,2.24,1.12,doorMats[kind],.014);
   const rt=[n[1],-n[0]];// viewer's right
   if(label&&label!=='SHAFT'){
@@ -361,7 +380,7 @@ const PIT=[wu(540),wv(300),wu(1170),wv(515)];
 const WALK=[[wu(165),wv(220)],[wu(1300),wv(220)],[wu(1300),wv(-150)],[wu(1660),wv(-150)],[wu(1660),wv(455)],[wu(1495),wv(455)],[wu(1495),wv(905)],[wu(165),wv(905)]];
 {
   const main=new THREE.Shape();rectPath(main,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);main.holes.push(h)}
-  flat(main,M.dterr,0);
+  flat(main,M.vct,0);
   const carpet=new THREE.Shape();rectPath(carpet,1095,205,1400,722);flat(carpet,M.carpet,.004);
   // Rosenbaum Center: cream tile with scattered brown and tan squares
   const [ac_,ax_]=cvs(512,512);
@@ -373,6 +392,18 @@ const WALK=[[wu(165),wv(220)],[wu(1300),wv(220)],[wu(1300),wv(-150)],[wu(1660),w
   const accT=tex(ac_,true);accT.repeat.set(1/2.44,1/2.44);const accM=std({map:accT,roughness:.12,metalness:.02});
   for(const r of [[15,15,540,772],[15,565,290,855]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,M.vct,.003)}
   for(const r of [[8,485,335,565],[290,505,432,530],[398,320,432,530]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,accM,.0045)}
+  // Herb Kelleher section: white tile with pairs of grey squares down the middle
+  const greyTex=(tr)=>{const [gc_,gx_]=cvs(512,512);
+    for(let i=0;i<8;i++)for(let j=0;j<8;j++){const v=236+rnd()*8|0;gx_.fillStyle=`rgb(${v},${v-2},${v-8})`;gx_.fillRect(i*64,j*64,64,64)}
+    for(let i=0;i<5000;i++){gx_.fillStyle=`rgba(150,145,135,${rnd()*.3})`;gx_.fillRect(rnd()*512,rnd()*512,1.2,1.2)}
+    for(const [a,b] of [[3,0],[4,1],[3,4],[4,5],[4,4]]){const [i,j]=tr?[b,a]:[a,b];gx_.fillStyle=(i+j)%2?'#9a9893':'#b4b1aa';gx_.fillRect(i*64,j*64,64,64);
+      for(let k=0;k<500;k++){gx_.fillStyle=`rgba(70,70,70,${rnd()*.35})`;gx_.fillRect(i*64+rnd()*64,j*64+rnd()*64,1.3,1.3)}}
+    gx_.fillStyle='rgba(170,165,155,.5)';for(let p=0;p<=512;p+=64){gx_.fillRect(p,0,1,512);gx_.fillRect(0,p,512,1)}
+    const t=tex(gc_,true);t.repeat.set(1/2.44,1/2.44);return t};
+  const fr=v=>v-Math.floor(v);
+  // centre the grey squares on each hall's middle line
+  {const t=greyTex(false);t.offset.x=fr(.5-fr(X(1412.5)/2.44));const sh=new THREE.Shape();rectPath(sh,1395,100,1430,790);flat(sh,std({map:t,roughness:.12}),.0045)}
+  {const t=greyTex(true);t.offset.y=fr(.5-fr(-Z(756)/2.44));const sh=new THREE.Shape();rectPath(sh,1235,722,1395,790);flat(sh,std({map:t,roughness:.12}),.0045)}
   const ws=new THREE.Shape();polyPath(ws,WALK);{const h=new THREE.Path();rectPath(h,...PIT);ws.holes.push(h)}
   flat(ws,M.dterr,0);
   const mc=new THREE.Shape();rectPath(mc,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);mc.holes.push(h)}
@@ -526,9 +557,32 @@ function glassDoors(xa,xb,gz,hgt=2.3){
   const ex=xb-.02+Math.cos(Math.PI+1.1)*leaf,ez=gz-Math.sin(Math.PI+1.1)*leaf;segs.push({ax:xb-.02,az:gz,bx:ex,bz:ez,h:.04});
   boxM(xa-.02,gz-.04,xb+.02,gz+.04,0,.015,std({color:0xa8874a,roughness:.4,metalness:.5}),{collide:false,cam:false}); // brass threshold
 }
-// 6.426 suite: plain opening between 6.420 and 6.426A
-boxM(X(1235),Z(722)-.06,X(1290),Z(722)+.06,2.3,H,M.grey,{collide:false});
-decal(1262,722,'s',1.6,.4,2.52,new THREE.MeshBasicMaterial({map:signTex('6.426 · 6.432','Suite · offices','#6c5b8f')}),.07);
+// Herb Kelleher Center entrance (video): oak-framed glass door with a dark transom, opening into the lounge
+{const xa=X(1290),xb=X(1330),gz=Z(722);
+ boxM(xa,gz-.06,xb,gz+.06,2.25,H,std({color:0x1d1f21,roughness:.4}),{collide:false});
+ boxM(xa,gz-.07,xa+.06,gz+.07,0,2.25,std({color:0xb98d55,roughness:.5}),{collide:false,cam:false});boxM(xb-.06,gz-.07,xb,gz+.07,0,2.25,std({color:0xb98d55,roughness:.5}),{collide:false,cam:false});
+ const leaf=new THREE.Mesh(new THREE.PlaneGeometry(xb-xa-.14,2.2),new THREE.MeshStandardMaterial({map:doorMats.glassoak.map,roughness:.4,side:THREE.DoubleSide}));
+ leaf.position.set(xb-.08,1.1,gz-(xb-xa-.14)/2);leaf.rotation.y=Math.PI/2;scene.add(leaf); // swung open against the passage wall
+ decal(1360,722,'s',.09,.14,1.15,M.black,.02);}
+// center name in raised letters, and two black display cases opposite the door
+{const [c,x]=cvs(1024,260);x.clearRect(0,0,1024,260);x.fillStyle='#2b2724';x.textAlign='center';x.font=`600 60px Georgia,serif`;
+ x.fillText('HERB KELLEHER CENTER',512,70);x.font=`500 44px Georgia,serif`;x.fillText('FOR ENTREPRENEURSHIP,',512,140);x.fillText('GROWTH AND RENEWAL',512,200);
+ decal(1357,790,'n',2.5,.64,2.25,new THREE.MeshBasicMaterial({map:tex(c),transparent:true}),.015);}
+{const [c,x]=cvs(256,384);x.fillStyle='#111214';x.fillRect(0,0,256,384);x.fillStyle='#d9dcd8';x.fillRect(14,14,228,356);
+ for(let k=0;k<5;k++){const y=30+k*68;x.fillStyle='#9a958c';x.fillRect(14,y+56,228,6);
+   for(let m=0;m<5;m++){x.fillStyle=['#f2f0ea','#c9a65a','#2f3a55','#bf5700','#e6e2d6'][(k+m)%5];x.fillRect(26+m*44,y+18+rnd()*10,30,38-rnd()*10)}}
+ x.fillStyle='rgba(255,255,255,.22)';x.beginPath();x.moveTo(20,20);x.lineTo(90,20);x.lineTo(20,200);x.fill();x.fillStyle='#111214';x.fillRect(124,14,8,356);
+ const dm=new THREE.MeshStandardMaterial({map:tex(c),roughness:.25});
+ for(const mx of [1338,1376])decal(mx,790,'n',1.55,1.72,.94,dm,.03);}
+// lettering over the conference room, EXIT above it (video)
+{const [c,x]=cvs(1024,180);x.clearRect(0,0,1024,180);x.fillStyle='#2b2724';x.textAlign='center';x.font=`600 64px Georgia,serif`;x.fillText('REPUBLIC CAPITAL GROUP',512,72);
+ x.font=`500 38px Georgia,serif`;x.fillText('WEALTH MANAGEMENT CONFERENCE ROOM',512,140);
+ decal(1235,755,'e',2.3,.32,2.41,new THREE.MeshBasicMaterial({map:tex(c),transparent:true}),.015);}
+exitSign(1238,755,'e',H-.08);
+// teal bench and round white bin on the wall beside the conference room
+box(1256,724,1288,736,.38,.46,M.wood,{cam:false});
+box(1257,725,1287,735,.46,.52,std({color:0x4f8a84,roughness:.9}),{collide:false,cam:false});
+{const w=new THREE.Mesh(new THREE.CylinderGeometry(.22,.2,.7,18),std({color:0xf0efea,roughness:.6}));w.position.set(X(1245),.35,Z(728));scene.add(w);addCollider(X(1245)-.22,Z(728)-.22,X(1245)+.22,Z(728)+.22)}
 // waiting chairs inside the suite lounge (photo): black, teal fabric, orange leather
 const stdS=(hex,o={})=>{const m=std(Object.assign({color:hex},o));m.color.convertSRGBToLinear();return m};
 function chair(mx,my,rot,kind){
@@ -737,13 +791,16 @@ function blocked(x,z,r){return !!(boxHit(x,z,r)||segHit(x,z,r))}
 function bin(mx,my,blue){
   const g=new THREE.Group();g.position.set(X(mx),0,Z(my));
   const body=new THREE.Mesh(new THREE.CylinderGeometry(.2,.17,.6,16),blue?std({color:0x1d5fb0,roughness:.5}):std({color:0x9b968c,roughness:.6}));body.position.y=.3;g.add(body);
-  const rim=new THREE.Mesh(new THREE.CylinderGeometry(.215,.215,.05,16),M.black);rim.position.y=.6;g.add(rim);
+  const rim=new THREE.Mesh(new THREE.CylinderGeometry(.215,.215,.05,16),blue?std({color:0xa9adb1,roughness:.5}):M.black);rim.position.y=.6;g.add(rim);
   scene.add(g);addCollider(X(mx)-.22,Z(my)-.22,X(mx)+.22,Z(my)+.22);
 }
 function basket(mx,my){const b=new THREE.Mesh(new THREE.BoxGeometry(.3,.42,.26),basketM);b.position.set(X(mx),.21,Z(my));scene.add(b);
   const lin=new THREE.Mesh(new THREE.BoxGeometry(.32,.05,.28),std({color:0x0c0c0c,roughness:.3}));lin.position.set(X(mx),.43,Z(my));scene.add(lin);addCollider(X(mx)-.17,Z(my)-.15,X(mx)+.17,Z(my)+.15)}
 for(const [mx,my] of [[298,270],[298,452],[298,360],[110,140],[110,345],[133,250],[133,370],[405,345],[425,470],[96,700],[118,790],[218,600]])basket(mx,my);
-bin(98,845);bin(112,845,true);bin(1132,700);bin(1100,740);bin(520,840);bin(1310,840,true);
+bin(98,845);bin(112,845,true);
+function rectBin(mx,my,col){const m=std({color:col,roughness:.6});m.color.convertSRGBToLinear();const b=new THREE.Mesh(new THREE.BoxGeometry(.34,.5,.28),m);b.position.set(X(mx),.25,Z(my));scene.add(b);addCollider(X(mx)-.18,Z(my)-.15,X(mx)+.18,Z(my)+.15)}
+for(const my of [300,470,640]){rectBin(1424,my,0x1f4fa8);rectBin(1424,my+9,0x8a4a32)}
+bin(900,845,true);bin(620,845,true);bin(1132,700);bin(1100,740);bin(520,840);bin(1310,840,true);
 function exitSign(mx,my,dir,y=H-.2){
   const [c,x]=cvs(128,64);x.fillStyle='#f2f0ea';x.fillRect(0,0,128,64);x.fillStyle='#d4141a';x.font=`700 40px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('EXIT',64,34);
   const m=new THREE.MeshBasicMaterial({map:tex(c),toneMapped:false});const b=new THREE.Mesh(new THREE.BoxGeometry(.34,.18,.06),[M.plain,M.plain,M.plain,M.plain,m,m]);
@@ -885,8 +942,8 @@ function moveP(dx,dz){
 const ZONES=[
   [[wu(1475),wv(-150),wu(1660),wv(310)],'Suite off the walkway · waiting room'],
   [[-2000,0,8,960],'CBA Sixth Floor Walkway'],
-  [[1095,205,1400,722],'6.432 / 6.426 suite'],
-  [[1235,722,1290,790],'6.426 suite · entrance'],
+  [[1095,205,1400,722],'Herb Kelleher Center for Entrepreneurship'],
+  [[1235,722,1430,790],'Herb Kelleher Center · Republic Capital Group'],
   [[540,772,1005,800],'Atrium overlook'],
   [[8,485,290,565],'Hallway to the CBA North walkway'],
   [[15,565,210,945],'6.304 suite'],
@@ -955,7 +1012,8 @@ const alias=(k,to)=>{if(ROOM_DB[to])ROOM_DB[k]=ROOM_DB[to]};
 for(const s of ['a','b','c','d'])alias('6402'+s,'6402');
 alias('lab','6402');alias('behaviorallab','6402');alias('behavioral','6402');alias('schwab','6420');alias('republic','6420');alias('republiccapital','6420');alias('rosenbaum','6402');alias('conference','6420');alias('conferenceroom','6420');
 alias('elevator','elevator');alias('elev','elevator');alias('lift','elevator');alias('women','women');alias('womens','women');alias('men','men');alias('mens','men');
-alias('restroom','women');alias('bathroom','women');alias('restrooms','women');alias('suite','6426');alias('lounge','6426');alias('6432','6432d');
+alias('restroom','women');alias('bathroom','women');alias('restrooms','women');ROOM_DB['6426']={name:'Herb Kelleher Center for Entrepreneurship',full:'Growth and Renewal · 6.426',dest:[1310,748],beacon:[1310,730],tag:'6.426',say:'The Herb Kelleher Center door is'};
+alias('suite','6426');alias('kelleher','6426');alias('herbkelleher','6426');alias('herb','6426');alias('entrepreneurship','6426');alias('lounge','6426');alias('6432','6432d');
 ROOM_DB.walkway={name:'CBA Sixth Floor Walkway',full:'Escalators down to level 5',dest:[wu(430),wv(350)],beacon:[wu(430),wv(350)],tag:'WALKWAY',say:'The walkway escalators are'};
 alias('escalator','walkway');alias('escalators','walkway');
 ROOM_DB.cbanorth={name:'CBA North',full:'Doors at the end of the walkway',dest:[wu(200),wv(665)],beacon:[wu(178),wv(665)],tag:'CBA NORTH',say:'The CBA North doors are'};alias('north','cbanorth');
@@ -1057,7 +1115,8 @@ const ENTRANCES=[
   {id:'north',name:'North hallway · photo spot',pos:[121,478],look:[121,20]},
   {id:'inner',name:'Hallway by 6.492',pos:[312,445],look:[312,180]},
   {id:'glass',name:'Walkway · glass doors to the suite',pos:[wu(1545),wv(395)],look:[wu(1545),wv(150)]},
-  {id:'suite',name:'6.426 suite · entrance',pos:[1262,770],look:[1262,500]},
+  {id:'suite',name:'Herb Kelleher Center · entrance',pos:[1400,756],look:[1235,756]},
+  {id:'east',name:'South corridor · toward Herb Kelleher',pos:[1412,240],look:[1412,790]},
   {id:'video',name:'Walkway · toward the Finance Office',pos:[wu(760),wv(678)],look:[wu(165),wv(630)]},
   {id:'walkway',name:'Walkway · top of the escalators',pos:[wu(470),wv(350)],look:[wu(1400),wv(380)]},
   {id:'cbanorth',name:'Walkway · CBA North doors',pos:[wu(240),wv(665)],look:[wu(1400),wv(620)]},
