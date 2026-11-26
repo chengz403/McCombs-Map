@@ -254,6 +254,7 @@ const M={
   terr:std({map:terrTex,roughness:.22}),
   dterr:std({map:dterrTex,roughness:.07,metalness:.08}),
   white:std({map:wallTex('#e8e0c8','#151515',true),roughness:.5}),
+  bright:std({map:wallTex('#efebe0','#121212',true),roughness:.4}),
   copper:std({color:0xb5774f,roughness:.8}),
   green:std({color:0x4c6156,roughness:.95}),
   ceil:std({map:ceilTex,roughness:1,side:THREE.DoubleSide}),
@@ -312,7 +313,7 @@ const NAMES={'6.420':['Republic Capital Group','Wealth Management Conference Roo
   'WOMEN':['Women\'s restroom','Restroom'],'MEN':['Men\'s restroom','Restroom'],'ELEVATOR':['Elevator','South-west elevator'],'STAIR':['Stairs','Stairwell']};
 
 const ATR=[540,252,1005,772];
-function faceMat(mx,my){return mx<8?M.white:inR(SUITE,mx,my)?M.grey:M.cream}
+function faceMat(mx,my){return mx<8?M.white:inR(SUITE,mx,my)?M.grey:(mx<545&&my<860&&!(my>772&&mx>210))?M.bright:M.cream}
 const DOORS=[];
 const roomBoxes=[];
 for(const R of ROOMS){
@@ -362,8 +363,8 @@ const WALK=[[wu(165),wv(220)],[wu(1460),wv(220)],[wu(1460),wv(140)],[wu(1660),wv
   for(let i=0;i<5000;i++){ax_.fillStyle=`rgba(150,140,120,${rnd()*.3})`;ax_.fillRect(rnd()*512,rnd()*512,1.2,1.2)}
   ax_.fillStyle='rgba(170,160,145,.5)';for(let p=0;p<=512;p+=64){ax_.fillRect(p,0,1,512);ax_.fillRect(0,p,512,1)}
   const accT=tex(ac_,true);accT.repeat.set(1/2.44,1/2.44);const accM=std({map:accT,roughness:.12,metalness:.02});
-  for(const r of [[8,485,335,565],[290,505,432,530],[398,320,432,530]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,accM,.003)}
-  for(const r of [[103,15,140,485],[103,168,290,205],[290,168,335,505]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,M.vct,.003)}
+  for(const r of [[15,15,540,772],[15,565,290,855]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,M.vct,.003)}
+  for(const r of [[8,485,335,565],[290,505,432,530],[398,320,432,530]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,accM,.0045)}
   const ws=new THREE.Shape();polyPath(ws,WALK);{const h=new THREE.Path();rectPath(h,...PIT);ws.holes.push(h)}
   flat(ws,M.dterr,0);
   const mc=new THREE.Shape();rectPath(mc,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);mc.holes.push(h)}
@@ -730,7 +731,11 @@ function bin(mx,my,blue){
   const rim=new THREE.Mesh(new THREE.CylinderGeometry(.215,.215,.05,16),M.black);rim.position.y=.6;g.add(rim);
   scene.add(g);addCollider(X(mx)-.22,Z(my)-.22,X(mx)+.22,Z(my)+.22);
 }
-bin(132,440);bin(132,350,true);bin(327,300,true);bin(327,440);bin(1132,700);bin(1100,740);bin(520,840);bin(1310,840,true);
+const basketM=std({color:0x161616,roughness:.55});basketM.color.convertSRGBToLinear();
+function basket(mx,my){const b=new THREE.Mesh(new THREE.BoxGeometry(.3,.42,.26),basketM);b.position.set(X(mx),.21,Z(my));scene.add(b);
+  const lin=new THREE.Mesh(new THREE.BoxGeometry(.32,.05,.28),std({color:0x0c0c0c,roughness:.3}));lin.position.set(X(mx),.43,Z(my));scene.add(lin);addCollider(X(mx)-.17,Z(my)-.15,X(mx)+.17,Z(my)+.15)}
+for(const [mx,my] of [[298,270],[298,452],[298,360],[110,140],[110,345],[133,250],[133,370],[405,345],[425,470],[96,700],[118,790],[218,600]])basket(mx,my);
+bin(98,845);bin(112,845,true);bin(1132,700);bin(1100,740);bin(520,840);bin(1310,840,true);
 function exitSign(mx,my,dir,y=H-.2){
   const [c,x]=cvs(128,64);x.fillStyle='#f2f0ea';x.fillRect(0,0,128,64);x.fillStyle='#d4141a';x.font=`700 40px ${SIGNF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('EXIT',64,34);
   const m=new THREE.MeshBasicMaterial({map:tex(c),toneMapped:false});const b=new THREE.Mesh(new THREE.BoxGeometry(.34,.18,.06),[M.plain,M.plain,M.plain,M.plain,m,m]);
@@ -1068,8 +1073,11 @@ function tick(){
   const ceilY=P.cafe?12:P.x<X(8)?H+.35:H;
   camera.position.y=Math.min(ceilY-.12,Math.max(P.base+.25,camera.position.y));
   if(P.cafe){camera.position.x=Math.max(X(ATR[0])+.2,Math.min(X(ATR[2])-.2,camera.position.x));camera.position.z=Math.max(Z(ATR[1])+.2,Math.min(Z(ATR[3])-.2,camera.position.z))}
-  camera.lookAt(tgt);
-  player.g.visible=camDist>.7;
+  // in tight halls with a wall right behind you, switch to first person instead of staring at the back of the head
+  const fp=camDist<1.6;
+  if(fp){camera.position.set(P.x-dirV.x*.12,P.y+1.6,P.z-dirV.z*.12);camera.lookAt(P.x-dirV.x*2,P.y+1.6-dirV.y*2,P.z-dirV.z*2)}
+  else camera.lookAt(tgt);
+  player.g.visible=!fp;
   const zn=zoneAt();if(zn!==lastZone){lastZone=zn;zoneEl.textContent=zn}
   updateNav();
   drawMini();
