@@ -35,6 +35,8 @@ Then go to http://localhost:8000.
 - **Rosenbaum Center entry (from the walk-through video):** a long cork bulletin board on the right, yellow doors (6.499, and 6.494 and 6.498 with a narrow window), a whiteboard easel and a sign stand by the opening, and someone waiting on the bench.
 - **Rosenbaum office halls (from the second walk-through video):** bright white walls, plain white glossy tile through the whole north wing, oak doors in black frames with room plaques, small black wastebaskets beside the doors, and a grey and blue recycling pair at the end of the 6.304 hall.
 - **Camera:** in tight halls where there's no room behind you, the view switches to first person.
+- **People on the floor:** six people walk to real office doors along the halls, keep to the middle and to the right, slow down and step aside for you and each other, slide along walls instead of pushing into them, pause at a door, then pick a new one. They glance at you as you pass, and you can't walk through them.
+- **Route arrows** keep to the middle of each hall instead of hugging walls and cutting corners.
 - **Top of the escalator (the default start):** a deep corridor under the hanging sign for the Rosenbaum Center for Behavioral Business Studies and the Republic Capital Group Wealth Management Conference Room (6.420), with the glass-fronted suite on the left, a wood bench and hanging sign on the right, an A-frame sign, and the opening into CBA under the "Rosenbaum Center for Behavioral Business Studies" lettering, with the yellow 6.499 door at the end of the hall.
 
 On the plan, north is to the left. The minimap follows you and keeps the plan's orientation.

@@ -778,19 +778,69 @@ function avatar(c){
 }
 const player=avatar({shirt:0xd8ccb0,skin:0xa8714c,skinHex:'#a8714c',hair:0x231812,curly:true,pants:0x6c7178,shoes:0xf2f0ea,pack:0x151515,bottle:0x2f6f7e});
 player.g.scale.setScalar(.92);
-// people walking back and forth on fixed lines (map px)
+// people who walk to real doors along the halls, keep to the middle and to the right, slow down and step aside for others,
+// stop at a door for a moment, then head somewhere else (map px start points)
 const walkers=[
-  {av:avatar({shirt:0x1f2d44,skin:0xd2a07e,skinHex:'#d2a07e',hair:0x5a3b24,pants:0xbfae8a,shoes:0x2b2b2b,pack:0x2a2a2a}),a:[330,825],b:[1250,825],t:.2,dir:1,phase:0,sp:1.4},
-  {av:avatar({shirt:0x161616,skin:0xe0b090,skinHex:'#e0b090',hair:0x7a3b1c,curly:true,pants:0xb7b9bc,shoes:0xf0f0f0,pack:0x111111}),a:[wu(260),wv(640)],b:[wu(1420),wv(620)],t:.6,dir:-1,phase:0,sp:1.3},
-  {av:avatar({shirt:0xbf5700,skin:0x8a5a3c,skinHex:'#8a5a3c',hair:0x111111,pants:0x30343a,shoes:0xe8e8e8}),a:[121,470],b:[121,60],t:.5,dir:1,phase:0,sp:1.2},
-  {av:avatar({shirt:0x6c8fb0,skin:0xf0c8a8,skinHex:'#f0c8a8',hair:0xc9a25a,pants:0x2b2b2b,shoes:0x3a2a20,pack:0x6b2a2a}),a:[1412,230],b:[1412,770],t:.3,dir:1,phase:0,sp:1.25},
+  {av:avatar({shirt:0x1f2d44,skin:0xd2a07e,skinHex:'#d2a07e',hair:0x5a3b24,pants:0xbfae8a,shoes:0x2b2b2b,pack:0x2a2a2a}),start:[400,825],sp:1.35},
+  {av:avatar({shirt:0x161616,skin:0xe0b090,skinHex:'#e0b090',hair:0x7a3b1c,curly:true,pants:0xb7b9bc,shoes:0xf0f0f0,pack:0x111111}),start:[wu(700),wv(640)],sp:1.3},
+  {av:avatar({shirt:0xbf5700,skin:0x8a5a3c,skinHex:'#8a5a3c',hair:0x111111,pants:0x30343a,shoes:0xe8e8e8}),start:[121,300],sp:1.2},
+  {av:avatar({shirt:0x6c8fb0,skin:0xf0c8a8,skinHex:'#f0c8a8',hair:0xc9a25a,pants:0x2b2b2b,shoes:0x3a2a20,pack:0x6b2a2a}),start:[1412,400],sp:1.25},
+  {av:avatar({shirt:0x7a3b6e,skin:0xc48a62,skinHex:'#c48a62',hair:0x2a1a10,pants:0x3a3f47,shoes:0xdddddd}),start:[312,350],sp:1.15},
+  {av:avatar({shirt:0x3a6b4a,skin:0xe8c0a0,skinHex:'#e8c0a0',hair:0x6b4a2a,pants:0x22262c,shoes:0x6b4a2a,pack:0x30363c}),start:[800,130],sp:1.4},
 ];
+for(const W of walkers){W.x=X(W.start[0]);W.z=Z(W.start[1]);W.path=null;W.pi=1;W.state='plan';W.t=rnd()*2;W.stuck=0;W.phase=rnd()*6;W.amp=0;W.face=rnd()*6;W.door=null;W.vx=0;W.vz=0}
 for(const w of walkers)w.av.g.scale.setScalar(.92);
 function angLerp(a,b,t){const d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*t}
 function animLimbs(av,phase,amp,air){const s=Math.sin(phase)*amp;av.legL.rotation.x=s*.8;av.legR.rotation.x=-s*.8;av.armL.rotation.x=air?-2.6:-s*.8;av.armR.rotation.x=air?-2.6:s*.8}
-function updateWalkers(dt){for(const W of walkers){const ax=X(W.a[0]),az=Z(W.a[1]),dx=X(W.b[0])-ax,dz=Z(W.b[1])-az,L=Math.hypot(dx,dz);
-  W.t+=W.dir*W.sp*dt/L;if(W.t>1){W.t=1;W.dir=-1}if(W.t<0){W.t=0;W.dir=1}
-  const x=ax+dx*W.t,z=az+dz*W.t;W.phase+=dt*7;W.av.g.position.set(x,0,z);W.av.g.rotation.y=angLerp(W.av.g.rotation.y,Math.atan2(dx*W.dir,dz*W.dir),Math.min(1,dt*6));W.av.sh.position.set(x,.015,z);animLimbs(W.av,W.phase,1,false)}}
+function planWalker(W){
+  // pick a door within about 40 m that this person can actually reach
+  const here=[W.x,W.z];
+  const opts=DOORS.filter(d=>d.label&&d.label!=='SHAFT'&&d.label!=='ELEVATOR'&&(d.label!==W.lastLabel)&&Math.hypot(X(d.dest[0])-W.x,Z(d.dest[1])-W.z)<40&&Math.hypot(X(d.dest[0])-W.x,Z(d.dest[1])-W.z)>6);
+  for(let k=0;k<6&&opts.length;k++){
+    const d=opts[rnd()*opts.length|0];const g=[X(d.dest[0])-d.n[0]*.35,Z(d.dest[1])-d.n[1]*.35];
+    const p=astar(here,g,true);
+    if(p&&p.length>1){W.path=p;W.pi=1;W.door=d;W.lastLabel=d.label;W.state='walk';W.stuck=0;return}
+  }
+  W.state='pause';W.t=2;
+}
+function updateWalkers(dt){
+  for(const W of walkers){
+    let moving=false;
+    if(W.state==='plan'){W.t-=dt;if(W.t<=0)planWalker(W)}
+    else if(W.state==='pause'){W.t-=dt;
+      if(W.door)W.face=angLerp(W.face,Math.atan2(-W.door.n[0],-W.door.n[1]),Math.min(1,dt*3));
+      if(W.t<=0){W.state='plan';W.t=.1}}
+    else{
+      const tg=W.path[W.pi];let dx=tg[0]-W.x,dz=tg[1]-W.z,dist=Math.hypot(dx,dz);
+      if(dist<.35){if(W.pi<W.path.length-1){W.pi++}else{W.state='pause';W.t=2+rnd()*5;W.path=null}}
+      else{
+        dx/=dist;dz/=dist;
+        // look ahead for the player and other people; humans ease off and keep to the right
+        let slow=1,sx=0,sz=0;
+        const others=[[P.x,P.z],...walkers.filter(o=>o!==W).map(o=>[o.x,o.z])];
+        for(const [ox,oz] of others){const ex=ox-W.x,ez=oz-W.z,d=Math.hypot(ex,ez);if(d<.01||d>2.2)continue;
+          const ahead=(ex*dx+ez*dz)/d;
+          if(d<.7){sx-=ex/d*.9;sz-=ez/d*.9;slow=Math.min(slow,.25)} // too close: back off a little
+          else if(ahead>.55){slow=Math.min(slow,.35+.3*(d-.7));const rx=-dz,rz=dx;sx+=rx*.8;sz+=rz*.8}} // someone ahead: slow and step right
+        let vx=(dx+sx)*W.sp*slow,vz=(dz+sz)*W.sp*slow;
+        W.vx+=(vx-W.vx)*Math.min(1,dt*5);W.vz+=(vz-W.vz)*Math.min(1,dt*5);
+        let nx=W.x+W.vx*dt,nz=W.z+W.vz*dt;
+        if(blocked(nx,nz,.28)){ // slide along the wall instead of pushing into it
+          if(!blocked(nx,W.z,.28))nz=W.z;else if(!blocked(W.x,nz,.28))nx=W.x;else{nx=W.x;nz=W.z}}
+        const step=Math.hypot(nx-W.x,nz-W.z);
+        if(step<dt*.15){W.stuck+=dt;if(W.stuck>2.5){W.state='plan';W.t=.3+rnd()}}else W.stuck=Math.max(0,W.stuck-dt);
+        W.x=nx;W.z=nz;moving=step>dt*.2;
+        if(moving)W.face=angLerp(W.face,Math.atan2(W.vx,W.vz),Math.min(1,dt*6));
+      }
+    }
+    W.amp+=((moving?1:0)-W.amp)*Math.min(1,dt*6);W.phase+=dt*7*Math.max(W.amp,.1);
+    W.av.g.position.set(W.x,0,W.z);W.av.g.rotation.y=W.face;W.av.sh.position.set(W.x,.015,W.z);animLimbs(W.av,W.phase,W.amp,false);
+    // glance at the player when passing close by
+    const px=P.x-W.x,pz=P.z-W.z,pd=Math.hypot(px,pz);let look=0;
+    if(pd<3.5&&pd>.3){const rel=((Math.atan2(px,pz)-W.face+Math.PI*3)%(Math.PI*2))-Math.PI;if(Math.abs(rel)<1.6)look=Math.max(-.9,Math.min(.9,rel))}
+    W.av.head.rotation.y+=(look-W.av.head.rotation.y)*Math.min(1,dt*4);
+  }
+}
 
 // ---------- player state & input ----------
 const P={x:0,z:0,y:0,vy:0,grounded:true,face:0,amp:0,phase:0,base:0,cafe:false};
@@ -828,6 +878,7 @@ function moveP(dx,dz){
   let nz=P.z+dz;c=hit(P.x,nz);if(c)nz=dz>0?c.minZ-R_-1e-4:dz<0?c.maxZ+R_+1e-4:P.z;if(hit(P.x,nz))nz=P.z;P.z=nz;
   for(let it=0;it<3;it++)for(const s of segs){const q=segClosest(P.x,P.z,s),ex=P.x-q[0],ez=P.z-q[1],d=Math.hypot(ex,ez),m=R_+s.h;if(d<m&&d>1e-6){P.x+=ex/d*(m-d);P.z+=ez/d*(m-d)}}
   if(hit(P.x,P.z)||segHit(P.x,P.z,R_-.03)){P.x=ox;P.z=oz}
+  for(const W of walkers){const ex=P.x-W.x,ez=P.z-W.z,d=Math.hypot(ex,ez),m=.6;if(d<m&&d>1e-6){const qx=W.x+ex/d*m,qz=W.z+ez/d*m;if(!blocked(qx,qz,R_)){P.x=qx;P.z=qz}}}
 }
 
 // ---------- where am I ----------
@@ -934,7 +985,11 @@ const cellPos=(i,j)=>[X(GX0+(i+.5)*CS),Z(GY0+(j+.5)*CS)];
 function nearestWalk(i,j){if(walk[j*CW+i])return [i,j];for(let r=1;r<8;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){const a=i+di,b=j+dj;if(a>=0&&b>=0&&a<CW&&b<CHh&&walk[b*CW+a])return [a,b]}return [i,j]}
 function los(a,b,r=.24){const dx=b[0]-a[0],dz=b[1]-a[1],n=Math.ceil(Math.hypot(dx,dz)/.2);for(let i=1;i<n;i++){const t=i/n;if(blocked(a[0]+dx*t,a[1]+dz*t,r))return false}return true}
 const gScore=new Float32Array(CW*CHh),came=new Int32Array(CW*CHh),closed=new Uint8Array(CW*CHh);
-function astar(start,goal){
+// cells to the nearest wall, so routes keep to the middle of a hall like a person would
+const clear=new Uint8Array(CW*CHh).fill(255);{const q=[];for(let k=0;k<CW*CHh;k++)if(!walk[k]){clear[k]=0;q.push(k)}
+  for(let h=0;h<q.length;h++){const u=q[h],ui=u%CW,uj=u/CW|0,du=clear[u];for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){const a=ui+di,b=uj+dj;if(a<0||b<0||a>=CW||b>=CHh)continue;const v=b*CW+a;if(clear[v]>du+1){clear[v]=du+1;q.push(v)}}}}
+const pen=new Float32Array(CW*CHh);for(let k=0;k<CW*CHh;k++)pen[k]=clear[k]>=4?0:(4-clear[k])*.55;
+function astar(start,goal,npc){
   const [si,sj]=nearestWalk(...cellOf(...start)),[gi,gj]=nearestWalk(...cellOf(...goal));
   const S0=sj*CW+si,G=gj*CW+gi;gScore.fill(Infinity);closed.fill(0);came.fill(-1);
   const heap=[];const push=(f,n)=>{heap.push([f,n]);let k=heap.length-1;while(k>0){const p=(k-1)>>1;if(heap[p][0]<=heap[k][0])break;[heap[p],heap[k]]=[heap[k],heap[p]];k=p}};
@@ -945,11 +1000,11 @@ function astar(start,goal){
   while(heap.length){const [,u]=pop();if(closed[u])continue;closed[u]=1;if(u===G)break;const ui=u%CW,uj=u/CW|0;
     for(const [di,dj,c] of nb){const a=ui+di,b=uj+dj;if(a<0||b<0||a>=CW||b>=CHh)continue;const v=b*CW+a;if(!walk[v]||closed[v])continue;
       if(di&&dj&&(!walk[uj*CW+a]||!walk[b*CW+ui]))continue;
-      const g=gScore[u]+c;if(g<gScore[v]){gScore[v]=g;came[v]=u;push(g+h(v),v)}}}
+      const g=gScore[u]+c*(1+pen[v]);if(g<gScore[v]){gScore[v]=g;came[v]=u;push(g+h(v),v)}}}
   if(!closed[G])return null;
   const cells=[];for(let v=G;v!==-1;v=came[v])cells.unshift(v);
   const pts=[start,...cells.slice(1,-1).map(v=>cellPos(v%CW,v/CW|0)),goal];
-  const sm=[pts[0]];let i=0;while(i<pts.length-1){let j=Math.min(pts.length-1,i+60);while(j>i+1&&!los(pts[i],pts[j]))j--;sm.push(pts[j]);i=j}
+  const sm=[pts[0]];let i=0;while(i<pts.length-1){let j=Math.min(pts.length-1,i+60);while(j>i+1&&!los(pts[i],pts[j],.42))j--;sm.push(pts[j]);i=j}
   return sm;
 }
 
