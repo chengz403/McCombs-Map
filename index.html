@@ -98,7 +98,7 @@ kbd{font-family:var(--font-ui);font-size:11px;font-weight:700;color:var(--ink);b
 </div>
 <div class="flash" id="flash"></div>
 <div class="mini-wrap"><canvas id="mini" aria-label="Floor map with your position"></canvas><div class="mini-cap"><span>Level 6 · ← North</span><b>● You</b></div></div>
-<div class="hint" id="hint"><span><kbd>WASD</kbd>move</span><span><kbd>Drag</kbd>look</span><span><kbd>Space</kbd>jump</span><span><kbd>Shift</kbd>run</span><span><kbd>Scroll</kbd>zoom</span></div>
+<div class="hint" id="hint"><span><kbd>W</kbd><kbd>S</kbd>walk</span><span><kbd>A</kbd><kbd>D</kbd>turn</span><span><kbd>Q</kbd><kbd>E</kbd>step aside</span><span><kbd>Drag</kbd>look</span><span><kbd>Space</kbd>jump</span><span><kbd>Shift</kbd>run</span><span><kbd>Scroll</kbd>zoom</span></div>
 <div id="stick" class="stick" hidden><div class="knob" id="knob"></div></div>
 <button id="jump" class="jump" type="button" hidden>Jump</button>
 
@@ -1119,17 +1119,27 @@ const clock=new THREE.Clock();const ray=new THREE.Raycaster();const tgt=new THRE
 teleport('escalator',true);
 function tick(){
   const dt=Math.min(clock.getDelta(),.05);
+  // walk forward/back, turn left/right like a person: the view turns with you
   let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joy.y;
-  let r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+joy.x;
-  const mag=Math.min(1,Math.hypot(f,r));
+  const turnIn=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+joy.x;
+  let r=(keys.KeyE?1:0)-(keys.KeyQ?1:0);
   const run=keys.ShiftLeft||keys.ShiftRight||(joy.id!==null&&Math.hypot(joy.x,joy.y)>.95);
-  const sp=(run?7.2:4.2)*mag;
+  if(Math.abs(turnIn)>.05)yaw-=turnIn*(run?2.8:2.2)*dt;
+  // corner assist: walking forward into the end of a hall that only continues one way turns you that way
+  const fwx=-Math.sin(yaw),fwz=-Math.cos(yaw),rgx=Math.cos(yaw),rgz=-Math.sin(yaw);
+  if(f>.3&&Math.abs(turnIn)<.05&&!P.cafe&&!look){
+    const ahead=blocked(P.x+fwx*1.1,P.z+fwz*1.1,.3);
+    if(ahead){const L=!blocked(P.x-rgx*1.4,P.z-rgz*1.4,.3)&&!blocked(P.x-rgx*2.2,P.z-rgz*2.2,.3),Rr=!blocked(P.x+rgx*1.4,P.z+rgz*1.4,.3)&&!blocked(P.x+rgx*2.2,P.z+rgz*2.2,.3);
+      if(L!==Rr)yaw+=(L?1:-1)*2.0*dt}}
+  const mag=Math.min(1,Math.hypot(f,r));
+  const sp=(run?7.2:4.2)*mag*(f<0&&!r?.6:1);
   if(mag>.05){
     const n=Math.hypot(f,r);f/=n;r/=n;
-    const vx=-Math.sin(yaw)*f+Math.cos(yaw)*r, vz=-Math.cos(yaw)*f-Math.sin(yaw)*r;
+    const vx=fwx*f+rgx*r, vz=fwz*f+rgz*r;
     moveP(vx*sp*dt,vz*sp*dt);
-    P.face=angLerp(P.face,Math.atan2(vx,vz),Math.min(1,dt*12));
   }
+  // body faces where you're looking (walking backward keeps facing forward)
+  if(mag>.05||Math.abs(turnIn)>.05)P.face=angLerp(P.face,Math.atan2(fwx,fwz),Math.min(1,dt*10));
   if((keys.Space||jumpQueued)&&P.grounded&&!document.activeElement.matches?.('input,select')){P.vy=6.2;P.grounded=false}
   jumpQueued=false;
   P.vy-=20*dt;P.y+=P.vy*dt;if(P.y<=P.base){P.y=P.base;P.vy=0;P.grounded=true}

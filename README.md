@@ -16,7 +16,9 @@ Then go to http://localhost:8000.
 
 | Action | Desktop | Touch |
 | --- | --- | --- |
-| Move | WASD or arrow keys | Left joystick |
+| Walk forward / back | W / S or ↑ / ↓ | Push the joystick up / down |
+| Turn left / right (the view turns with you) | A / D or ← / → | Push the joystick left / right |
+| Step aside | Q / E | — |
 | Look | Drag | Drag |
 | Jump | Space | Jump button |
 | Run | Shift | Push the joystick to the edge |
@@ -36,6 +38,7 @@ Then go to http://localhost:8000.
 - **Rosenbaum office halls (from the second walk-through video):** bright white walls, plain white glossy tile through the whole north wing, oak doors in black frames with room plaques, small black wastebaskets beside the doors, and a grey and blue recycling pair at the end of the 6.304 hall.
 - **Camera:** in tight halls where there's no room behind you, the view switches to first person.
 - **People on the floor:** six people walk to real office doors along the halls, keep to the middle and to the right, slow down and step aside for you and each other, slide along walls instead of pushing into them, pause at a door, then pick a new one. They glance at you as you pass, and you can't walk through them.
+- **Turning corners:** turning swings the view with you, like turning your head. Walking into the end of a hall that only continues one way turns you that way on its own; at a T-junction you choose.
 - **No diagonal shortcuts:** people and the route arrows walk straight down the halls and turn square at corners, the way people walk in a building.
 - **Top of the escalator (the default start):** a deep corridor under the hanging sign for the Rosenbaum Center for Behavioral Business Studies and the Republic Capital Group Wealth Management Conference Room (6.420), with the glass-fronted suite on the left, a wood bench and hanging sign on the right, an A-frame sign, and the opening into CBA under the "Rosenbaum Center for Behavioral Business Studies" lettering, with the yellow 6.499 door at the end of the hall.
 
