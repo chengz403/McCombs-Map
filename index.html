@@ -209,12 +209,13 @@ function doorTex(kind){
     x.fillStyle=g;x.fillRect(lx,ly,lw,lh);for(let i=0;i<180;i++){x.fillStyle=`rgba(255,255,255,${rnd()*.12})`;x.fillRect(lx,ly+rnd()*lh,lw,1)}
     x.fillStyle='#55595e';x.fillRect(127,ly,3,lh);
   }else{
-    const base=kind==='suite'?[196,132,58]:kind==='tan'?[190,172,112]:kind==='yellow'?[222,186,72]:[214,168,118];
+    const base=kind==='suite'?[196,132,58]:kind==='tan'?[190,172,112]:(kind==='yellow'||kind==='yellowwin')?[222,186,72]:[214,168,118];
     x.fillStyle=`rgb(${base})`;x.fillRect(lx,ly,lw,lh);
     for(let i=0;i<260;i++){const xx=lx+rnd()*lw;x.fillStyle=`rgba(120,70,30,${.05+rnd()*.12})`;x.fillRect(xx,ly,1+rnd()*1.5,lh)}
     if(kind==='oak'){x.lineWidth=1.6;for(let k=0;k<3;k++){const cxk=lx+40+k*76;for(let j=0;j<9;j++){x.strokeStyle=`rgba(140,85,40,${.25+rnd()*.2})`;x.beginPath();const y0=60+j*52+rnd()*10;x.moveTo(cxk-22,y0+50);x.quadraticCurveTo(cxk,y0-30,cxk+22,y0+50);x.stroke()}}}
     else{const g=x.createLinearGradient(lx,0,lx+lw,0);g.addColorStop(0,'rgba(255,255,255,.06)');g.addColorStop(.5,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.08)');x.fillStyle=g;x.fillRect(lx,ly,lw,lh)}
   }
+  if(kind==='yellowwin'){x.fillStyle='#2a2e33';x.fillRect(146,56,50,184);x.fillStyle='#8fa1a9';x.fillRect(152,62,38,172);x.fillStyle='rgba(255,255,255,.25)';x.fillRect(154,64,10,80)}
   if(kind!=='elev'){
     const hw=kind==='suite'?'#c9a45a':'#6f5a3c';
     x.fillStyle=hw;x.beginPath();x.arc(46,236,7,0,7);x.fill();
@@ -267,7 +268,7 @@ const M={
   red:std({color:0xb3221c,roughness:.5}),
 };
 M.copper.color.convertSRGBToLinear();M.green.color.convertSRGBToLinear();
-const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan','yellow'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
+const doorMats={};for(const k of ['oak','suite','steel','plain','elev','tan','yellow','yellowwin'])doorMats[k]=new THREE.MeshStandardMaterial({map:doorTex(k),roughness:.5});
 
 // ---------- the plan: rooms as solid blocks, corridors are what's left ----------
 // [label, x1,y1,x2,y2, door] door: side n/s/e/w + optional position along that side (0..1), '' = none
@@ -327,7 +328,7 @@ for(const R of ROOMS){
   if(side==='n'){dx=x1+(x2-x1)*t;dy=y1}else if(side==='s'){dx=x1+(x2-x1)*t;dy=y2}else if(side==='e'){dx=x2;dy=y1+(y2-y1)*t}else{dx=x1;dy=y1+(y2-y1)*t}
   const n=DIR[side].n;
   const suite=inR(SUITE,dx+n[0]*3,dy+n[1]*3);
-  const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':label==='6.499'?'yellow':opt&&opt.walk?'tan':'oak';
+  const kind=label==='STAIR'?'steel':label==='ELEVATOR'?'elev':suite?'suite':label==='6.499'?'yellow':(label==='6.494'||label==='6.498')?'yellowwin':opt&&opt.walk?'tan':'oak';
   const dw=label==='ELEVATOR'?1.25:.98;
   decal(dx,dy,side,dw,2.24,1.12,doorMats[kind],.014);
   const rt=[n[1],-n[0]];// viewer's right
@@ -339,7 +340,7 @@ for(const R of ROOMS){
 }
 // outer walls of the main building (west side opening = CBA North walkway)
 box(0,0,1545,15,0,H,M.cream);box(0,945,1545,960,0,H,M.cream);box(1530,0,1545,960,0,H,M.cream);
-box(0,0,15,488,0,H,M.cream);box(0,545,15,960,0,H,M.cream);
+box(0,0,15,488,0,H+.35,M.cream);box(0,545,15,960,0,H+.35,M.cream);
 // end door of the north hallway (photo: dead end with a door under the EXIT sign)
 decal(121,15,'s',.98,2.24,1.12,doorMats.plain,.014);
 
@@ -353,6 +354,16 @@ const WALK=[[wu(165),wv(220)],[wu(1460),wv(220)],[wu(1460),wv(140)],[wu(1660),wv
   const main=new THREE.Shape();rectPath(main,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);main.holes.push(h)}
   flat(main,M.dterr,0);
   const carpet=new THREE.Shape();rectPath(carpet,1095,205,1400,722);flat(carpet,M.carpet,.004);
+  // Rosenbaum Center: cream tile with scattered brown and tan squares
+  const [ac_,ax_]=cvs(512,512);
+  for(let i=0;i<8;i++)for(let j=0;j<8;j++){const v=238+rnd()*8|0;ax_.fillStyle=`rgb(${v},${v-3},${v-12})`;ax_.fillRect(i*64,j*64,64,64)}
+  for(let k=0;k<9;k++){const i=rnd()*8|0,j=rnd()*8|0;ax_.fillStyle=k%3===0?'#5a3526':'#cdb98c';ax_.fillRect(i*64,j*64,64,64);
+    if(rnd()<.35){const i2=(i+1)%8;ax_.fillStyle=k%2?'#5a3526':'#cdb98c';ax_.fillRect(i2*64,j*64,64,64)}}
+  for(let i=0;i<5000;i++){ax_.fillStyle=`rgba(150,140,120,${rnd()*.3})`;ax_.fillRect(rnd()*512,rnd()*512,1.2,1.2)}
+  ax_.fillStyle='rgba(170,160,145,.5)';for(let p=0;p<=512;p+=64){ax_.fillRect(p,0,1,512);ax_.fillRect(0,p,512,1)}
+  const accT=tex(ac_,true);accT.repeat.set(1/2.44,1/2.44);const accM=std({map:accT,roughness:.12,metalness:.02});
+  for(const r of [[8,485,335,565],[290,505,432,530],[398,320,432,530]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,accM,.003)}
+  for(const r of [[103,15,140,485],[103,168,290,205],[290,168,335,505]]){const sh=new THREE.Shape();rectPath(sh,...r);flat(sh,M.vct,.003)}
   const ws=new THREE.Shape();polyPath(ws,WALK);{const h=new THREE.Path();rectPath(h,...PIT);ws.holes.push(h)}
   flat(ws,M.dterr,0);
   const mc=new THREE.Shape();rectPath(mc,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);mc.holes.push(h)}
@@ -557,14 +568,35 @@ wb(1495,440,1660,455,0,H+.35,M.white);
   // wood bench with a teal cushion on the right
   box(wu(1585),wv(412),wu(1652),wv(438),.38,.46,M.wood,{cam:false});
   box(wu(1587),wv(414),wu(1650),wv(436),.46,.52,std({color:0x5f9a98,roughness:.9}),{collide:false,cam:false});
-  // A-frame sign by the opening
-  const [ac,ax]=cvs(256,384);ax.fillStyle='#f4f3ef';ax.fillRect(0,0,256,384);ax.fillStyle='#222';ax.fillRect(0,0,256,10);ax.fillRect(0,374,256,10);ax.fillRect(0,0,10,384);ax.fillRect(246,0,10,384);
-  ax.fillStyle='#bf5700';ax.fillRect(24,30,208,70);ax.fillStyle='#fff';ax.font=`700 30px ${SIGNF}`;ax.fillText('STUDY SIGN-UP',36,76);
-  ax.fillStyle='#444';ax.font=`500 22px ${SIGNF}`;['Behavioral lab sessions','Earn credit or cash','Check in at 6.402'].forEach((t,i)=>ax.fillText(t,30,150+i*40));
-  const am=new THREE.MeshStandardMaterial({map:tex(ac),roughness:.7,side:THREE.DoubleSide});
-  const ag=new THREE.Group();ag.position.set(X(wu(1628)),0,Z(wv(330)));ag.rotation.y=Math.PI/2;
-  for(const s_ of [-1,1]){const pnl=new THREE.Mesh(new THREE.PlaneGeometry(.6,1.05),am);pnl.position.set(0,.6,s_*.16);pnl.rotation.x=s_*.28;ag.add(pnl)}
-  scene.add(ag);addCollider(X(wu(1628))-.25,Z(wv(330))-.35,X(wu(1628))+.25,Z(wv(330))+.35);
+  // whiteboard easel with a STOP drawing, and a small sign stand (video)
+  {const [c,x]=cvs(320,420);x.fillStyle='#fbfbf8';x.fillRect(0,0,320,420);x.fillStyle='#b9bdc0';x.fillRect(0,0,320,8);x.fillRect(0,412,320,8);x.fillRect(0,0,8,420);x.fillRect(312,0,8,420);
+   x.strokeStyle='#c8433a';x.lineWidth=4;x.font='italic 34px "Comic Sans MS",cursive';x.fillStyle='#c8433a';x.fillText('Welcome to the',40,70);x.fillText('Behavioral Lab',44,112);
+   x.beginPath();for(let k=0;k<8;k++){const a=k/8*Math.PI*2+Math.PI/8;x.lineTo(170+Math.cos(a)*48,220+Math.sin(a)*48)}x.closePath();x.stroke();x.font='700 26px sans-serif';x.fillText('STOP',138,230);
+   x.beginPath();x.moveTo(40,220);x.lineTo(110,220);x.lineTo(98,210);x.moveTo(110,220);x.lineTo(98,230);x.stroke();
+   x.fillStyle='#2f5fa8';x.font='italic 26px "Comic Sans MS",cursive';x.fillText('Please check in',70,320);x.fillText('& wait here',90,356);
+   const wm=new THREE.MeshStandardMaterial({map:tex(c),roughness:.3,side:THREE.DoubleSide});
+   const eg=new THREE.Group();eg.position.set(X(wu(1628)),0,Z(wv(332)));eg.rotation.y=-Math.PI/2+.35;
+   const bd=new THREE.Mesh(new THREE.PlaneGeometry(.68,.9),wm);bd.position.set(0,1.3,0);bd.rotation.x=-.12;eg.add(bd);
+   for(const [lx_,lz,rx] of [[-.3,.12,-.12],[.3,.12,-.12],[0,-.35,.35]]){const l=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,1.85,6),M.steel);l.position.set(lx_,.9,lz);l.rotation.x=rx;eg.add(l)}
+   scene.add(eg);addCollider(X(wu(1628))-.3,Z(wv(332))-.35,X(wu(1628))+.3,Z(wv(332))+.35);
+   const st=new THREE.Group();st.position.set(X(wu(1612)),0,Z(wv(318)));st.rotation.y=-Math.PI/2;
+   const base_=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.03,16),M.black);base_.position.y=.015;st.add(base_);
+   const pole=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,1.05,8),M.black);pole.position.y=.53;st.add(pole);
+   const [c2,x2]=cvs(128,170);x2.fillStyle='#111';x2.fillRect(0,0,128,170);x2.fillStyle='#fafafa';x2.fillRect(8,8,112,154);x2.fillStyle='#222';x2.font='600 13px sans-serif';
+   ['Rosenbaum Center','Study participants:','please wait to be','called by a','researcher.'].forEach((t,i)=>x2.fillText(t,14,34+i*22));
+   const sp_=new THREE.Mesh(new THREE.PlaneGeometry(.28,.37),new THREE.MeshBasicMaterial({map:tex(c2),side:THREE.DoubleSide}));sp_.position.y=1.2;sp_.rotation.x=-.25;st.add(sp_);
+   scene.add(st);}
+  // someone waiting on the bench
+  {const av=avatar({shirt:0x1b1b1b,skin:0x9c6a48,skinHex:'#9c6a48',hair:0x18110d,pants:0x2f3a55,shoes:0x8a8f96});av.g.scale.setScalar(.9);
+   av.g.position.set(X(wu(1625)),-.24,Z(wv(428)));av.g.rotation.y=Math.PI;av.legL.rotation.x=av.legR.rotation.x=-Math.PI/2;av.armL.rotation.x=av.armR.rotation.x=-1.0;av.head.rotation.x=.35;
+   av.sh.position.set(av.g.position.x,.02,av.g.position.z);}
+  // long cork bulletin board on the right, just inside the Rosenbaum opening (video)
+  {const [c,x]=cvs(1024,288);x.fillStyle='#b58a52';x.fillRect(0,0,1024,288);x.fillStyle='#c49a63';x.fillRect(14,14,996,260);
+   for(let i=0;i<5000;i++){x.fillStyle=`rgba(120,80,40,${rnd()*.3})`;x.fillRect(14+rnd()*996,14+rnd()*260,1.5,1.5)}
+   for(let i=0;i<14;i++){const fx=30+i*70+(rnd()-.5)*16,fy=30+rnd()*100,fw=46+rnd()*20,fh=70+rnd()*50;x.save();x.translate(fx+fw/2,fy+fh/2);x.rotate((rnd()-.5)*.1);
+     x.fillStyle=['#f7f5ee','#eaf0f7','#fff4c9','#f4e1e1','#e6f2e6'][i%5];x.fillRect(-fw/2,-fh/2,fw,fh);x.fillStyle=['#bf5700','#1f4e8c','#333','#7a3b6e'][i%4];x.fillRect(-fw/2+5,-fh/2+6,fw-10,10);
+     x.fillStyle='rgba(60,60,60,.6)';for(let k=0;k<5;k++)x.fillRect(-fw/2+5,-fh/2+24+k*9,fw-10-rnd()*12,3);x.fillStyle='#c8433a';x.beginPath();x.arc(0,-fh/2+3,3,0,7);x.fill();x.restore()}
+   decal(140,565,'n',4.6,1.3,1.5,new THREE.MeshStandardMaterial({map:tex(c),roughness:.9}),.02);}
   // hanging sign at the corridor entrance (photo)
   {const [c,x]=cvs(1024,300);x.fillStyle='#2a2220';x.fillRect(0,0,1024,300);x.fillStyle='#f6f5f1';x.fillRect(10,26,1004,264);
    x.fillStyle='#9a3324';x.font='500 15px Georgia,serif';x.textAlign='left';x.fillText('THE UNIVERSITY OF TEXAS AT AUSTIN',300,52);
