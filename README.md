@@ -25,18 +25,19 @@ Then go to http://localhost:8000.
 ## What's modeled
 
 - **Every room on the floor plan:** about 110 rooms, each with a door and a room plaque on the side that faces the hallway.
-- **North wing (6.3xx and 6.48x–6.49x):** cream walls with a black base, glossy speckled tile, oak doors in black frames, a dead-end hallway with an EXIT sign, trash and recycling bins.
+- **North wing (6.3xx and 6.48x–6.49x):** cream walls with a black base, oak doors in black frames, a dead-end hallway with an EXIT sign, trash and recycling bins.
 - **6.432 / 6.426 suite:** grey fabric-panel walls and carpet, a frameless glass entry with one leaf swung open, and waiting chairs (black, teal fabric, orange leather).
 - **Atrium (from a photo of the McCombs atrium):** red brick walls with rows of white-framed windows and stone bands at each floor, a glass skylight on a steel frame, and a ground-floor café with glass shopfronts, a café counter, orange and blue McCombs banners, globe lamps, and wood tables with black bistro chairs. Look over the glass railing on the west corridor, or pick "Atrium · ground floor café" to walk around the tables.
 - **West corridor:** elevator, stairs, restrooms and 6.404–6.418.
 - **Sixth Floor Walkway:** dark speckled terrazzo, terracotta columns, a solid half-wall with a black rail around the two escalators down to level 5, green club chairs, tan doors for offices 6.202–6.220, and the glass doors into the Finance Office with the clock and STAIR 4 sign beside them (from the walkway video). Start at "Walkway · toward the Finance Office" to match the video's view.
-- **Top of the escalator (the default start):** a glass-walled waiting room with chairs on the left, a wood bench and hanging sign on the right, an A-frame sign, and the opening into CBA under the "Rosenbaum Center for Behavioral Business Studies" lettering, with the yellow 6.499 door at the end of the hall.
+- **Floor:** dark, glossy brown terrazzo across the whole floor and the walkway (carpet stays in the 6.432 / 6.426 suite and the waiting room).
+- **Top of the escalator (the default start):** a deep corridor under the hanging sign for the Rosenbaum Center for Behavioral Business Studies and the Republic Capital Group Wealth Management Conference Room (6.420), with a glass-walled waiting room with chairs on the left, a wood bench and hanging sign on the right, an A-frame sign, and the opening into CBA under the "Rosenbaum Center for Behavioral Business Studies" lettering, with the yellow 6.499 door at the end of the hall.
 
 On the plan, north is to the left. The minimap follows you and keeps the plan's orientation.
 
 ## Features
 
-- **Find a room:** type any room number (`6.492`, `6.432K`, `6.202`) or `elevator`, `restroom`, `stairs`, `walkway`, `atrium`, `lab`, `schwab`. You get arrows on the floor, a beacon at the door, turn-by-turn steps and the route on the minimap. Routing uses A* on a walkable grid, so new rooms are routed around automatically.
+- **Find a room:** type any room number (`6.492`, `6.432K`, `6.202`) or `elevator`, `restroom`, `stairs`, `walkway`, `atrium`, `lab`, `republic`. You get arrows on the floor, a beacon at the door, turn-by-turn steps and the route on the minimap. Routing uses A* on a walkable grid, so new rooms are routed around automatically.
 - **Start at an entrance:** teleport to the atrium, elevator, the north hallway, the suite doors or either end of the walkway.
 
 ## Extending the map
