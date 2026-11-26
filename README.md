@@ -36,14 +36,14 @@ Then go to http://localhost:8000.
 - **Rosenbaum office halls (from the second walk-through video):** bright white walls, plain white glossy tile through the whole north wing, oak doors in black frames with room plaques, small black wastebaskets beside the doors, and a grey and blue recycling pair at the end of the 6.304 hall.
 - **Camera:** in tight halls where there's no room behind you, the view switches to first person.
 - **People on the floor:** six people walk to real office doors along the halls, keep to the middle and to the right, slow down and step aside for you and each other, slide along walls instead of pushing into them, pause at a door, then pick a new one. They glance at you as you pass, and you can't walk through them.
-- **Route arrows** keep to the middle of each hall instead of hugging walls and cutting corners.
+- **No diagonal shortcuts:** people and the route arrows walk straight down the halls and turn square at corners, the way people walk in a building.
 - **Top of the escalator (the default start):** a deep corridor under the hanging sign for the Rosenbaum Center for Behavioral Business Studies and the Republic Capital Group Wealth Management Conference Room (6.420), with the glass-fronted suite on the left, a wood bench and hanging sign on the right, an A-frame sign, and the opening into CBA under the "Rosenbaum Center for Behavioral Business Studies" lettering, with the yellow 6.499 door at the end of the hall.
 
 On the plan, north is to the left. The minimap follows you and keeps the plan's orientation.
 
 ## Features
 
-- **Find a room:** type any room number (`6.492`, `6.432K`, `6.202`) or `elevator`, `restroom`, `stairs`, `walkway`, `atrium`, `lab`, `republic`. You get arrows on the floor, a beacon at the door, turn-by-turn steps and the route on the minimap. Routing uses A* on a walkable grid, so new rooms are routed around automatically.
+- **Find a room:** type any room number (`6.492`, `6.432K`, `6.202`) or `elevator`, `restroom`, `stairs`, `walkway`, `atrium`, `lab`, `republic`. You get arrows on the floor, a beacon at the door, turn-by-turn steps and the route on the minimap. Routing uses A* on a walkable grid that moves only along the hall axes and penalizes turns, so new rooms are routed around automatically.
 - **Start at an entrance:** teleport to the atrium, elevator, the north hallway, the suite doors or either end of the walkway.
 
 ## Extending the map
