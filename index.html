@@ -377,7 +377,7 @@ function rectPath(p,a,b,c,d){p.moveTo(X(a),-Z(b));p.lineTo(X(c),-Z(b));p.lineTo(
 function polyPath(p,pts){pts.forEach(([a,b],i)=>i?p.lineTo(X(a),-Z(b)):p.moveTo(X(a),-Z(b)));p.lineTo(X(pts[0][0]),-Z(pts[0][1]))}
 function flat(shape,mat,y){const g=new THREE.ShapeGeometry(shape);g.rotateX(-Math.PI/2);const m=new THREE.Mesh(g,mat);m.position.y=y;scene.add(m);return m}
 const PIT=[wu(540),wv(300),wu(1170),wv(515)];
-const WALK=[[wu(165),wv(220)],[wu(1300),wv(220)],[wu(1300),wv(-150)],[wu(1660),wv(-150)],[wu(1660),wv(455)],[wu(1495),wv(455)],[wu(1495),wv(905)],[wu(165),wv(905)]];
+const WALK=[[wu(165),wv(220)],[wu(1300),wv(220)],[wu(1300),wv(-150)],[wu(1660),wv(-150)],[wu(1660),wv(935)],[wu(1495),wv(935)],[wu(1495),wv(905)],[wu(165),wv(905)]];
 {
   const main=new THREE.Shape();rectPath(main,8,8,1537,952);{const h=new THREE.Path();rectPath(h,...ATR);main.holes.push(h)}
   flat(main,M.vct,0);
@@ -606,7 +606,7 @@ for(const [u,v,r] of [[250,532,.5],[585,538,0],[628,540,.15],[900,538,0],[945,54
 // ---------- walkway between CBA and CBA North ----------
 const wb=(u1,v1,u2,v2,y0,y1,mat,o)=>box(wu(u1),wv(v1),wu(u2),wv(v2),y0,y1,mat,o);
 wb(165,205,1460,220,0,H+.35,M.white);
-wb(1495,440,1660,455,0,H+.35,M.white);
+wb(1495,440,1515,455,0,H+.35,M.white);wb(1515,920,1660,935,0,H+.35,M.white);
 // ---- top of the escalator, CBA end (video): glass waiting room on the left, bench right, Rosenbaum Center ahead ----
 {
   const gz=Z(wv(310)),xa=X(wu(1475)),xb=X(wu(1650));
@@ -630,8 +630,6 @@ wb(1495,440,1660,455,0,H+.35,M.white);
   decal(-4,512,'w',2.7,.53,2.62,new THREE.MeshBasicMaterial({map:tex(lc),transparent:true}),.012);
   exitSign(-6,512,'w',H+.35-.13);
   // wood bench with a teal cushion on the right
-  box(wu(1585),wv(412),wu(1652),wv(438),.38,.46,M.wood,{cam:false});
-  box(wu(1587),wv(414),wu(1650),wv(436),.46,.52,std({color:0x5f9a98,roughness:.9}),{collide:false,cam:false});
   // whiteboard easel with a STOP drawing, and a small sign stand (video)
   {const [c,x]=cvs(320,420);x.fillStyle='#fbfbf8';x.fillRect(0,0,320,420);x.fillStyle='#b9bdc0';x.fillRect(0,0,320,8);x.fillRect(0,412,320,8);x.fillRect(0,0,8,420);x.fillRect(312,0,8,420);
    x.strokeStyle='#c8433a';x.lineWidth=4;x.font='italic 34px "Comic Sans MS",cursive';x.fillStyle='#c8433a';x.fillText('Welcome to the',40,70);x.fillText('Behavioral Lab',44,112);
@@ -652,7 +650,7 @@ wb(1495,440,1660,455,0,H+.35,M.white);
    scene.add(st);}
   // someone waiting on the bench
   {const av=avatar({shirt:0x1b1b1b,skin:0x9c6a48,skinHex:'#9c6a48',hair:0x18110d,pants:0x2f3a55,shoes:0x8a8f96});av.g.scale.setScalar(.9);
-   av.g.position.set(X(wu(1625)),-.24,Z(wv(428)));av.g.rotation.y=Math.PI;av.legL.rotation.x=av.legR.rotation.x=-Math.PI/2;av.armL.rotation.x=av.armR.rotation.x=-1.0;av.head.rotation.x=.35;
+   av.g.position.set(X(wu(1633)),-.24,Z(wv(482)));av.g.rotation.y=-Math.PI/2;av.legL.rotation.x=av.legR.rotation.x=-Math.PI/2;av.armL.rotation.x=av.armR.rotation.x=-1.0;av.head.rotation.x=.35;
    av.sh.position.set(av.g.position.x,.02,av.g.position.z);}
   // long cork bulletin board on the right, just inside the Rosenbaum opening (video)
   {const [c,x]=cvs(1024,288);x.fillStyle='#b58a52';x.fillRect(0,0,1024,288);x.fillStyle='#c49a63';x.fillRect(14,14,996,260);
@@ -670,9 +668,42 @@ wb(1495,440,1660,455,0,H+.35,M.white);
    const sm=new THREE.MeshBasicMaterial({map:tex(c)});
    const hs=new THREE.Mesh(new THREE.BoxGeometry(2.1,.62,.06),[M.dark,M.dark,M.dark,M.dark,sm,sm]);hs.position.set(X(wu(1330)),H+.35-.55,Z(wv(375)));hs.rotation.y=-Math.PI/2;scene.add(hs);
    for(const dz of [-.8,.8]){const r=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,.24,6),M.steel);r.position.set(X(wu(1330)),H+.35-.12,Z(wv(375))+dz);scene.add(r)}}
-  {const [c,x]=cvs(512,128);x.fillStyle='#2a2220';x.fillRect(0,0,512,128);x.fillStyle='#f6f5f1';x.fillRect(6,6,500,116);x.fillStyle='#1c1c1c';x.font=`500 30px ${UIF}`;
-   x.fillText('Republic Capital Group',24,54);x.fillText('Wealth Management Conference Room',24,96);x.font='700 44px sans-serif';x.fillText('→',446,58);
-   decal(-4,536,'w',.95,.24,2.5,new THREE.MeshBasicMaterial({map:tex(c)}),.02);}
+  // hanging signs at the corner (photos): Republic Capital Group → facing the corridor, Rosenbaum Center facing the bench hall
+  const hang=(lines,arrow,w,h,mx,my,rot)=>{const [c,x]=cvs(640,Math.round(640*h/w));const ch=c.height;x.fillStyle='#2a2220';x.fillRect(0,0,640,ch);x.fillStyle='#f6f5f1';x.fillRect(8,8,624,ch-16);
+    x.fillStyle='#1c1c1c';const fs=Math.min(44,(ch-30)/lines.length*.8);x.font=`500 ${fs}px ${UIF}`;lines.forEach((t,k)=>x.fillText(t,arrow==='←'?84:26,ch/2-(lines.length-1)*fs*.62+k*fs*1.24+fs*.35));
+    if(arrow){x.font=`700 ${fs*1.3}px sans-serif`;x.fillText(arrow,arrow==='←'?20:640-74,ch/2+fs*.45)}
+    const m=new THREE.MeshBasicMaterial({map:tex(c)});const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,.05),[M.dark,M.dark,M.dark,M.dark,m,m]);
+    b.position.set(X(mx),H+.35-.15-h/2,Z(my));b.rotation.y=rot;scene.add(b);
+    for(const d of [-w*.4,w*.4]){const r=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,.15,6),M.steel);r.position.set(X(mx)+Math.cos(rot)*d,H+.35-.075,Z(my)-Math.sin(rot)*d);scene.add(r)}};
+  hang(['Republic Capital Group','Wealth Management Conference Room'],'→',1.5,.4,wu(1585),wv(446),-Math.PI/2);
+  hang(['Rosenbaum Center for','Behavioral Business Studies'],'',1.2,.4,wu(1610),wv(505),0);
+  hang(['Republic Capital Group','Wealth Management Conference Room'],'←',1.3,.32,wu(1582),wv(880),0);
+  // notices on the end wall right of the opening
+  {const [c,x]=cvs(128,160);x.fillStyle='#fafafa';x.fillRect(0,0,128,160);x.strokeStyle='#c8433a';x.lineWidth=8;x.beginPath();x.arc(64,80,38,0,7);x.stroke();x.beginPath();x.moveTo(38,54);x.lineTo(90,106);x.stroke();
+   decal(0,553,'w',.3,.36,1.58,new THREE.MeshBasicMaterial({map:tex(c)}),.015);
+   const [c2,x2]=cvs(192,128);x2.fillStyle='#fafafa';x2.fillRect(0,0,192,128);x2.fillStyle='#9a2a2a';x2.fillRect(10,10,172,108);x2.fillStyle='#fff';x2.font='700 18px sans-serif';x2.fillText('STUDENTS:',22,42);x2.font='500 14px sans-serif';x2.fillText('Participate in',22,66);x2.fillText('research studies',22,86);
+   decal(0,553,'w',.36,.24,1.18,new THREE.MeshBasicMaterial({map:tex(c2)}),.015);}
+}
+// ---- bench hall to the right of the Rosenbaum opening (photo): teal benches, round bins, wall TV, double oak doors at the end ----
+{
+  const cush=std({color:0x3f7f78,roughness:.6});cush.color.convertSRGBToLinear();
+  const bench=(u1,v1,u2,v2)=>{box(wu(u1),wv(v1),wu(u2),wv(v2),0,.44,M.wood,{cam:false});box(wu(u1)+.3,wv(v1)+.3,wu(u2)-.3,wv(v2)-.3,.44,.5,cush,{collide:false,cam:false})};
+  bench(1628,452,1648,508);                                     // by the opening (the person waiting sits here)
+  bench(1628,560,1648,614);bench(1628,618,1648,672);bench(1628,676,1648,730); // row on the left
+  bench(1515,700,1535,752);bench(1515,812,1535,864);           // right side
+  box(wu(1515),wv(870),wu(1537),wv(890),0,.5,M.wood,{cam:false}); // low wood cube
+  bin(wu(1527),wv(585));bin(wu(1527),wv(603),true);
+  // TV, "Quiet Please" plaque and a recess on the right wall
+  box(wu(1515),wv(560),wu(1517.5),wv(598),1.6,2.25,M.black,{collide:false,cam:false});
+  decal(wu(1517.5),wv(579),'e',1.05,.6,1.925,std({color:0x15181b,roughness:.2,metalness:.3}),.01);
+  {const [c,x]=cvs(128,96);x.fillStyle='#1c1c1c';x.fillRect(0,0,128,96);x.fillStyle='#e8e2d4';x.font='italic 500 20px Georgia,serif';x.fillText('Quiet Please',14,40);x.fillText('Office Area',18,70);
+   decal(wu(1515),wv(530),'e',.22,.16,1.6,new THREE.MeshBasicMaterial({map:tex(c)}),.015);}
+  decal(wu(1515),wv(650),'e',1.0,2.3,1.15,std({color:0xf2e9c8,roughness:.8}),.012);
+  // water fountain and the double oak doors with an EXIT sign at the end
+  box(wu(1517),wv(895),wu(1530),wv(915),.72,.95,M.steel,{cam:false});
+  decal(wu(1582),wv(920),'n',1.9,2.24,1.12,doorMats.double,.014);
+  exitSign(wu(1582),wv(918),'n',H+.35-.25);
+
 }
 wb(145,205,165,920,0,H+.35,M.white);wb(165,905,1495,920,0,H+.35,M.white);wb(1495,455,1515,920,0,H+.35,M.white);
 for(const u of [182,508,832,1158])wb(u-14,220,u+14,248,0,H+.35,M.copper);
@@ -780,7 +811,7 @@ function blocked(x,z,r){return !!(boxHit(x,z,r)||segHit(x,z,r))}
 
 // troffers on a grid wherever there is open floor below
 {const panel=new THREE.PlaneGeometry(.6,1.2);
- const inside=(mx,my)=>(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&mx>wu(165)&&my>wv(-150)&&my<wv(905));
+ const inside=(mx,my)=>(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&mx>wu(165)&&my>wv(-150)&&my<wv(935));
  for(let mx=-940;mx<1540;mx+=58)for(let my=30;my<950;my+=58){
    if(!inside(mx,my)||blocked(X(mx),Z(my),.55))continue;
    const alongX=!blocked(X(mx)+1.2,Z(my),.3)&&!blocked(X(mx)-1.2,Z(my),.3);
@@ -790,8 +821,8 @@ function blocked(x,z,r){return !!(boxHit(x,z,r)||segHit(x,z,r))}
 // ---------- props from the photos ----------
 function bin(mx,my,blue){
   const g=new THREE.Group();g.position.set(X(mx),0,Z(my));
-  const body=new THREE.Mesh(new THREE.CylinderGeometry(.2,.17,.6,16),blue?std({color:0x1d5fb0,roughness:.5}):std({color:0x9b968c,roughness:.6}));body.position.y=.3;g.add(body);
-  const rim=new THREE.Mesh(new THREE.CylinderGeometry(.215,.215,.05,16),blue?std({color:0xa9adb1,roughness:.5}):M.black);rim.position.y=.6;g.add(rim);
+  const bm=blue?std({color:0x1d4fb8,roughness:.5}):std({color:0x9b968c,roughness:.6});bm.color.convertSRGBToLinear();const body=new THREE.Mesh(new THREE.CylinderGeometry(.22,.2,.72,18),bm);body.position.y=.36;g.add(body);
+  const rim=new THREE.Mesh(new THREE.CylinderGeometry(.235,.235,.1,18),blue?std({color:0xa9adb1,roughness:.5}):M.black);rim.position.y=.74;g.add(rim);
   scene.add(g);addCollider(X(mx)-.22,Z(my)-.22,X(mx)+.22,Z(my)+.22);
 }
 function basket(mx,my){const b=new THREE.Mesh(new THREE.BoxGeometry(.3,.42,.26),basketM);b.position.set(X(mx),.21,Z(my));scene.add(b);
@@ -941,6 +972,7 @@ function moveP(dx,dz){
 // ---------- where am I ----------
 const ZONES=[
   [[wu(1475),wv(-150),wu(1660),wv(310)],'Suite off the walkway · waiting room'],
+  [[wu(1515),wv(440),wu(1660),wv(935)],'Bench hall · toward CBA'],
   [[-2000,0,8,960],'CBA Sixth Floor Walkway'],
   [[1095,205,1400,722],'Herb Kelleher Center for Entrepreneurship'],
   [[1235,722,1430,790],'Herb Kelleher Center · Republic Capital Group'],
@@ -1036,7 +1068,7 @@ beacon.visible=false;scene.add(beacon);
 const CS=10,CW=GW/CS|0,CHh=GH/CS|0;
 const walk=new Uint8Array(CW*CHh);
 for(let j=0;j<CHh;j++)for(let i=0;i<CW;i++){const mx=GX0+(i+.5)*CS,my=GY0+(j+.5)*CS;
-  const inside=(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&my>wv(-150)&&my<wv(905)&&mx>wu(165));
+  const inside=(mx>=8&&mx<=1537&&my>=8&&my<=952)||(mx<8&&my>wv(-150)&&my<wv(935)&&mx>wu(165));
   walk[j*CW+i]=inside&&!blocked(X(mx),Z(my),.27)?1:0}
 const cellOf=(x,z)=>{const i=Math.floor((mxOf(x)-GX0)/CS),j=Math.floor((myOf(z)-GY0)/CS);return [i,j]};
 const cellPos=(i,j)=>[X(GX0+(i+.5)*CS),Z(GY0+(j+.5)*CS)];
@@ -1114,6 +1146,7 @@ const ENTRANCES=[
   {id:'elev',name:'Elevator · west corridor',pos:[442,825],look:[900,825]},
   {id:'north',name:'North hallway · photo spot',pos:[121,478],look:[121,20]},
   {id:'inner',name:'Hallway by 6.492',pos:[312,445],look:[312,180]},
+  {id:'bench',name:'Walkway · bench hall',pos:[wu(1580),wv(470)],look:[wu(1580),wv(930)]},
   {id:'glass',name:'Walkway · glass doors to the suite',pos:[wu(1545),wv(395)],look:[wu(1545),wv(150)]},
   {id:'suite',name:'Herb Kelleher Center · entrance',pos:[1400,756],look:[1235,756]},
   {id:'east',name:'South corridor · toward Herb Kelleher',pos:[1412,240],look:[1412,790]},
